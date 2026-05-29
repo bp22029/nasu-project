@@ -1,0 +1,119 @@
+[
+  {
+    "id": "chausu",
+    "name": "茶臼岳",
+    "lat": 37.1249179,
+    "lng": 139.9629008,
+    "placeId": "ChIJp11ahRGLH2ARXP3zd88uErk",
+    "tags": [],
+    "description": "那須連山の主峰。ロープウェイで気軽に高山の眺望が楽しめる。"
+  },
+  {
+    "id": "shikanoyu",
+    "name": "鹿の湯",
+    "lat": 37.1202,
+    "lng": 139.9762,
+    "placeId": "ChIJL26YcR6KH2ARg69TXLH2t0U",
+    "tags": [],
+    "description": "那須温泉発祥の地とされる1300年の歴史を持つ共同浴場。"
+  },
+  {
+    "id": "sesshooseki",
+    "name": "殺生石",
+    "lat": 37.1225,
+    "lng": 139.974,
+    "placeId": "ChIJNSzP5BeKH2AR7hI8smN0cfQ",
+    "tags": [],
+    "description": "九尾の狐伝説が残る奇岩。周囲から硫黄ガスが噴出する天然の景勝地。"
+  },
+  {
+    "id": "nasu-shrine",
+    "name": "那須温泉神社",
+    "lat": 37.1188,
+    "lng": 139.975,
+    "placeId": "ChIJWSfbbRiKH2ARnOmknKbcFVg",
+    "tags": [],
+    "description": "那須温泉の守護神を祀る古社。杉木立の参道が荘厳な雰囲気を醸す。"
+  },
+  {
+    "id": "nasu-ropeway",
+    "name": "那須ロープウェイ",
+    "lat": 37.124759,
+    "lng": 139.9751259,
+    "placeId": "ChIJpYltswOLH2AR6G-UyFcuPrc",
+    "tags": [],
+    "description": "茶臼岳山頂近くまでを結ぶロープウェイ。山頂からは関東平野を一望。"
+  },
+  {
+    "id": "nasu-animal-kingdom",
+    "name": "那須どうぶつ王国",
+    "lat": 37.1320456,
+    "lng": 140.0404064,
+    "placeId": "ChIJkYSq9pQgIGARinf0dqZ1xio",
+    "tags": [],
+    "description": "国内最大級の動物園。スナネコやアルパカとの近距離ふれあいが人気。"
+  },
+  {
+    "id": "nasu-safari",
+    "name": "那須サファリパーク",
+    "lat": 37.0587204,
+    "lng": 140.0041526,
+    "placeId": "ChIJOYOAK82JH2AR9hJst91UYN8",
+    "tags": [],
+    "description": "車内から野生動物を間近に観察できるサファリ形式の動物園。"
+  },
+  {
+    "id": "rindoko",
+    "name": "那須高原りんどう湖ファミリー牧場",
+    "lat": 37.0412404,
+    "lng": 140.0467169,
+    "placeId": "ChIJ_c2NCdsnIGARNxBudsZDuCM",
+    "tags": [],
+    "description": "湖畔に広がる牧場型レジャー施設。ヨーロッパ風の景観とアクティビティ。"
+  },
+  {
+    "id": "minamigaoka",
+    "name": "南ヶ丘牧場",
+    "lat": 37.0797851,
+    "lng": 140.0004676,
+    "placeId": "ChIJjZqwvOuJH2ARZHWhikijbEE",
+    "tags": [],
+    "description": "ガーンジィ牛の牧場。自家製ソフトクリームやチーズが名物。"
+  },
+  {
+    "id": "cheese-garden",
+    "name": "チーズガーデン御用邸チーズケーキ本店",
+    "lat": 37.0291044,
+    "lng": 140.0235651,
+    "placeId": "ChIJQ87NsAAoIGAR5p5YHAc4RK4",
+    "tags": [],
+    "description": "那須を代表する土産菓子「御用邸チーズケーキ」の本店。カフェも併設。"
+  },
+  {
+    "id": "good-news",
+    "name": "GOOD NEWS",
+    "lat": 37.0253919,
+    "lng": 140.029732,
+    "placeId": "ChIJt20xss0pIGARcYsnvlo9GPU",
+    "tags": [],
+    "description": "地元那須の生産者と繋がる複合施設。飲食・雑貨・体験が集まる。"
+  },
+  {
+    "id": "stained-glass",
+    "name": "那須ステンドグラス美術館",
+    "lat": 37.0655152,
+    "lng": 140.0248935,
+    "placeId": "ChIJLxTcQ4InIGAR-8iqskO5Xoo",
+    "tags": [],
+    "description": "英国の古城を再現した建物に、本物のステンドグラスを展示する美術館。"
+  },
+  {
+    "id": "michi-no-eki",
+    "name": "道の駅 那須高原友愛の森",
+    "lat": 37.0413767,
+    "lng": 140.0134551,
+    "placeId": "ChIJ77XAMxmIH2ARCY-Xaqdv4kY",
+    "tags": [],
+    "description": "那須の農産物・土産物が揃う道の駅。地元の工芸品展示も。"
+  }
+]

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import type { Spot } from "@/types/spot";
 
 // Leafletのデフォルトマーカーアイコンのパス修正（Next.jsでのWebpack問題対策）
 function FixLeafletIcons() {
@@ -16,7 +17,6 @@ function FixLeafletIcons() {
       iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
       shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
     });
-    // map参照を使って警告を抑制
     void map;
   }, [map]);
   return null;
@@ -26,7 +26,11 @@ function FixLeafletIcons() {
 const NASU_CENTER: [number, number] = [37.07, 140.0];
 const INITIAL_ZOOM = 12;
 
-export default function Map() {
+interface MapProps {
+  spots?: Spot[];
+}
+
+export default function Map({ spots = [] }: MapProps) {
   return (
     <MapContainer
       center={NASU_CENTER}
@@ -38,6 +42,15 @@ export default function Map() {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <FixLeafletIcons />
+      {spots.map((spot) => (
+        <Marker key={spot.id} position={[spot.lat, spot.lng]}>
+          <Popup>
+            <strong>{spot.name}</strong>
+            <br />
+            <span className="text-sm text-gray-600">{spot.description}</span>
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 }

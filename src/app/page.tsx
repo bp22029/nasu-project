@@ -1,4 +1,8 @@
 import dynamic from "next/dynamic";
+import spotsData from "@/../data/spots.json";
+import type { Spot } from "@/types/spot";
+
+const spots = spotsData as Spot[];
 
 // SSRを無効化してLeafletを読み込む（LeafletはSSRで壊れるため）
 const Map = dynamic(() => import("@/components/Map"), {
@@ -15,11 +19,13 @@ export default function Home() {
     <main className="flex flex-col h-screen">
       <header className="px-4 py-3 bg-white border-b shadow-sm flex-shrink-0">
         <h1 className="text-xl font-bold text-gray-800">那須旅 — 観光ルート提案</h1>
-        <p className="text-sm text-gray-500">行きたいスポットを選んで、最適なルートを見つけよう</p>
+        <p className="text-sm text-gray-500">
+          行きたいスポットを選んで、最適なルートを見つけよう（{spots.length}件）
+        </p>
       </header>
 
       <div className="flex-1 relative">
-        <Map />
+        <Map spots={spots} />
       </div>
     </main>
   );
