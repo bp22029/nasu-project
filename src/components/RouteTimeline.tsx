@@ -18,36 +18,60 @@ function formatDistance(meters: number): string {
 }
 
 export default function RouteTimeline({ result }: RouteTimelineProps) {
-  const { orderedSpots, segments, totalDuration, totalDistance } = result;
+  const { departure, orderedSpots, tripType, segments, totalDuration, totalDistance } = result;
+
+  // タイムラインに表示する全ウェイポイント名
+  const labels = [
+    departure.name,
+    ...orderedSpots.map((s) => s.name),
+    ...(tripType === "roundtrip" ? [departure.name] : []),
+  ];
+
+  const modeLabel = tripType === "roundtrip" ? "周遊（出発地へ戻る）" : "片道";
 
   return (
     <div className="px-4 py-3">
-      <h2 className="text-sm font-bold text-gray-700 mb-3">
-        ルート（{orderedSpots.length}件 / 合計 {formatDuration(totalDuration)} · {formatDistance(totalDistance)}）
-      </h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-bold text-gray-700">
+          ルート（{orderedSpots.length}スポット / {modeLabel}）
+        </h2>
+        <span className="text-xs text-gray-500">
+          {formatDuration(totalDuration)} · {formatDistance(totalDistance)}
+        </span>
+      </div>
 
       <ol className="space-y-0">
-        {orderedSpots.map((spot, i) => (
-          <li key={spot.id}>
-            {/* スポット行 */}
-            <div className="flex items-center gap-3 py-2">
-              <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 shadow">
-                {i + 1}
-              </div>
-              <span className="text-sm font-medium text-gray-800">{spot.name}</span>
-            </div>
+        {labels.map((label, i) => {
+          const isStart = i === 0;
+          const isEnd = i === labels.length - 1;
+          const isDeparture = isStart || (tripType === "roundtrip" && isEnd);
+          const spotNumber = isDeparture ? null : i; // 1-based spot number
 
-            {/* 区間情報（最後のスポット以外） */}
-            {i < segments.length && (
-              <div className="flex items-center gap-2 ml-[14px] pl-6 border-l-2 border-blue-200 py-1">
-                <span className="text-lg">🚗</span>
-                <span className="text-xs text-gray-500">
-                  {formatDuration(segments[i].duration)}（{formatDistance(segments[i].distance)}）
-                </span>
+          return (
+            <li key={i}>
+              {/* ウェイポイント行 */}
+              <div className="flex items-center gap-3 py-1.5">
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 shadow text-xs font-bold
+                    ${isDeparture ? "bg-green-600 text-white" : "bg-blue-600 text-white"}`}
+                >
+                  {isDeparture ? (isStart ? "出" : "戻") : spotNumber}
+                </div>
+                <span className="text-sm font-medium text-gray-800">{label}</span>
               </div>
-            )}
-          </li>
-        ))}
+
+              {/* 区間情報（最後のウェイポイント以外） */}
+              {i < segments.length && (
+                <div className="flex items-center gap-2 ml-[14px] pl-6 border-l-2 border-blue-200 py-1">
+                  <span className="text-base">🚗</span>
+                  <span className="text-xs text-gray-500">
+                    {formatDuration(segments[i].duration)}（{formatDistance(segments[i].distance)}）
+                  </span>
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ol>
     </div>
   );

@@ -1,35 +1,50 @@
 import { NextResponse } from "next/server";
 import spotsData from "@/../data/spots.json";
 import type { Spot } from "@/types/spot";
+import type { TripType } from "@/types/departure";
 import { calculateRoute } from "@/lib/calculateRoute";
 
 const allSpots = spotsData as Spot[];
 
+interface RequestBody {
+  spotIds: string[];
+  departure: { lat: number; lng: number; name: string };
+  tripType: TripType;
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { spotIds: string[] };
-    const { spotIds } = body;
+    const body = await request.json() as RequestBody;
+    const { spotIds, departure, tripType } = body;
 
-    if (!Array.isArray(spotIds) || spotIds.length < 2) {
+    if (!Array.isArray(spotIds) || spotIds.length < 1) {
       return NextResponse.json(
-        { error: "spotIds は2件以上の配列で指定してください" },
+        { error: "spotIds は1件以上の配列で指定してください" },
+        { status: 400 }
+      );
+    }
+    if (!departure?.lat || !departure?.lng || !departure?.name) {
+      return NextResponse.json(
+        { error: "departure (lat, lng, name) が必要です" },
+        { status: 400 }
+      );
+    }
+    if (tripType !== "roundtrip" && tripType !== "oneway") {
+      return NextResponse.json(
+        { error: "tripType は 'roundtrip' または 'oneway' で指定してください" },
         { status: 400 }
       );
     }
 
-    // 選択順を保持したままスポットを取得
     const selectedSpots = spotIds
       .map((id) => allSpots.find((s) => s.id === id))
       .filter((s): s is Spot => s !== undefined);
 
-    if (selectedSpots.length < 2) {
-      return NextResponse.json(
-        { error: "有効なスポットが2件未満です" },
-        { status: 400 }
-      );
+    if (selectedSpots.length < 1) {
+      return NextResponse.json({ error: "有効なスポットが見つかりません" }, { status: 400 });
     }
 
-    const result = await calculateRoute(selectedSpots);
+    const result = await calculateRoute(selectedSpots, departure, tripType);
     return NextResponse.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "ルート計算に失敗しました";

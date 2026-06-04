@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import type { Spot } from "@/types/spot";
+import type { TripType } from "@/types/departure";
 
 // Leafletのデフォルトマーカーアイコンのパス修正
 function FixLeafletIcons() {
@@ -60,18 +61,45 @@ function createNumberIcon(num: number) {
 const NASU_CENTER: [number, number] = [37.07, 140.0];
 const INITIAL_ZOOM = 12;
 
+// 出発地マーカー（緑色）
+function createDepartureIcon() {
+  return L.divIcon({
+    html: `<div style="
+      background:#16a34a;
+      color:white;
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:11px;
+      border:2px solid white;
+      box-shadow:0 2px 6px rgba(0,0,0,.4);
+    ">出</div>`,
+    className: "",
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  });
+}
+
 interface MapProps {
   /** 初期表示用スポット一覧（ルートなし時） */
   spots?: Spot[];
   /** ルート確定後の順番付きスポット */
   routeSpots?: Spot[];
+  /** 出発地（ルート表示時） */
+  departure?: { lat: number; lng: number; name: string };
+  /** 周遊/片道 */
+  tripType?: TripType;
   /** ORS Directions GeoJSON レスポンス */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   routeGeoJSON?: any;
 }
 
-export default function Map({ spots = [], routeSpots, routeGeoJSON }: MapProps) {
-  const hasRoute = routeSpots && routeSpots.length > 0 && routeGeoJSON;
+export default function Map({ spots = [], routeSpots, departure, tripType, routeGeoJSON }: MapProps) {
+  const hasRoute = routeSpots && routeSpots.length > 0 && routeGeoJSON && departure;
 
   // ORS GeoJSON の [lng, lat] → Leaflet の [lat, lng] に変換
   const polylinePositions = useMemo<[number, number][]>(() => {
@@ -88,14 +116,27 @@ export default function Map({ spots = [], routeSpots, routeGeoJSON }: MapProps) 
       />
       <FixLeafletIcons />
 
-      {/* ルートあり: 番号付きマーカー + ポリライン */}
+      {/* ルートあり: 出発地マーカー + 番号付きマーカー + ポリライン */}
       {hasRoute ? (
         <>
-          <FitBoundsToSpots spots={routeSpots} />
+          <FitBoundsToSpots spots={[
+            { id: "_dep", lat: departure.lat, lng: departure.lng } as Spot,
+            ...routeSpots,
+          ]} />
           <Polyline
             positions={polylinePositions}
             pathOptions={{ color: "#2563eb", weight: 5, opacity: 0.85 }}
           />
+
+          {/* 出発地マーカー（緑） */}
+          <Marker position={[departure.lat, departure.lng]} icon={createDepartureIcon()}>
+            <Popup>
+              <strong>出発地: {departure.name}</strong>
+              {tripType === "roundtrip" && <><br /><span className="text-xs text-gray-500">ここへ戻ります</span></>}
+            </Popup>
+          </Marker>
+
+          {/* スポット番号マーカー（青） */}
           {routeSpots.map((spot, i) => (
             <Marker
               key={spot.id}
