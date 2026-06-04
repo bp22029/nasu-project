@@ -10,30 +10,22 @@ interface RequestBody {
   spotIds: string[];
   departure: { lat: number; lng: number; name: string };
   tripType: TripType;
+  avoidTolls: boolean;
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json() as RequestBody;
-    const { spotIds, departure, tripType } = body;
+    const { spotIds, departure, tripType, avoidTolls } = body;
 
     if (!Array.isArray(spotIds) || spotIds.length < 1) {
-      return NextResponse.json(
-        { error: "spotIds は1件以上の配列で指定してください" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "spotIds は1件以上の配列で指定してください" }, { status: 400 });
     }
     if (!departure?.lat || !departure?.lng || !departure?.name) {
-      return NextResponse.json(
-        { error: "departure (lat, lng, name) が必要です" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "departure (lat, lng, name) が必要です" }, { status: 400 });
     }
     if (tripType !== "roundtrip" && tripType !== "oneway") {
-      return NextResponse.json(
-        { error: "tripType は 'roundtrip' または 'oneway' で指定してください" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "tripType は 'roundtrip' または 'oneway'" }, { status: 400 });
     }
 
     const selectedSpots = spotIds
@@ -44,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "有効なスポットが見つかりません" }, { status: 400 });
     }
 
-    const result = await calculateRoute(selectedSpots, departure, tripType);
+    const result = await calculateRoute(selectedSpots, departure, tripType, avoidTolls ?? true);
     return NextResponse.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "ルート計算に失敗しました";

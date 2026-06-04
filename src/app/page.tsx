@@ -28,6 +28,8 @@ export default function Home() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [departure, setDeparture] = useState<DeparturePoint | null>(null);
   const [tripType, setTripType] = useState<TripType>("oneway");
+  // 現在地（GPS）出発のときはデフォルト true（有料OK）、プリセットは true（一般道推奨）→ユーザーが切替可
+  const [avoidTolls, setAvoidTolls] = useState(true);
   const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +37,12 @@ export default function Home() {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  }, []);
+
+  // 出発地変更時: GPS = 有料OK（遠方から来る想定）、プリセット = 一般道推奨
+  const handleSelectDeparture = useCallback((dep: DeparturePoint) => {
+    setDeparture(dep);
+    setAvoidTolls(dep.id !== "current-location");
   }, []);
 
   const canDesign = selectedIds.length >= 1 && departure !== null;
@@ -51,6 +59,7 @@ export default function Home() {
           spotIds: selectedIds,
           departure: { lat: departure.lat, lng: departure.lng, name: departure.name },
           tripType,
+          avoidTolls,
         }),
       });
       if (!res.ok) {
@@ -66,17 +75,15 @@ export default function Home() {
     }
   };
 
-  const handleBack = () => {
-    setView("grid");
-    setRouteResult(null);
-  };
-
   return (
     <main className="flex flex-col h-screen bg-gray-50">
       {/* ヘッダー */}
       <header className="px-4 py-3 bg-white border-b shadow-sm flex-shrink-0 flex items-center gap-3">
         {view === "route" && (
-          <button onClick={handleBack} className="text-blue-600 font-medium text-sm flex-shrink-0">
+          <button
+            onClick={() => { setView("grid"); setRouteResult(null); }}
+            className="text-blue-600 font-medium text-sm flex-shrink-0"
+          >
             ← 戻る
           </button>
         )}
@@ -86,8 +93,8 @@ export default function Home() {
             {view === "grid"
               ? "出発地を選んでスポットをタップ"
               : view === "route" && routeResult
-              ? `${routeResult.orderedSpots.length}スポット / ${routeResult.tripType === "roundtrip" ? "周遊" : "片道"}`
-              : "計算中..."}
+              ? `${routeResult.orderedSpots.length}スポット / ${routeResult.tripType === "roundtrip" ? "周遊" : "片道"} / ${routeResult.avoidTolls ? "一般道" : "有料道路OK"}`
+              : "ルート計算中..."}
           </p>
         </div>
       </header>
@@ -95,13 +102,13 @@ export default function Home() {
       {/* グリッドビュー */}
       {(view === "grid" || view === "calculating") && (
         <>
-          <div className="flex-1 overflow-y-auto pb-24">
+          <div className="flex-1 overflow-y-auto pb-20">
             {/* 出発地セレクター */}
-            <DepartureSelector selected={departure} onSelect={setDeparture} />
+            <DepartureSelector selected={departure} onSelect={handleSelectDeparture} />
 
             {/* スポットグリッド */}
-            <div className="px-0 mt-2">
-              <p className="text-xs text-gray-500 px-3 mb-1">行きたいスポットを選択（1件以上）</p>
+            <div className="mt-2">
+              <p className="text-xs text-gray-400 px-3 mb-2">行きたいスポットを選択</p>
               <SpotGrid spots={spots} selectedIds={selectedIds} onToggle={toggleSpot} />
             </div>
           </div>
@@ -112,38 +119,43 @@ export default function Home() {
             </div>
           )}
 
-          {/* 下部アクションバー: 周遊/片道トグル + ルート設計ボタン */}
+          {/* 下部アクションバー */}
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-3 py-2.5 shadow-lg">
             <div className="flex items-center gap-2">
-              {/* 周遊/片道トグル */}
-              <div className="flex rounded-lg border border-gray-200 overflow-hidden flex-shrink-0 text-xs">
+              {/* 片道/周遊トグル */}
+              <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs flex-shrink-0">
                 <button
                   onClick={() => setTripType("oneway")}
                   className={`px-2.5 py-1.5 font-medium transition-colors
-                    ${tripType === "oneway"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-50"}`}
+                    ${tripType === "oneway" ? "bg-blue-600 text-white" : "bg-white text-gray-600"}`}
                 >
                   片道
                 </button>
                 <button
                   onClick={() => setTripType("roundtrip")}
-                  className={`px-2.5 py-1.5 font-medium transition-colors border-l border-gray-200
-                    ${tripType === "roundtrip"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-50"}`}
+                  className={`px-2.5 py-1.5 font-medium border-l border-gray-200 transition-colors
+                    ${tripType === "roundtrip" ? "bg-blue-600 text-white" : "bg-white text-gray-600"}`}
                 >
                   周遊
                 </button>
               </div>
 
+              {/* 有料道路トグル */}
+              <button
+                onClick={() => setAvoidTolls((v) => !v)}
+                className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors
+                  ${avoidTolls
+                    ? "bg-white border-gray-200 text-gray-500"
+                    : "bg-amber-50 border-amber-300 text-amber-700"}`}
+                title={avoidTolls ? "一般道のみ（タップで有料道路を許可）" : "有料道路OK（タップで一般道のみに変更）"}
+              >
+                🛣️
+                <span>{avoidTolls ? "一般道" : "有料OK"}</span>
+              </button>
+
               {/* 選択状況 */}
-              <span className="text-xs text-gray-500 flex-1 truncate">
-                {!departure
-                  ? "出発地を選んでください"
-                  : selectedIds.length === 0
-                  ? "スポットを選んでください"
-                  : `${selectedIds.length}件選択`}
+              <span className="text-xs text-gray-400 flex-1 truncate min-w-0">
+                {!departure ? "出発地を選択" : selectedIds.length === 0 ? "スポットを選択" : `${selectedIds.length}件選択`}
               </span>
 
               {/* ルート設計ボタン */}
@@ -159,9 +171,7 @@ export default function Home() {
                     <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
                     計算中...
                   </span>
-                ) : (
-                  "ルートを設計する"
-                )}
+                ) : "設計する"}
               </button>
             </div>
           </div>
@@ -171,7 +181,6 @@ export default function Home() {
       {/* ルートビュー */}
       {view === "route" && routeResult && (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* 地図（上部） */}
           <div className="flex-1 relative min-h-0">
             <Map
               routeSpots={routeResult.orderedSpots}
@@ -180,8 +189,6 @@ export default function Home() {
               routeGeoJSON={routeResult.geojson}
             />
           </div>
-
-          {/* タイムライン（下部） */}
           <div className="h-64 overflow-y-auto border-t bg-white flex-shrink-0">
             <RouteTimeline result={routeResult} />
           </div>

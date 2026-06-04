@@ -1,7 +1,5 @@
 /**
  * OpenRouteService (ORS) API クライアント
- * - Matrix API: 道なり所要時間行列を取得
- * - Directions API: 道なり経路 (GeoJSON) を取得
  */
 
 const ORS_BASE = "https://api.openrouteservice.org/v2";
@@ -15,21 +13,28 @@ function orsHeaders() {
   };
 }
 
-/** 座標ペア [lng, lat] の配列（ORS は経度→緯度の順） */
 type LngLat = [number, number];
 
 /**
  * ORS Matrix API (driving-car)
- * 返値: 所要時間の N×N 行列（秒）
+ * @param avoidTolls true のとき avoid_features: ["tollways"] を付加
  */
-export async function getDurationMatrix(locations: LngLat[]): Promise<number[][]> {
+export async function getDurationMatrix(
+  locations: LngLat[],
+  avoidTolls: boolean
+): Promise<number[][]> {
+  const body: Record<string, unknown> = {
+    locations,
+    metrics: ["duration"],
+  };
+  if (avoidTolls) {
+    body.options = { avoid_features: ["tollways"] };
+  }
+
   const res = await fetch(`${ORS_BASE}/matrix/driving-car`, {
     method: "POST",
     headers: orsHeaders(),
-    body: JSON.stringify({
-      locations,
-      metrics: ["duration"],
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
@@ -42,16 +47,24 @@ export async function getDurationMatrix(locations: LngLat[]): Promise<number[][]
 }
 
 /**
- * ORS Directions API (driving-car, GeoJSON フォーマット)
- * 返値: ORS の GeoJSON レスポンス全体
+ * ORS Directions API (driving-car, GeoJSON)
+ * @param avoidTolls true のとき avoid_features: ["tollways"] を付加
  */
-export async function getDirectionsGeoJSON(waypoints: LngLat[]): Promise<unknown> {
+export async function getDirectionsGeoJSON(
+  waypoints: LngLat[],
+  avoidTolls: boolean
+): Promise<unknown> {
+  const body: Record<string, unknown> = {
+    coordinates: waypoints,
+  };
+  if (avoidTolls) {
+    body.options = { avoid_features: ["tollways"] };
+  }
+
   const res = await fetch(`${ORS_BASE}/directions/driving-car/geojson`, {
     method: "POST",
     headers: orsHeaders(),
-    body: JSON.stringify({
-      coordinates: waypoints,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {

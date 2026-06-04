@@ -16,7 +16,6 @@ interface PhotoItem {
   authorAttributions: Array<{ displayName: string; uri?: string }>;
 }
 
-// プレースホルダー用グラデーション
 const GRADIENTS = [
   "from-emerald-400 to-green-600",
   "from-sky-400 to-blue-600",
@@ -58,21 +57,15 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber }: Spot
   const [photo, setPhoto] = useState<PhotoItem | null>(null);
   const [photoLoading, setPhotoLoading] = useState(!!spot.placeId);
 
-  // 写真取得（CLAUDE.md セクション8: 写真取得の独立 API ルート）
   useEffect(() => {
-    if (!spot.placeId) {
-      setPhotoLoading(false);
-      return;
-    }
+    if (!spot.placeId) { setPhotoLoading(false); return; }
     let cancelled = false;
     fetch(`/api/photos/${spot.placeId}`)
       .then((r) => r.json())
       .then((data: { photos?: PhotoItem[] }) => {
-        if (!cancelled && data.photos && data.photos.length > 0) {
-          setPhoto(data.photos[0]);
-        }
+        if (!cancelled && data.photos?.[0]) setPhoto(data.photos[0]);
       })
-      .catch(() => {/* エラー時はプレースホルダーのまま */})
+      .catch(() => {})
       .finally(() => { if (!cancelled) setPhotoLoading(false); });
     return () => { cancelled = true; };
   }, [spot.placeId]);
@@ -84,63 +77,71 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber }: Spot
   return (
     <button
       onClick={onToggle}
-      className="relative aspect-square w-full overflow-hidden rounded-sm focus:outline-none"
       aria-pressed={selected}
       aria-label={spot.name}
+      className={`
+        relative w-full text-left bg-white rounded-2xl overflow-hidden
+        shadow-sm transition-all duration-200
+        ${selected
+          ? "ring-2 ring-blue-500 shadow-blue-100 shadow-md"
+          : "hover:shadow-md active:scale-[0.98]"}
+      `}
     >
-      {/* 背景: 写真 or プレースホルダー */}
-      {photo ? (
-        <Image
-          src={photo.uri}
-          alt={spot.name}
-          fill
-          sizes="(max-width: 768px) 33vw, 25vw"
-          className="object-cover"
-          unoptimized  // Google の photoUri はホスト制限があるため最適化しない
-        />
-      ) : (
-        <div className={`w-full h-full bg-gradient-to-br ${gradient} flex flex-col items-center justify-center`}>
-          {photoLoading ? (
-            <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <span className="text-3xl">{icon}</span>
-          )}
-        </div>
-      )}
+      {/* 写真エリア（16:9） */}
+      <div className="relative aspect-video overflow-hidden bg-gray-100">
+        {photo ? (
+          <Image
+            src={photo.uri}
+            alt={spot.name}
+            fill
+            sizes="(max-width: 640px) 50vw, 33vw"
+            className="object-cover"
+            unoptimized
+          />
+        ) : (
+          <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+            {photoLoading
+              ? <span className="w-5 h-5 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+              : <span className="text-3xl">{icon}</span>}
+          </div>
+        )}
 
-      {/* スポット名オーバーレイ */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2">
-        <p className="text-white text-xs font-medium leading-tight line-clamp-2">{spot.name}</p>
-        {/* 写真クレジット（CLAUDE.md セクション5: authorAttributions 必須表示） */}
-        {photo && photo.authorAttributions.length > 0 && (
-          <p className="text-white/60 text-[9px] truncate mt-0.5">
+        {/* Google ロゴ（写真あり時、CLAUDE.md セクション5） */}
+        {photo && (
+          <span className="absolute bottom-1 right-1.5 text-[9px] font-semibold text-white/90 bg-black/30 rounded px-1 py-0.5 leading-none">
+            Google
+          </span>
+        )}
+
+        {/* 選択時のオーバーレイ */}
+        {selected && <div className="absolute inset-0 bg-blue-500/10" />}
+      </div>
+
+      {/* カード本文 */}
+      <div className="px-2.5 pt-2 pb-2.5">
+        <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-1">{spot.name}</p>
+        <p className="text-[10px] text-gray-400 mt-0.5 leading-snug line-clamp-2">{spot.description}</p>
+
+        {/* 撮影者クレジット（CLAUDE.md セクション5） */}
+        {photo?.authorAttributions?.[0] && (
+          <p className="text-[9px] text-gray-300 mt-1 truncate">
             📷 {photo.authorAttributions[0].displayName}
           </p>
         )}
       </div>
 
-      {/* Google ロゴ（写真あり時に表示、CLAUDE.md セクション5） */}
-      {photo && (
-        <div className="absolute top-1 right-1 bg-white/80 rounded px-1 py-0.5 text-[9px] font-medium text-gray-700 leading-none">
-          Google
-        </div>
-      )}
-
-      {/* 選択時: 青枠 + チェックバッジ */}
+      {/* 選択チェックバッジ */}
       {selected && (
-        <>
-          <div className="absolute inset-0 border-[3px] border-blue-500 rounded-sm pointer-events-none" />
-          <div className="absolute top-1.5 left-1.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow">
-            <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </>
+        <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+          <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       )}
 
       {/* ルート番号バッジ */}
       {routeNumber !== undefined && (
-        <div className="absolute top-1.5 left-1.5 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow text-white text-xs font-bold border-2 border-white">
+        <div className="absolute top-2 left-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-md border-2 border-white text-white text-[11px] font-bold">
           {routeNumber}
         </div>
       )}

@@ -18,7 +18,7 @@ function formatDistance(meters: number): string {
 }
 
 export default function RouteTimeline({ result }: RouteTimelineProps) {
-  const { departure, orderedSpots, tripType, segments, totalDuration, totalDistance } = result;
+  const { departure, orderedSpots, tripType, avoidTolls, segments, totalDuration, totalDistance } = result;
 
   // タイムラインに表示する全ウェイポイント名
   const labels = [
@@ -31,6 +31,22 @@ export default function RouteTimeline({ result }: RouteTimelineProps) {
 
   return (
     <div className="px-4 py-3">
+      {/* 有料道路が含まれる場合の注記 */}
+      {!avoidTolls && (
+        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3 text-xs text-amber-800">
+          <span>🛣️</span>
+          <span className="flex-1">有料道路が含まれる場合があります。</span>
+          <a
+            href="https://www.driveplaza.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline underline-offset-1 whitespace-nowrap"
+          >
+            料金を調べる↗
+          </a>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-bold text-gray-700">
           ルート（{orderedSpots.length}スポット / {modeLabel}）

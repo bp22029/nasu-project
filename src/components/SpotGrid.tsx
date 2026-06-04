@@ -11,13 +11,10 @@ interface SpotGridProps {
 }
 
 export default function SpotGrid({ spots, selectedIds, onToggle }: SpotGridProps) {
-  // SpotCard の色割り当てを初期化
-  useEffect(() => {
-    initSpotIndex(spots);
-  }, [spots]);
+  useEffect(() => { initSpotIndex(spots); }, [spots]);
 
   return (
-    <div className="grid grid-cols-3 gap-0.5">
+    <div className="grid grid-cols-2 gap-3 px-3 pb-3">
       {spots.map((spot) => (
         <SpotCard
           key={spot.id}

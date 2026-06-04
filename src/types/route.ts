@@ -14,6 +14,7 @@ export interface RouteResult {
   /** TSP最適化後のスポット訪問順（出発地は含まない） */
   orderedSpots: Spot[];
   tripType: TripType;
+  avoidTolls: boolean;
   segments: RouteSegment[];
   totalDuration: number;   // seconds
   totalDistance: number;   // meters
