@@ -68,7 +68,7 @@ body {
 .start-brandmark { opacity: 0; animation: rise 1s 1.05s ease forwards; }
 
 .start-t-line { display: block; overflow: hidden; }
-.start-t-inner { display: inline-block; transform: translateY(112%); animation: rise2 1s cubic-bezier(.2,.8,.2,1) forwards; }
+.start-t-inner { display: inline-block; white-space: nowrap; transform: translateY(112%); animation: rise2 1s cubic-bezier(.2,.8,.2,1) forwards; }
 .start-t-line:nth-child(1) .start-t-inner { animation-delay: .22s; }
 .start-t-line:nth-child(2) .start-t-inner { animation-delay: .34s; }
 

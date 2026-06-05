@@ -193,7 +193,7 @@ export default function Home() {
             <h1 style={{
               fontFamily: "var(--font-serif)",
               fontWeight: 600,
-              fontSize: "clamp(44px, 6.6vw, 86px)",
+              fontSize: "clamp(28px, 7.5vw, 86px)",
               lineHeight: 1.14,
               letterSpacing: ".03em",
               color: "#243019",
