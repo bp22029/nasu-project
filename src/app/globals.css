@@ -67,7 +67,9 @@ body {
 .start-meta      { opacity: 0; animation: rise 1s 1.00s ease forwards; }
 .start-brandmark { opacity: 0; animation: rise 1s 1.05s ease forwards; }
 
-.start-t-line { display: block; overflow: hidden; }
+.start-t-line  { display: block; }
+/* マスクをinline-blockにすることで横幅 = テキスト幅になり横クリップが発生しない */
+.start-t-mask  { display: inline-block; overflow: hidden; vertical-align: bottom; }
 .start-t-inner { display: inline-block; white-space: nowrap; transform: translateY(112%); animation: rise2 1s cubic-bezier(.2,.8,.2,1) forwards; }
 .start-t-line:nth-child(1) .start-t-inner { animation-delay: .22s; }
 .start-t-line:nth-child(2) .start-t-inner { animation-delay: .34s; }

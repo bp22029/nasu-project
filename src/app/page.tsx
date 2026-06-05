@@ -200,11 +200,15 @@ export default function Home() {
               marginBottom: "30px",
             }}>
               <span className="start-t-line">
-                <span className="start-t-inner">気になる写真から、</span>
+                <span className="start-t-mask">
+                  <span className="start-t-inner">気になる写真から、</span>
+                </span>
               </span>
               <span className="start-t-line">
-                <span className="start-t-inner">
-                  あなたの<span style={{ color: "#5a7d5a" }}>那須</span>へ。
+                <span className="start-t-mask">
+                  <span className="start-t-inner">
+                    あなたの<span style={{ color: "#5a7d5a" }}>那須</span>へ。
+                  </span>
                 </span>
               </span>
             </h1>
