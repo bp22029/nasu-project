@@ -2,8 +2,8 @@
   {
     "id": "chausu",
     "name": "茶臼岳",
-    "lat": 37.126093562667144,
-    "lng": 139.96528314549937,
+    "lat": 37.12521705270146, 
+    "lng": 139.98047376709303,
     "placeId": "ChIJp11ahRGLH2ARXP3zd88uErk",
     "tags": [],
     "description": "那須連山の主峰。ロープウェイで気軽に高山の眺望が楽しめる。"
@@ -20,8 +20,8 @@
   {
     "id": "sesshooseki",
     "name": "殺生石",
-    "lat": 37.101557242872246, 
-    "lng": 139.99900192019646,
+    "lat": 37.09952300194355, 
+    "lng": 140.00028503994778,
     "placeId": "ChIJNSzP5BeKH2AR7hI8smN0cfQ",
     "tags": [],
     "description": "九尾の狐伝説が残る奇岩。周囲から硫黄ガスが噴出する天然の景勝地。"
@@ -29,8 +29,8 @@
   {
     "id": "nasu-shrine",
     "name": "那須温泉神社",
-    "lat": 37.10018089501324, 
-    "lng": 139.99911633530178,
+    "lat": 37.09952300194355, 
+    "lng": 140.00028503994778,
     "placeId": "ChIJWSfbbRiKH2ARnOmknKbcFVg",
     "tags": [],
     "description": "那須温泉の守護神を祀る古社。杉木立の参道が荘厳な雰囲気を醸す。"
@@ -38,8 +38,8 @@
   {
     "id": "nasu-ropeway",
     "name": "那須ロープウェイ",
-    "lat": 37.12516652479941, 
-    "lng": 139.97487595169645,
+    "lat": 37.12521705270146, 
+    "lng": 139.98047376709303,
     "placeId": "ChIJpYltswOLH2AR6G-UyFcuPrc",
     "tags": [],
     "description": "茶臼岳山頂近くまでを結ぶロープウェイ。山頂からは関東平野を一望。"
@@ -90,10 +90,10 @@
     "description": "那須を代表する土産菓子「御用邸チーズケーキ」の本店。カフェも併設。"
   },
   {
-    "id": "good-news-neighbors",
-    "name": "GOOD NEWS NEIGHBORS",
-    "lat": 37.02565743840638,
-    "lng": 140.02975344655673,
+    "id": "good-news",
+    "name": "GOOD NEWS",
+    "lat": 37.02552190142865, 
+    "lng": 140.02872252777183,
     "placeId": "ChIJt20xss0pIGARcYsnvlo9GPU",
     "tags": [],
     "description": "地元那須の生産者と繋がる複合施設。飲食・雑貨・体験が集まる。"
