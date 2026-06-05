@@ -43,7 +43,7 @@ const ICONS: Record<string, string> = {
   rindoko: "🌿",
   minamigaoka: "🐄",
   "cheese-garden": "🧀",
-  "good-news": "🌱",
+  "good-news-neighbors": "🌱",
   "stained-glass": "🎨",
   "michi-no-eki": "🛒",
 };
@@ -80,15 +80,15 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber }: Spot
       aria-pressed={selected}
       aria-label={spot.name}
       className={`
-        relative w-full rounded-[14px] overflow-hidden
-        transition-all duration-200
+        relative w-full text-left bg-white rounded-2xl overflow-hidden
+        shadow-sm transition-all duration-200
         ${selected
-          ? "ring-2 ring-[#5a7d5a] shadow-[0_8px_24px_rgba(90,125,90,0.20)]"
-          : "shadow-[0_8px_24px_rgba(44,62,45,0.10)] hover:shadow-[0_8px_24px_rgba(44,62,45,0.16)] active:scale-[0.98]"}
+          ? "ring-2 ring-blue-500 shadow-blue-100 shadow-md"
+          : "hover:shadow-md active:scale-[0.98]"}
       `}
     >
-      {/* 画像エリア（正方形） */}
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
+      {/* 写真エリア（16:9） */}
+      <div className="relative aspect-video overflow-hidden bg-gray-100">
         {photo ? (
           <Image
             src={photo.uri}
@@ -102,40 +102,49 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber }: Spot
           <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
             {photoLoading
               ? <span className="w-5 h-5 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
-              : <span className="text-4xl">{icon}</span>}
+              : <span className="text-3xl">{icon}</span>}
           </div>
+        )}
+
+        {/* Google ロゴ（写真あり時、CLAUDE.md セクション5） */}
+        {photo && (
+          <span className="absolute bottom-1 right-1.5 text-[9px] font-semibold text-white/90 bg-black/30 rounded px-1 py-0.5 leading-none">
+            Google
+          </span>
         )}
 
         {/* 選択時のオーバーレイ */}
-        {selected && <div className="absolute inset-0 bg-[#5a7d5a]/15" />}
+        {selected && <div className="absolute inset-0 bg-blue-500/10" />}
+      </div>
 
-        {/* 撮影者クレジット + Google（写真あり時、CLAUDE.md セクション5） */}
-        {photo && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-2 py-1.5">
-            <p className="text-[8px] text-white/80 truncate leading-none">
-              {photo.authorAttributions?.[0]
-                ? `📷 ${photo.authorAttributions[0].displayName} · Google`
-                : "Google"}
-            </p>
-          </div>
-        )}
+      {/* カード本文 */}
+      <div className="px-2.5 pt-2 pb-2.5">
+        <p className="text-xs font-bold text-gray-900 leading-snug line-clamp-1">{spot.name}</p>
+        <p className="text-[10px] text-gray-400 mt-0.5 leading-snug line-clamp-2">{spot.description}</p>
 
-        {/* 選択チェックバッジ */}
-        {selected && (
-          <div className="absolute top-2 right-2 w-7 h-7 bg-[#5a7d5a] rounded-full flex items-center justify-center shadow-md border-2 border-white">
-            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        )}
-
-        {/* ルート番号バッジ */}
-        {routeNumber !== undefined && (
-          <div className="absolute top-2 left-2 w-6 h-6 bg-[#2c3e2d] rounded-full flex items-center justify-center shadow-md border-2 border-white text-white text-[11px] font-bold">
-            {routeNumber}
-          </div>
+        {/* 撮影者クレジット（CLAUDE.md セクション5） */}
+        {photo?.authorAttributions?.[0] && (
+          <p className="text-[9px] text-gray-300 mt-1 truncate">
+            📷 {photo.authorAttributions[0].displayName}
+          </p>
         )}
       </div>
+
+      {/* 選択チェックバッジ */}
+      {selected && (
+        <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+          <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
+
+      {/* ルート番号バッジ */}
+      {routeNumber !== undefined && (
+        <div className="absolute top-2 left-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-md border-2 border-white text-white text-[11px] font-bold">
+          {routeNumber}
+        </div>
+      )}
     </button>
   );
 }

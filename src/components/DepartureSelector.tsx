@@ -40,8 +40,8 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
   };
 
   return (
-    <div className="px-4 pt-4 pb-1">
-      <p className="text-xs font-semibold text-[#6b7d6b] mb-2 uppercase tracking-wide">出発地</p>
+    <div className="px-3 pt-3 pb-1">
+      <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">出発地</p>
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {/* プリセット出発地 */}
         {PRESET_DEPARTURES.map((dep) => {
@@ -52,8 +52,8 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
               onClick={() => onSelect(dep)}
               className={`flex-shrink-0 px-3 py-2 rounded-xl border text-sm font-medium transition-colors
                 ${isSelected
-                  ? "bg-[#2c3e2d] border-[#2c3e2d] text-white"
-                  : "bg-white border-[#e5e0d3] text-[#2c3e2d] hover:border-[#5a7d5a]"
+                  ? "bg-blue-600 border-blue-600 text-white"
+                  : "bg-white border-gray-200 text-gray-700 hover:border-blue-400"
                 }`}
             >
               <span className="block text-xs font-bold leading-tight">{dep.name}</span>
@@ -68,8 +68,8 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
           disabled={gpsLoading}
           className={`flex-shrink-0 px-3 py-2 rounded-xl border text-sm font-medium transition-colors
             ${selected?.id === "current-location"
-              ? "bg-[#2c3e2d] border-[#2c3e2d] text-white"
-              : "bg-white border-[#e5e0d3] text-[#2c3e2d] hover:border-[#5a7d5a]"
+              ? "bg-blue-600 border-blue-600 text-white"
+              : "bg-white border-gray-200 text-gray-700 hover:border-blue-400"
             }
             disabled:opacity-50`}
         >
@@ -84,7 +84,7 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
         <p className="text-xs text-red-500 mt-1 px-1">{gpsError}</p>
       )}
       {selected && (
-        <p className="text-xs text-[#5a7d5a] mt-1 px-1">
+        <p className="text-xs text-blue-600 mt-1 px-1">
           ✓ {selected.name} を出発地に設定
         </p>
       )}
