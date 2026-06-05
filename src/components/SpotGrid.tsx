@@ -14,7 +14,7 @@ export default function SpotGrid({ spots, selectedIds, onToggle }: SpotGridProps
   useEffect(() => { initSpotIndex(spots); }, [spots]);
 
   return (
-    <div className="grid grid-cols-2 gap-3 px-3 pb-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 px-4 pb-4">
       {spots.map((spot) => (
         <SpotCard
           key={spot.id}
