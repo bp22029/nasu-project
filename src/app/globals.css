@@ -11,12 +11,73 @@
 :root {
   --background: #f7f5f0;
   --foreground: #2c3e2d;
+  --font-serif: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-sans:  "Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* ===== Start screen animations ===== */
+@keyframes morph {
+  0%,100% { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
+  33%      { border-radius: 60% 40% 38% 62% / 63% 38% 62% 37%; }
+  66%      { border-radius: 38% 62% 54% 46% / 49% 60% 40% 51%; }
+}
+@keyframes drift {
+  0%,100% { transform: translate(0,0) scale(1) rotate(0deg); }
+  50%      { transform: translate(-3%,4%) scale(1.06) rotate(4deg); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rise2 {
+  from { transform: translateY(112%); }
+  to   { transform: translateY(0); }
+}
+
+.start-parallax { position: absolute; will-change: transform; transition: transform 1.6s cubic-bezier(.2,.7,.2,1); }
+
+.start-drift { width: 100%; height: 100%; will-change: transform; }
+.start-blob  { width: 100%; height: 100%; will-change: border-radius; }
+.start-ring  {
+  width: 100%; height: 100%;
+  border: 1.5px solid var(--start-rc, rgba(90,125,90,.4));
+  background: transparent;
+  will-change: border-radius;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .start-drift { animation: drift var(--dur, 26s) ease-in-out infinite; }
+  .start-blob  { animation: morph var(--mdur, 22s) ease-in-out infinite; }
+  .start-ring  { animation: morph var(--mdur, 24s) ease-in-out infinite; }
+}
+
+.start-index     { opacity: 0; animation: rise  .9s  .10s cubic-bezier(.2,.7,.2,1) forwards; }
+.start-subtitle  { opacity: 0; animation: rise  .9s  .58s cubic-bezier(.2,.7,.2,1) forwards; }
+.start-cta       { opacity: 0; animation: rise  .9s  .74s cubic-bezier(.2,.7,.2,1) forwards;
+                   transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s, background .35s; }
+.start-cta:hover { transform: translateY(-3px) !important; background: #1f2d1e !important;
+                   box-shadow: 0 26px 54px -20px rgba(36,48,25,.78) !important; }
+.start-cta:hover .start-ringbtn { background: rgba(255,255,255,.2); transform: translateX(3px); }
+.start-ringbtn   { transition: transform .4s cubic-bezier(.2,.7,.2,1), background .35s; }
+.start-meta      { opacity: 0; animation: rise 1s 1.00s ease forwards; }
+.start-brandmark { opacity: 0; animation: rise 1s 1.05s ease forwards; }
+
+.start-t-line { display: block; overflow: hidden; }
+.start-t-inner { display: inline-block; transform: translateY(112%); animation: rise2 1s cubic-bezier(.2,.8,.2,1) forwards; }
+.start-t-line:nth-child(1) .start-t-inner { animation-delay: .22s; }
+.start-t-line:nth-child(2) .start-t-inner { animation-delay: .34s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .start-drift, .start-blob, .start-ring { animation: none !important; }
+  .start-index, .start-subtitle, .start-cta, .start-meta, .start-brandmark {
+    animation: none !important; opacity: 1 !important; transform: none !important;
+  }
+  .start-t-inner { animation: none !important; transform: none !important; }
 }
 
 @layer utilities {
