@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "leaflet/dist/leaflet.css";
+
 /* Leaflet地図コンテナのデフォルト高さを確保 */
 .leaflet-container {
   width: 100%;

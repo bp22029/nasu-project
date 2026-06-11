@@ -58,7 +58,10 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber }: Spot
   const [photoLoading, setPhotoLoading] = useState(!!spot.placeId);
 
   useEffect(() => {
-    if (!spot.placeId) { setPhotoLoading(false); return; }
+    const debugOff =
+      process.env.NEXT_PUBLIC_DEBUG_NO_PHOTOS === "true" ||
+      (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("noPhotos"));
+    if (!spot.placeId || debugOff) { setPhotoLoading(false); return; }
     let cancelled = false;
     fetch(`/api/photos/${spot.placeId}`)
       .then((r) => r.json())

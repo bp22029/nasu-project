@@ -12,3 +12,6 @@ out/
 .DS_Store
 *.pem
 npm-debug.log*
+
+nasu-trip-demo.html
+v2-sou.html
