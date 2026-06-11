@@ -112,10 +112,10 @@ Supabase等のDBと投稿者管理が必要。写真取得関数を差し替え�
 
 ### フロー
 
-1. ユーザーが出発地を選択（3プリセット または GPS現在地）
+1. ユーザーが `/select` で出発地を選択（3プリセット または GPS現在地）
 2. 画像グリッドでスポットを1件以上選択
 3. 片道/周遊・有料道路オプションを設定
-4. 「設計する」ボタン → クライアントが `POST /api/route` を呼ぶ
+4. 「設計する」ボタン → `/route?spots=..&dep=..&trip=..&tolls=..` へ遷移し、ルート画面がクライアントから `POST /api/route` を呼ぶ
 5. サーバーサイドで `calculateRoute()` を実行:
    - **ORS Matrix API**: 出発地 + 全選択スポットの道なり所要時間行列を取得
    - **TSP最適化**: `solveTSP(matrix, roundTrip)` で訪問順を決定（出発地はindex 0に固定）
@@ -137,6 +137,7 @@ Supabase等のDBと投稿者管理が必要。写真取得関数を差し替え�
 ## 8. 将来の拡張の差し込み口（実装済みの構造）
 
 - **ルート計算は独立関数**: `calculateRoute(selectedSpots, departure, tripType, avoidTolls) → RouteResult`（`src/lib/calculateRoute.ts`）。機能2は「診断結果からスポット配列を生成してこの関数に渡す」だけで追加できる。
+- **ルート条件はURLで表現**: `/route?spots=..&dep=..&trip=..&tolls=..`（エンコード/デコードは `src/lib/routeQuery.ts`）。機能2（診断）は診断結果からこのURLを組み立てて遷移するだけでルート画面を丸ごと再利用できる。URLなのでアンケートでのルート共有・リロード復元もできる。
 - **写真取得は独立APIルート**: `GET /api/photos/[placeId]`（`src/app/api/photos/[placeId]/route.ts`）。機能3は投稿DBからの写真をこのエンドポイントに追加するだけで対応できる。
 - **`tags` フィールドが空配列で確保済み**: `data/spots.json` の全スポットに `"tags": []` がある。機能2のマッチングロジックをここに追記する。
 
@@ -146,17 +147,31 @@ Supabase等のDBと投稿者管理が必要。写真取得関数を差し替え�
 
 ## 9. 実装済み機能の概要
 
-### グリッド画面（初期表示）
+### ページ構成（App Router で分割済み）
+
+| URL | 役割 |
+|---|---|
+| `/` | ホーム（スタート画面）。「はじめる」で `/select` へ |
+| `/select` | 出発地 + 写真グリッドでスポット選択。「設計する」で `/route?...` へ |
+| `/route?spots=..&dep=..&trip=..&tolls=..` | ルート結果（地図 + タイムライン）。URL単体で共有・リロード可能 |
+
+- `/select` の選択状態は sessionStorage（キー `nasu-select-state`）に保存され、「← 選び直す」で戻っても維持される。
+- `dep` はプリセットID（`nasushiobara-station` 等）。GPS現在地は `dep=gps&lat=..&lng=..`。
+- 機能2（診断）は診断結果から `/route?...` のURLを組み立てて遷移するだけで追加できる。
+
+### 選択画面（/select）
 
 - `DepartureSelector`: 出発地を横スクロールのチップで選択。GPSボタン押下で `navigator.geolocation.getCurrentPosition()` を呼ぶ。
-- `SpotGrid` + `SpotCard`: 2列カードグリッド。各カードは Google Places 写真（16:9）を非同期取得し、取得中はグラデーションプレースホルダーを表示。
-- 下部アクションバー: 片道/周遊トグル・有料道路トグル・選択件数・「設計する」ボタン。出発地未選択または0件選択でボタンを無効化。
+- `SpotGrid` + `SpotCard`: カードグリッド。各カードは Google Places 写真を非同期取得し、取得中はグラデーションプレースホルダーを表示。
+- 下部アクションバー: 片道/周遊トグル・有料道路トグル・選択件数・「設計する」ボタン。出発地未選択のまま押すと、出発地セクションへスクロール + 点滅ハイライトで誘導する（disabled で殺さない）。
 
-### ルート画面（設計後）
+### ルート画面（/route）
 
+- クエリパラメータを `decodeRouteQuery` で検証し、不正なら エラー文言 + 「選び直す」リンクを表示。
+- 計算中はスピナーを表示。`AbortController` で二重リクエスト（Strict Mode / 再遷移）を中断する。
 - 地図（上部）: Leaflet + OSM。出発地=緑マーカー、スポット=番号付き青マーカー、経路=青ポリライン。
 - タイムライン（下部）: 出発地→スポット1→スポット2…（→出発地 if 周遊）の区間ごとに所要時間・距離を表示。
-- ヘッダーの「← 戻る」でグリッド画面に戻り、選択状態はリセットされる。
+- ヘッダーの「← 選び直す」で `/select` に戻る。選択状態は維持される。
 
 ### API ルート
 
@@ -177,7 +192,9 @@ nasu-tabi/
 │   └── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx             # メインページ（クライアントコンポーネント、状態管理）
+│   │   ├── page.tsx             # ホーム（/ スタート画面）
+│   │   ├── select/page.tsx      # スポット選択（/select、選択状態は sessionStorage に保存）
+│   │   ├── route/page.tsx       # ルート結果（/route?spots=..&dep=..、計算 + 地図 + タイムライン）
 │   │   ├── layout.tsx
 │   │   ├── globals.css
 │   │   └── api/
@@ -188,9 +205,12 @@ nasu-tabi/
 │   │   ├── SpotCard.tsx         # スポットカード（写真取得・選択状態）
 │   │   ├── SpotGrid.tsx         # 2列グリッド
 │   │   ├── DepartureSelector.tsx # 出発地選択UI（プリセット + GPS）
-│   │   └── RouteTimeline.tsx    # ルートのタイムライン表示
+│   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
+│   │   └── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
 │   ├── lib/
 │   │   ├── calculateRoute.ts    # ルート計算の独立関数（拡張の差し込み口）
+│   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
+│   │   ├── useParallax.ts       # ポインタ追従パララックスのフック（/ と /select で共用）
 │   │   ├── ors.ts               # ORS API クライアント（Matrix / Directions）
 │   │   └── tsp.ts               # 自前TSP（全探索 / 最近傍法）
 │   └── types/
@@ -238,6 +258,8 @@ openrouteservice.org は 2023 年以降にトークン体系を刷新した。�
 2. AI が書いたコードの全体構造は人間が把握する。バグ修正の丸投げで無限ループにしない。
 3. 機能2・3の中身は作り込まない（差し込み口だけ用意済み）。
 4. API キーは `.env.local` で管理。`.gitignore` に `.env*` が入っていることを確認する。
+5. 機能を追加して、その内容がREADME.mdに記載されていなかったら追記する。
+6. 細かい修正であってもブランチを切ってから、修正をする。mainは常に安定版を置くようにする。
 
 ### Git / GitHub 運用
 
@@ -245,6 +267,7 @@ openrouteservice.org は 2023 年以降にトークン体系を刷新した。�
 - 機能単位でブランチを切る（例: `feature/departure`, `feature/toll-ui`）。
 - `npm run dev` で動作確認できたら commit して `main` にマージし、push する。
 - ビルドが通らない状態・動作未確認のコードは push しない。
+- 細かい修正であってもブランチを切ってから、修正をする。mainは常に安定版を置くようにする。
 
 ---
 
