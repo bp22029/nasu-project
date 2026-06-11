@@ -33,6 +33,7 @@ export default function Home() {
   const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const parallaxLayers = useRef<(HTMLDivElement | null)[]>([null, null, null, null, null, null]);
+  const gridParallaxLayers = useRef<(HTMLDivElement | null)[]>([null, null, null]);
 
   useEffect(() => {
     if (view !== "start") return;
@@ -46,6 +47,32 @@ export default function Home() {
       cx += (tx - cx) * 0.06;
       cy += (ty - cy) * 0.06;
       for (const l of parallaxLayers.current) {
+        if (!l) continue;
+        const d = parseFloat(l.dataset.depth ?? "0");
+        l.style.transform = `translate(${cx * d}px, ${cy * d}px)`;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    window.addEventListener("pointermove", onMove as EventListener);
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("pointermove", onMove as EventListener);
+      cancelAnimationFrame(raf);
+    };
+  }, [view]);
+
+  useEffect(() => {
+    if (view !== "grid" && view !== "calculating") return;
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    const onMove = (e: PointerEvent) => {
+      tx = e.clientX / window.innerWidth - 0.5;
+      ty = e.clientY / window.innerHeight - 0.5;
+    };
+    let raf: number;
+    const tick = () => {
+      cx += (tx - cx) * 0.06;
+      cy += (ty - cy) * 0.06;
+      for (const l of gridParallaxLayers.current) {
         if (!l) continue;
         const d = parseFloat(l.dataset.depth ?? "0");
         l.style.transform = `translate(${cx * d}px, ${cy * d}px)`;
@@ -270,114 +297,189 @@ export default function Home() {
       {/* ===== スポット選択画面 ===== */}
       {(view === "grid" || view === "calculating") && (
         <>
-          <header className="bg-white border-b border-[#e5e0d3] sticky top-0 z-10">
-            <div className="max-w-[900px] mx-auto px-5 py-4">
-              <button
-                onClick={() => setView("start")}
-                className="text-[#5a7d5a] text-xs font-medium mb-2 block"
-              >
-                ← もどる
-              </button>
-              <p className="text-[11px] tracking-[4px] text-[#5a7d5a] font-medium mb-0.5">
-                S T E P  0 1
-              </p>
-              <h2 className="text-xl font-bold text-[#2c3e2d]">行きたい場所を選んでください</h2>
-              <p className="text-xs text-[#6b7d6b] mt-0.5">写真をタップして選択</p>
+          {/* 背景有機形状フィールド */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+            <div ref={el => { gridParallaxLayers.current[0] = el; }} className="start-parallax" data-depth="16"
+              style={{ position: "absolute", right: "-6%", top: "-8%", width: "520px", height: "520px" }}>
+              <div className="start-drift" style={{ "--dur": "34s" } as React.CSSProperties}>
+                <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 38% 32%, #b9cdb0, #6c9069)", filter: "blur(40px)", opacity: .32, "--mdur": "27s" } as React.CSSProperties} />
+              </div>
             </div>
+            <div ref={el => { gridParallaxLayers.current[1] = el; }} className="start-parallax" data-depth="44"
+              style={{ position: "absolute", right: "10%", top: "8%", width: "240px", height: "240px" }}>
+              <div className="start-drift" style={{ "--dur": "28s" } as React.CSSProperties}>
+                <div className="start-ring" style={{ "--start-rc": "rgba(90,125,90,.28)", "--mdur": "30s" } as React.CSSProperties} />
+              </div>
+            </div>
+            <div ref={el => { gridParallaxLayers.current[2] = el; }} className="start-parallax" data-depth="22"
+              style={{ position: "absolute", left: "-10%", bottom: "-6%", width: "420px", height: "420px" }}>
+              <div className="start-drift" style={{ "--dur": "38s" } as React.CSSProperties}>
+                <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 40% 35%, #e6efe0, #b6cbac)", filter: "blur(38px)", opacity: .4, "--mdur": "31s" } as React.CSSProperties} />
+              </div>
+            </div>
+          </div>
+
+          {/* グレインテクスチャ */}
+          <div className="fixed inset-0 pointer-events-none" style={{
+            zIndex: 1, opacity: .035, mixBlendMode: "multiply",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E")`,
+          }} />
+
+          {/* トップバー */}
+          <header className="sticky top-0 flex items-center justify-between" style={{
+            zIndex: 20,
+            padding: "18px clamp(20px, 5vw, 64px)",
+            background: "linear-gradient(180deg, #f7f5f0 62%, rgba(247,245,240,0))",
+          }}>
+            <button className="sel-back" onClick={() => setView("start")}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              もどる
+            </button>
+            <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>N&nbsp;A&nbsp;S&nbsp;U</span>
           </header>
 
-          <div className="max-w-[900px] mx-auto pb-28">
-            <DepartureSelector selected={departure} onSelect={handleSelectDeparture} />
+          {/* コンテンツ */}
+          <div className="relative" style={{ zIndex: 2, maxWidth: "1120px", margin: "0 auto", padding: "4px clamp(20px, 5vw, 64px) 180px" }}>
 
-            {/* 選択件数バー */}
-            <div className="mx-4 mt-3 mb-4 bg-white rounded-xl px-4 py-3 flex justify-between items-center border border-[#e5e0d3]">
-              <span className="text-sm text-[#2c3e2d] font-medium">
-                <span className="text-[22px] font-bold text-[#5a7d5a] leading-none">
-                  {selectedIds.length}
-                </span>{" "}
-                件選択中
-              </span>
-              <span className="text-xs text-[#6b7d6b]">
-                {!departure
-                  ? "出発地を先に選択"
-                  : selectedIds.length === 0
-                  ? "1件以上で設計できます"
-                  : "↓ 設計するを押す"}
-              </span>
+            {/* 02 — SELECT */}
+            <div className="sel-rise flex items-baseline gap-[14px] mb-[22px]" style={{ animationDelay: ".05s" }}>
+              <span style={{ fontFamily: "var(--font-serif)", fontSize: "15px", color: "#5a7d5a", letterSpacing: ".1em" }}>02</span>
+              <span style={{ width: "56px", height: "1px", background: "#8fa888", opacity: .7, transform: "translateY(-4px)", flexShrink: 0 }} />
+              <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>SELECT</span>
             </div>
+
+            {/* 見出し */}
+            <h1 className="sel-rise" style={{
+              fontFamily: "var(--font-serif)", fontWeight: 600,
+              fontSize: "clamp(30px, 4.6vw, 56px)", lineHeight: 1.16, letterSpacing: ".03em",
+              color: "#243019", marginBottom: "16px", animationDelay: ".12s",
+            }}>
+              気になる写真から、<br /><span style={{ color: "#5a7d5a" }}>行き先</span>を選ぶ。
+            </h1>
+
+            {/* リード文 */}
+            <p className="sel-rise" style={{
+              fontSize: "clamp(13px, 1.3vw, 16px)", color: "#5a7d5a",
+              letterSpacing: ".06em", lineHeight: 1.9, maxWidth: "44ch", marginBottom: "40px",
+              animationDelay: ".2s",
+            }}>
+              施設名も情報も、いったん忘れて。<br />
+              心が動いた一枚をタップするだけで、ルートは描ける。
+            </p>
+
+            {/* 出発地セクション */}
+            <div className="sel-rise flex items-center gap-3 mb-[14px]" style={{ animationDelay: ".26s" }}>
+              <span style={{ fontSize: "11px", letterSpacing: ".26em", color: "#8fa888", textTransform: "uppercase" }}>Departure</span>
+              <span style={{ fontSize: "12px", letterSpacing: ".14em", color: "#5a7d5a" }}>出発地</span>
+              <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
+            </div>
+            <div className="sel-rise mb-[44px]" style={{ animationDelay: ".3s" }}>
+              <DepartureSelector selected={departure} onSelect={handleSelectDeparture} />
+            </div>
+
+            {/* スポットセクション */}
+            <div className="sel-rise flex items-center gap-3 mb-[14px]" style={{ animationDelay: ".34s" }}>
+              <span style={{ fontSize: "11px", letterSpacing: ".26em", color: "#8fa888", textTransform: "uppercase" }}>Spots</span>
+              <span style={{ fontSize: "12px", letterSpacing: ".14em", color: "#5a7d5a" }}>ピンときた写真を選ぶ</span>
+              <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
+            </div>
+
+            {error && (
+              <div className="mb-3 rounded-lg text-xs px-4 py-2" style={{ background: "#fff0f0", border: "1px solid #fecaca", color: "#b91c1c" }}>
+                ⚠ {error}
+              </div>
+            )}
 
             <SpotGrid spots={spots} selectedIds={selectedIds} onToggle={toggleSpot} />
           </div>
 
-          {error && (
-            <div className="max-w-[900px] mx-auto px-4 mb-3">
-              <div className="bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs px-4 py-2">
-                ⚠ {error}
-              </div>
-            </div>
-          )}
-
-          {/* 下部アクションバー */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e5e0d3] shadow-lg z-10">
-            <div className="max-w-[900px] mx-auto px-4 py-3 flex items-center gap-2">
-              {/* 片道/周遊トグル */}
-              <div className="flex rounded-lg border border-[#e5e0d3] overflow-hidden text-xs flex-shrink-0">
-                <button
-                  onClick={() => setTripType("oneway")}
-                  className={`px-2.5 py-1.5 font-medium transition-colors
-                    ${tripType === "oneway" ? "bg-[#2c3e2d] text-white" : "bg-white text-[#6b7d6b]"}`}
-                >
-                  片道
-                </button>
-                <button
-                  onClick={() => setTripType("roundtrip")}
-                  className={`px-2.5 py-1.5 font-medium border-l border-[#e5e0d3] transition-colors
-                    ${tripType === "roundtrip" ? "bg-[#2c3e2d] text-white" : "bg-white text-[#6b7d6b]"}`}
-                >
-                  周遊
-                </button>
+          {/* フローティングアクションバー */}
+          <div className="fixed left-1/2 -translate-x-1/2" style={{ bottom: "22px", zIndex: 30, width: "calc(100% - 32px)", maxWidth: "720px" }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap",
+              padding: "12px 12px 12px 18px",
+              background: "rgba(247,245,240,.82)",
+              backdropFilter: "blur(16px) saturate(1.2)",
+              border: "1px solid rgba(143,168,136,.35)",
+              borderRadius: "22px",
+              boxShadow: "0 22px 50px -22px rgba(36,48,25,.5)",
+            }}>
+              {/* 片道/周遊セグメント */}
+              <div style={{ display: "flex", border: "1px solid #e5e0d3", borderRadius: "11px", overflow: "hidden", background: "#fff", flexShrink: 0 }}>
+                {(["oneway", "roundtrip"] as const).map((t, i) => (
+                  <button key={t} onClick={() => setTripType(t)} style={{
+                    border: "none", cursor: "pointer",
+                    borderLeft: i > 0 ? "1px solid #e5e0d3" : undefined,
+                    padding: "9px 14px", fontSize: "12.5px", fontWeight: 600,
+                    letterSpacing: ".06em", fontFamily: "var(--font-sans)",
+                    background: tripType === t ? "#2c3e2d" : "#fff",
+                    color: tripType === t ? "#f3f1ea" : "#5a7d5a",
+                    transition: "background .2s, color .2s",
+                  }}>
+                    {t === "oneway" ? "片道" : "周遊"}
+                  </button>
+                ))}
               </div>
 
               {/* 有料道路トグル */}
-              <button
-                onClick={() => setAvoidTolls((v) => !v)}
-                className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors
-                  ${avoidTolls
-                    ? "bg-white border-[#e5e0d3] text-[#6b7d6b]"
-                    : "bg-amber-50 border-amber-300 text-amber-700"}`}
-                title={avoidTolls ? "一般道のみ" : "有料道路OK"}
-              >
-                🛣️
-                <span>{avoidTolls ? "一般道" : "有料OK"}</span>
+              <button onClick={() => setAvoidTolls((v) => !v)} style={{
+                flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer",
+                padding: "9px 14px", borderRadius: "11px",
+                border: avoidTolls ? "1px solid #e5e0d3" : "1px solid #d8c79e",
+                background: avoidTolls ? "#fff" : "#f3ede0",
+                fontSize: "12.5px", fontWeight: 600, fontFamily: "var(--font-sans)",
+                color: avoidTolls ? "#5a7d5a" : "#8a6d2e",
+                letterSpacing: ".04em",
+                transition: "background .2s, border-color .2s, color .2s",
+              }}>
+                <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: avoidTolls ? "#8fa888" : "#c39a3e", transition: "background .2s" }} />
+                {avoidTolls ? "一般道" : "有料OK"}
               </button>
 
-              {/* 選択状況 */}
-              <span className="text-xs text-[#6b7d6b] flex-1 truncate min-w-0">
-                {!departure
-                  ? "出発地を選択"
-                  : selectedIds.length === 0
-                  ? "スポットを選択"
-                  : `${selectedIds.length}件選択`}
-              </span>
+              {/* 選択数 */}
+              <div style={{ flex: 1, minWidth: "64px", display: "flex", alignItems: "baseline", gap: "7px", color: "#5a7d5a" }}>
+                <span style={{ fontFamily: "var(--font-serif)", fontSize: "24px", fontWeight: 700, color: "#2c3e2d", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+                  {selectedIds.length}
+                </span>
+                <span style={{ fontSize: "11px", letterSpacing: ".08em" }}>スポット選択中</span>
+              </div>
 
-              {/* 設計ボタン */}
+              {/* 設計するボタン */}
               <button
                 onClick={handleDesignRoute}
                 disabled={!canDesign || view === "calculating"}
-                className="bg-[#2c3e2d] text-white px-4 py-2 rounded-[100px] text-sm font-semibold
-                           disabled:opacity-40 disabled:cursor-not-allowed
-                           active:opacity-80 transition-colors flex-shrink-0"
+                style={{
+                  flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "12px",
+                  cursor: canDesign && view !== "calculating" ? "pointer" : "not-allowed",
+                  background: "#2c3e2d", color: "#f3f1ea", border: "none",
+                  fontSize: "14px", fontWeight: 600, fontFamily: "var(--font-sans)",
+                  letterSpacing: ".1em",
+                  padding: "13px 16px 13px 24px", borderRadius: "100px",
+                  boxShadow: "0 14px 30px -16px rgba(36,48,25,.7)",
+                  opacity: !canDesign || view === "calculating" ? .4 : 1,
+                  transition: "transform .3s cubic-bezier(.2,.7,.2,1), background .3s, opacity .3s",
+                }}
               >
-                {view === "calculating" ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
-                    計算中...
-                  </span>
-                ) : (
-                  "設計する"
-                )}
+                {view === "calculating" ? "計算中..." : "設計する"}
+                <span style={{ width: "30px", height: "30px", borderRadius: "50%", background: "rgba(255,255,255,.14)", display: "grid", placeItems: "center" }}>
+                  {view === "calculating"
+                    ? <span className="animate-spin" style={{ width: "15px", height: "15px", border: "2px solid rgba(255,255,255,.4)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block" }} />
+                    : <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  }
+                </span>
               </button>
             </div>
+
+            {/* ヒント */}
+            <p style={{ textAlign: "center", marginTop: "10px", fontSize: "11px", letterSpacing: ".1em", color: "#8fa888" }}>
+              {!departure
+                ? "まず出発地を選んでください"
+                : selectedIds.length === 0
+                ? "ピンときた写真を1枚以上選んでください"
+                : `${selectedIds.length}スポットでルートを設計します`}
+            </p>
           </div>
         </>
       )}

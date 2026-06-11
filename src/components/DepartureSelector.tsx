@@ -27,7 +27,7 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
           name: "現在地",
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-          description: "GPS取得",
+          description: "GPSで取得",
         });
         setGpsLoading(false);
       },
@@ -39,54 +39,70 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
     );
   };
 
+  const chipStyle = (isSelected: boolean): React.CSSProperties => ({
+    flexShrink: 0,
+    textAlign: "left",
+    cursor: "pointer",
+    background: isSelected ? "#2c3e2d" : "rgba(255,255,255,.7)",
+    border: `1px solid ${isSelected ? "#2c3e2d" : "#e5e0d3"}`,
+    borderRadius: "16px",
+    padding: "13px 18px",
+    minWidth: "150px",
+    transition: "border-color .25s, background .25s, transform .25s, box-shadow .25s",
+    boxShadow: isSelected ? "0 14px 30px -16px rgba(36,48,25,.7)" : undefined,
+    fontFamily: "var(--font-sans)",
+  });
+
+  const nameStyle = (isSelected: boolean): React.CSSProperties => ({
+    display: "block", fontSize: "14px", fontWeight: 700,
+    color: isSelected ? "#f3f1ea" : "#2c3e2d",
+    letterSpacing: ".04em",
+  });
+
+  const descStyle = (isSelected: boolean): React.CSSProperties => ({
+    display: "block", fontSize: "10.5px",
+    color: isSelected ? "rgba(243,241,234,.72)" : "#5a7d5a",
+    opacity: 0.8, marginTop: "3px", letterSpacing: ".03em",
+  });
+
+  const gpsSelected = selected?.id === "current-location";
+
   return (
-    <div className="px-4 pt-4 pb-1">
-      <p className="text-xs font-semibold text-[#6b7d6b] mb-2 uppercase tracking-wide">出発地</p>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {/* プリセット出発地 */}
+    <div>
+      <div style={{
+        display: "flex", gap: "10px", overflowX: "auto",
+        paddingBottom: "6px", scrollbarWidth: "none",
+      }}>
         {PRESET_DEPARTURES.map((dep) => {
-          const isSelected = selected?.id === dep.id;
+          const isSel = selected?.id === dep.id;
           return (
-            <button
-              key={dep.id}
-              onClick={() => onSelect(dep)}
-              className={`flex-shrink-0 px-3 py-2 rounded-xl border text-sm font-medium transition-colors
-                ${isSelected
-                  ? "bg-[#2c3e2d] border-[#2c3e2d] text-white"
-                  : "bg-white border-[#e5e0d3] text-[#2c3e2d] hover:border-[#5a7d5a]"
-                }`}
-            >
-              <span className="block text-xs font-bold leading-tight">{dep.name}</span>
-              <span className="block text-[10px] opacity-70 leading-tight mt-0.5">{dep.description}</span>
+            <button key={dep.id} onClick={() => onSelect(dep)} style={chipStyle(isSel)}>
+              <span style={nameStyle(isSel)}>{dep.name}</span>
+              <span style={descStyle(isSel)}>{dep.description}</span>
             </button>
           );
         })}
 
-        {/* 現在地ボタン */}
+        {/* GPS / 現在地 */}
         <button
           onClick={handleGPS}
           disabled={gpsLoading}
-          className={`flex-shrink-0 px-3 py-2 rounded-xl border text-sm font-medium transition-colors
-            ${selected?.id === "current-location"
-              ? "bg-[#2c3e2d] border-[#2c3e2d] text-white"
-              : "bg-white border-[#e5e0d3] text-[#2c3e2d] hover:border-[#5a7d5a]"
-            }
-            disabled:opacity-50`}
+          style={{ ...chipStyle(gpsSelected), opacity: gpsLoading ? 0.6 : 1 }}
         >
-          <span className="block text-xs font-bold leading-tight">
-            {gpsLoading ? "取得中…" : "📍 現在地"}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", ...nameStyle(gpsSelected) }}>
+            <span style={{
+              width: "7px", height: "7px", borderRadius: "50%", flexShrink: 0,
+              background: gpsSelected ? "#cfe0c6" : "#5a7d5a",
+              boxShadow: gpsSelected ? "0 0 0 3px rgba(207,224,198,.25)" : "0 0 0 3px rgba(90,125,90,.2)",
+            }} />
+            {gpsLoading ? "取得中…" : "現在地"}
           </span>
-          <span className="block text-[10px] opacity-70 leading-tight mt-0.5">GPS</span>
+          <span style={descStyle(gpsSelected)}>GPSで取得</span>
         </button>
       </div>
 
       {gpsError && (
-        <p className="text-xs text-red-500 mt-1 px-1">{gpsError}</p>
-      )}
-      {selected && (
-        <p className="text-xs text-[#5a7d5a] mt-1 px-1">
-          ✓ {selected.name} を出発地に設定
-        </p>
+        <p style={{ fontSize: "11px", color: "#e05252", marginTop: "6px" }}>{gpsError}</p>
       )}
     </div>
   );

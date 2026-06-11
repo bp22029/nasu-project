@@ -9,6 +9,8 @@ interface SpotCardProps {
   selected: boolean;
   onToggle: () => void;
   routeNumber?: number;
+  index?: number;
+  selectionOrder?: number;
 }
 
 interface PhotoItem {
@@ -16,46 +18,18 @@ interface PhotoItem {
   authorAttributions: Array<{ displayName: string; uri?: string }>;
 }
 
-const GRADIENTS = [
-  "from-emerald-400 to-green-600",
-  "from-sky-400 to-blue-600",
-  "from-violet-400 to-purple-600",
-  "from-amber-400 to-orange-500",
-  "from-rose-400 to-red-500",
-  "from-teal-400 to-cyan-600",
-  "from-indigo-400 to-blue-700",
-  "from-lime-400 to-green-500",
-  "from-fuchsia-400 to-pink-600",
-  "from-yellow-400 to-amber-500",
-  "from-red-400 to-rose-600",
-  "from-cyan-400 to-teal-600",
-  "from-blue-400 to-indigo-600",
-];
-
-const ICONS: Record<string, string> = {
-  chausu: "🌋",
-  shikanoyu: "♨️",
-  sesshooseki: "🪨",
-  "nasu-shrine": "⛩️",
-  "nasu-ropeway": "🚡",
-  "nasu-animal-kingdom": "🐾",
-  "nasu-safari": "🦁",
-  rindoko: "🌿",
-  minamigaoka: "🐄",
-  "cheese-garden": "🧀",
-  "good-news": "🌱",
-  "stained-glass": "🎨",
-  "michi-no-eki": "🛒",
-};
-
-let _spotIndexMap: Record<string, number> = {};
-export function initSpotIndex(spots: Spot[]) {
-  spots.forEach((s, i) => { _spotIndexMap[s.id] = i; });
+function cardGradient(i: number): string {
+  const hue = 118 + (i * 13) % 64;
+  const light = 0.62 + ((i * 7) % 20) / 100;
+  const c1 = `oklch(${(light + 0.12).toFixed(2)} 0.05 ${hue})`;
+  const c2 = `oklch(${(light - 0.18).toFixed(2)} 0.06 ${(hue + 22) % 360})`;
+  return `linear-gradient(${145 + (i * 9) % 40}deg, ${c1}, ${c2})`;
 }
 
-export default function SpotCard({ spot, selected, onToggle, routeNumber }: SpotCardProps) {
+export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder }: SpotCardProps) {
   const [photo, setPhoto] = useState<PhotoItem | null>(null);
   const [photoLoading, setPhotoLoading] = useState(!!spot.placeId);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const debugOff =
@@ -73,25 +47,34 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber }: Spot
     return () => { cancelled = true; };
   }, [spot.placeId]);
 
-  const idx = _spotIndexMap[spot.id] ?? 0;
-  const gradient = GRADIENTS[idx % GRADIENTS.length];
-  const icon = ICONS[spot.id] ?? "📍";
+  const badgeNum = routeNumber ?? selectionOrder;
 
   return (
     <button
       onClick={onToggle}
       aria-pressed={selected}
       aria-label={spot.name}
-      className={`
-        relative w-full rounded-[14px] overflow-hidden
-        transition-all duration-200
-        ${selected
-          ? "ring-2 ring-[#5a7d5a] shadow-[0_8px_24px_rgba(90,125,90,0.20)]"
-          : "shadow-[0_8px_24px_rgba(44,62,45,0.10)] hover:shadow-[0_8px_24px_rgba(44,62,45,0.16)] active:scale-[0.98]"}
-      `}
+      className="sel-card relative w-full p-0 border-none"
+      style={{
+        borderRadius: "16px",
+        aspectRatio: "4 / 5",
+        background: "#f0ede4",
+        cursor: "pointer",
+        isolation: "isolate",
+        animationDelay: `${0.38 + index * 0.04}s`,
+        boxShadow: selected
+          ? "0 16px 36px -16px rgba(90,125,90,.6)"
+          : hovered
+          ? "0 20px 40px -18px rgba(44,62,45,.45)"
+          : "0 10px 26px -16px rgba(44,62,45,.35)",
+        transform: hovered ? "translateY(-4px)" : "none",
+        transition: "transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {/* 画像エリア（正方形）*/}
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
+      {/* Photo or gradient placeholder */}
+      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "16px" }}>
         {photo ? (
           <Image
             src={photo.uri}
@@ -102,41 +85,76 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber }: Spot
             unoptimized
           />
         ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-            {photoLoading
-              ? <span className="w-5 h-5 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
-              : <span className="text-4xl">{icon}</span>}
+          <div className="w-full h-full" style={{ background: cardGradient(index) }}>
+            <div className="absolute inset-0" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
+              opacity: .08, mixBlendMode: "overlay",
+            }} />
           </div>
         )}
+      </div>
 
-        {/* 選択時のオーバーレイ */}
-        {selected && <div className="absolute inset-0 bg-[#5a7d5a]/15" />}
+      {/* "写真" tag top-left */}
+      <span className="absolute flex items-center gap-[5px]" style={{
+        top: "11px", left: "12px", zIndex: 3,
+        fontFamily: "var(--font-sans)", fontSize: "9px", letterSpacing: ".18em",
+        color: "rgba(255,255,255,.82)", textTransform: "uppercase",
+      }}>
+        <span style={{ width: "5px", height: "5px", borderRadius: "1px", background: "rgba(255,255,255,.7)", flexShrink: 0 }} />
+        写真
+      </span>
 
-        {/* 撮影者クレジット + Google（CLAUDE.md セクション5） */}
-        {photo && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-2 py-1.5">
-            <p className="text-[8px] text-white/80 truncate leading-none">
-              {photo.authorAttributions?.[0]
-                ? `📷 ${photo.authorAttributions[0].displayName} · Google`
-                : "Google"}
-            </p>
-          </div>
-        )}
+      {/* Loading spinner */}
+      {photoLoading && (
+        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
+          <span className="w-5 h-5 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
 
-        {/* 選択チェックバッジ */}
-        {selected && (
-          <div className="absolute top-2 right-2 w-7 h-7 bg-[#5a7d5a] rounded-full flex items-center justify-center shadow-md border-2 border-white">
-            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        )}
+      {/* Selection overlay + border */}
+      {selected && (
+        <div className="absolute inset-0 pointer-events-none" style={{
+          border: "3px solid #5a7d5a",
+          borderRadius: "16px",
+          background: "rgba(90,125,90,.16)",
+          zIndex: 2,
+        }} />
+      )}
 
-        {/* ルート番号バッジ */}
-        {routeNumber !== undefined && (
-          <div className="absolute top-2 left-2 w-6 h-6 bg-[#2c3e2d] rounded-full flex items-center justify-center shadow-md border-2 border-white text-white text-[11px] font-bold">
-            {routeNumber}
-          </div>
+      {/* Number badge top-right (selection order or route number) */}
+      {badgeNum !== undefined && (
+        <span className="absolute" style={{
+          top: "10px", right: "11px", zIndex: 4,
+          width: "27px", height: "27px", borderRadius: "50%",
+          display: "grid", placeItems: "center",
+          background: "#5a7d5a",
+          border: "1.5px solid #fff",
+          color: "#fff", fontSize: "12px", fontWeight: 700,
+          backdropFilter: "blur(4px)",
+        }}>
+          {badgeNum}
+        </span>
+      )}
+
+      {/* Bottom caption: name + optional attribution */}
+      <div className="absolute left-0 right-0 bottom-0" style={{
+        padding: "38px 14px 14px", zIndex: 3,
+        background: "linear-gradient(0deg, rgba(20,28,16,.62) 0%, rgba(20,28,16,.22) 55%, transparent 100%)",
+      }}>
+        <div style={{
+          fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "16px",
+          lineHeight: 1.32, color: "#f6f4ed", letterSpacing: ".03em",
+          textShadow: "0 1px 8px rgba(0,0,0,.3)",
+        }}>
+          {spot.name}
+        </div>
+        {photo?.authorAttributions?.[0] && (
+          <p style={{
+            fontSize: "8px", color: "rgba(255,255,255,.65)", marginTop: "3px",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {photo.authorAttributions[0].displayName} · Google
+          </p>
         )}
       </div>
     </button>

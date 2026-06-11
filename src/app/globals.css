@@ -89,3 +89,23 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ===== Select screen ===== */
+@keyframes sel-rise {
+  from { transform: translateY(13px); }
+  to { transform: none; }
+}
+.sel-rise { animation: sel-rise .8s cubic-bezier(.2,.7,.2,1) both; }
+.sel-card { animation: sel-rise .7s cubic-bezier(.2,.7,.2,1) both; }
+.sel-back {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: none; border: none; cursor: pointer;
+  color: #5a7d5a; font-size: 12px; letter-spacing: .14em; font-weight: 500;
+  padding: 6px 0; font-family: var(--font-sans);
+  transition: gap .3s, color .3s;
+}
+.sel-back:hover { gap: 13px; color: #2c3e2d; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .sel-rise, .sel-card { animation: none !important; }
+}

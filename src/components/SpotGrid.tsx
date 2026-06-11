@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import type { Spot } from "@/types/spot";
-import SpotCard, { initSpotIndex } from "@/components/SpotCard";
+import SpotCard from "@/components/SpotCard";
 
 interface SpotGridProps {
   spots: Spot[];
@@ -11,16 +10,16 @@ interface SpotGridProps {
 }
 
 export default function SpotGrid({ spots, selectedIds, onToggle }: SpotGridProps) {
-  useEffect(() => { initSpotIndex(spots); }, [spots]);
-
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 px-4 pb-4">
-      {spots.map((spot) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      {spots.map((spot, i) => (
         <SpotCard
           key={spot.id}
           spot={spot}
           selected={selectedIds.includes(spot.id)}
           onToggle={() => onToggle(spot.id)}
+          index={i}
+          selectionOrder={selectedIds.includes(spot.id) ? selectedIds.indexOf(spot.id) + 1 : undefined}
         />
       ))}
     </div>
