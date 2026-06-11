@@ -32,6 +32,9 @@ export default function Home() {
   const [avoidTolls, setAvoidTolls] = useState(true);
   const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // 設計ボタン押下時に出発地が未選択なら、出発地セクションへスクロールして点滅で誘導する
+  const [departureFlash, setDepartureFlash] = useState(false);
+  const departureSectionRef = useRef<HTMLDivElement | null>(null);
   const parallaxLayers = useRef<(HTMLDivElement | null)[]>([null, null, null, null, null, null]);
   const gridParallaxLayers = useRef<(HTMLDivElement | null)[]>([null, null, null]);
 
@@ -100,6 +103,19 @@ export default function Home() {
   }, []);
 
   const canDesign = selectedIds.length >= 1 && departure !== null;
+
+  // 未準備のままボタンを押されたら、足りないもの（出発地）へ誘導する
+  const handleDesignClick = () => {
+    if (view === "calculating") return;
+    if (!departure) {
+      departureSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setDepartureFlash(true);
+      window.setTimeout(() => setDepartureFlash(false), 1800);
+      return;
+    }
+    if (selectedIds.length === 0) return;
+    void handleDesignRoute();
+  };
 
   const handleDesignRoute = async () => {
     if (!canDesign || !departure) return;
@@ -376,7 +392,11 @@ export default function Home() {
               <span style={{ fontSize: "12px", letterSpacing: ".14em", color: "#5a7d5a" }}>出発地</span>
               <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
             </div>
-            <div className="sel-rise mb-[44px]" style={{ animationDelay: ".3s" }}>
+            <div
+              ref={departureSectionRef}
+              className={`sel-rise mb-[44px]${departureFlash ? " dep-flash" : ""}`}
+              style={{ animationDelay: ".3s", borderRadius: "20px" }}
+            >
               <DepartureSelector selected={departure} onSelect={handleSelectDeparture} />
             </div>
 
@@ -450,17 +470,18 @@ export default function Home() {
               {/* 設計するボタン */}
               <button
                 type="button"
-                onClick={handleDesignRoute}
-                disabled={!canDesign || view === "calculating"}
+                onClick={handleDesignClick}
+                disabled={view === "calculating"}
+                aria-disabled={!canDesign || view === "calculating"}
                 style={{
                   flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "12px",
-                  cursor: canDesign && view !== "calculating" ? "pointer" : "not-allowed",
+                  cursor: view === "calculating" ? "wait" : "pointer",
                   background: "#2c3e2d", color: "#f3f1ea", border: "none",
                   fontSize: "14px", fontWeight: 600, fontFamily: "var(--font-sans)",
                   letterSpacing: ".1em",
                   padding: "13px 16px 13px 24px", borderRadius: "100px",
                   boxShadow: "0 14px 30px -16px rgba(36,48,25,.7)",
-                  opacity: !canDesign || view === "calculating" ? .4 : 1,
+                  opacity: !canDesign || view === "calculating" ? .55 : 1,
                   transition: "transform .3s cubic-bezier(.2,.7,.2,1), background .3s, opacity .3s",
                 }}
               >
@@ -475,9 +496,15 @@ export default function Home() {
             </div>
 
             {/* ヒント */}
-            <p style={{ textAlign: "center", marginTop: "10px", fontSize: "11px", letterSpacing: ".1em", color: "#8fa888" }}>
+            <p style={{
+              textAlign: "center", marginTop: "10px", fontSize: "11px", letterSpacing: ".1em",
+              color: !departure && selectedIds.length > 0 ? "#8a6d2e" : "#8fa888",
+              fontWeight: !departure && selectedIds.length > 0 ? 600 : 400,
+            }}>
               {!departure
-                ? "まず出発地を選んでください"
+                ? selectedIds.length > 0
+                  ? "あとは出発地を選ぶだけ（ボタンを押すと出発地へ移動します）"
+                  : "まず出発地を選んでください"
                 : selectedIds.length === 0
                 ? "ピンときた写真を1枚以上選んでください"
                 : `${selectedIds.length}スポットでルートを設計します`}
