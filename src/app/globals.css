@@ -106,6 +106,14 @@ body {
 }
 .sel-back:hover { gap: 13px; color: #2c3e2d; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* 出発地未選択のまま「設計する」を押したときの誘導ハイライト */
+@keyframes dep-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(195, 154, 62, 0); }
+  50%      { box-shadow: 0 0 0 5px rgba(195, 154, 62, .45); }
+}
+.dep-flash { animation: dep-flash .85s ease-in-out 2; }
+
 @media (prefers-reduced-motion: reduce) {
-  .sel-rise, .sel-card { animation: none !important; }
+  .sel-rise, .sel-card, .dep-flash { animation: none !important; }
 }
