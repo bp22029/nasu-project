@@ -15,3 +15,9 @@ npm-debug.log*
 
 nasu-trip-demo.html
 v2-sou.html
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
+# Claude Code local settings
+.claude/settings.local.json
