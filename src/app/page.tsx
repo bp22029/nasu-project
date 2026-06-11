@@ -330,8 +330,9 @@ export default function Home() {
             zIndex: 20,
             padding: "18px clamp(20px, 5vw, 64px)",
             background: "linear-gradient(180deg, #f7f5f0 62%, rgba(247,245,240,0))",
+            pointerEvents: "none",
           }}>
-            <button className="sel-back" onClick={() => setView("start")}>
+            <button type="button" className="sel-back" style={{ pointerEvents: "auto" }} onClick={() => setView("start")}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                 <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -409,7 +410,7 @@ export default function Home() {
               {/* 片道/周遊セグメント */}
               <div style={{ display: "flex", border: "1px solid #e5e0d3", borderRadius: "11px", overflow: "hidden", background: "#fff", flexShrink: 0 }}>
                 {(["oneway", "roundtrip"] as const).map((t, i) => (
-                  <button key={t} onClick={() => setTripType(t)} style={{
+                  <button type="button" key={t} onClick={() => setTripType(t)} style={{
                     border: "none", cursor: "pointer",
                     borderLeft: i > 0 ? "1px solid #e5e0d3" : undefined,
                     padding: "9px 14px", fontSize: "12.5px", fontWeight: 600,
@@ -424,7 +425,7 @@ export default function Home() {
               </div>
 
               {/* 有料道路トグル */}
-              <button onClick={() => setAvoidTolls((v) => !v)} style={{
+              <button type="button" onClick={() => setAvoidTolls((v) => !v)} style={{
                 flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer",
                 padding: "9px 14px", borderRadius: "11px",
                 border: avoidTolls ? "1px solid #e5e0d3" : "1px solid #d8c79e",
@@ -448,6 +449,7 @@ export default function Home() {
 
               {/* 設計するボタン */}
               <button
+                type="button"
                 onClick={handleDesignRoute}
                 disabled={!canDesign || view === "calculating"}
                 style={{

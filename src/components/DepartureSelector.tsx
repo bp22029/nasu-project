@@ -76,7 +76,7 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
         {PRESET_DEPARTURES.map((dep) => {
           const isSel = selected?.id === dep.id;
           return (
-            <button key={dep.id} onClick={() => onSelect(dep)} style={chipStyle(isSel)}>
+            <button type="button" key={dep.id} onClick={() => onSelect(dep)} style={chipStyle(isSel)}>
               <span style={nameStyle(isSel)}>{dep.name}</span>
               <span style={descStyle(isSel)}>{dep.description}</span>
             </button>
@@ -85,6 +85,7 @@ export default function DepartureSelector({ selected, onSelect }: DepartureSelec
 
         {/* GPS / 現在地 */}
         <button
+          type="button"
           onClick={handleGPS}
           disabled={gpsLoading}
           style={{ ...chipStyle(gpsSelected), opacity: gpsLoading ? 0.6 : 1 }}
