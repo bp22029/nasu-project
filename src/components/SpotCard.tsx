@@ -51,6 +51,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
 
   return (
     <button
+      type="button"
       onClick={onToggle}
       aria-pressed={selected}
       aria-label={spot.name}
