@@ -163,6 +163,7 @@ Supabase等のDBと投稿者管理が必要。写真取得関数を差し替え�
 
 - `DepartureSelector`: 出発地を横スクロールのチップで選択。GPSボタン押下で `navigator.geolocation.getCurrentPosition()` を呼ぶ。
 - `SpotGrid` + `SpotCard`: カードグリッド。各カードは Google Places 写真を非同期取得し、取得中はグラデーションプレースホルダーを表示。
+- 施設名の表示/非表示トグル（スポットセクション見出しの右端）: デフォルト表示。「直感で選ぶ」ために隠せる。**撮影者クレジット（authorAttributions）は規約上、非表示時も表示し続ける**。設定は sessionStorage に保存。
 - 下部アクションバー: 片道/周遊トグル・有料道路トグル・選択件数・「設計する」ボタン。出発地未選択のまま押すと、出発地セクションへスクロール + 点滅ハイライトで誘導する（disabled で殺さない）。
 
 ### ルート画面（/route）
