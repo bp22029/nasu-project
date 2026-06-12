@@ -11,6 +11,7 @@ import type { DeparturePoint, TripType } from "@/types/departure";
 import spotsData from "@/../data/spots.json";
 
 const spots = spotsData as Spot[];
+const spotsById = new Map(spots.map((s) => [s.id, s]));
 
 // /route から「選び直す」で戻ったときに選択状態を復元するためのキー
 const STORAGE_KEY = "nasu-select-state";
@@ -21,6 +22,25 @@ interface StoredState {
   tripType: TripType;
   avoidTolls: boolean;
   showNames?: boolean;
+  orderedIds?: string[];
+}
+
+// Fisher-Yates。全員が同じ順で見ると下方のスポットに不利が出るため、表示順は毎セッションランダム
+function shuffleIds(ids: string[]): string[] {
+  const a = [...ids];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 保存された順序が現在の spots と同じ id 集合か（スポット追加・削除後の古い保存を弾く）
+function isValidOrder(ids: unknown): ids is string[] {
+  return Array.isArray(ids)
+    && ids.length === spots.length
+    && ids.every((id) => typeof id === "string" && spotsById.has(id))
+    && new Set(ids).size === ids.length;
 }
 
 export default function SelectPage() {
@@ -32,6 +52,9 @@ export default function SelectPage() {
   const [avoidTolls, setAvoidTolls] = useState(true);
   // 施設名の表示。デフォルトは非表示（「直感で選ぶ」コンセプト）、見たい人は表示に切替できる
   const [showNames, setShowNames] = useState(false);
+  // 表示順（スポットidの配列）。SSRとのハイドレーション不一致を避けるため、
+  // マウント後に確定するまで null にしてグリッドを描画しない
+  const [orderedIds, setOrderedIds] = useState<string[] | null>(null);
   const [restored, setRestored] = useState(false);
   // 設計ボタン押下時に出発地が未選択なら、出発地セクションへスクロールして点滅で誘導する
   const [departureFlash, setDepartureFlash] = useState(false);
@@ -39,26 +62,30 @@ export default function SelectPage() {
 
   // sessionStorage から選択状態を復元（ルート画面から戻ってきたとき用）
   useEffect(() => {
+    let restoredOrder: string[] | null = null;
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (raw) {
         const s = JSON.parse(raw) as StoredState;
-        const validIds = (s.selectedIds ?? []).filter((id) => spots.some((sp) => sp.id === id));
+        const validIds = (s.selectedIds ?? []).filter((id) => spotsById.has(id));
         setSelectedIds(validIds);
         if (s.departure?.id && typeof s.departure.lat === "number") setDeparture(s.departure);
         if (s.tripType === "roundtrip" || s.tripType === "oneway") setTripType(s.tripType);
         if (typeof s.avoidTolls === "boolean") setAvoidTolls(s.avoidTolls);
         if (typeof s.showNames === "boolean") setShowNames(s.showNames);
+        if (isValidOrder(s.orderedIds)) restoredOrder = s.orderedIds;
       }
     } catch { /* 壊れた保存データは無視して初期状態で開始 */ }
+    // 保存済みの順序があればそれを維持（戻ってきても並びが変わらない）、なければ新規シャッフル
+    setOrderedIds(restoredOrder ?? shuffleIds(spots.map((s) => s.id)));
     setRestored(true);
   }, []);
 
   useEffect(() => {
     if (!restored) return;
-    const state: StoredState = { selectedIds, departure, tripType, avoidTolls, showNames };
+    const state: StoredState = { selectedIds, departure, tripType, avoidTolls, showNames, orderedIds: orderedIds ?? undefined };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [restored, selectedIds, departure, tripType, avoidTolls, showNames]);
+  }, [restored, selectedIds, departure, tripType, avoidTolls, showNames, orderedIds]);
 
   const toggleSpot = useCallback((id: string) => {
     setSelectedIds((prev) =>
@@ -179,6 +206,25 @@ export default function SelectPage() {
           <span style={{ fontSize: "11px", letterSpacing: ".26em", color: "#8fa888", textTransform: "uppercase" }}>Spots</span>
           <span style={{ fontSize: "12px", letterSpacing: ".14em", color: "#5a7d5a" }}>ピンときた写真を選ぶ</span>
           <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
+          {/* シャッフルボタン（表示順のみ入れ替え。選択状態・取得済み写真は維持される） */}
+          <button
+            type="button"
+            onClick={() => setOrderedIds((prev) => (prev ? shuffleIds(prev) : prev))}
+            style={{
+              flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer",
+              padding: "7px 13px", borderRadius: "100px",
+              border: "1px solid #e5e0d3", background: "rgba(255,255,255,.7)",
+              fontSize: "11.5px", fontWeight: 600, fontFamily: "var(--font-sans)",
+              color: "#5a7d5a", letterSpacing: ".06em",
+              transition: "background .2s, border-color .2s",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M16 3h5v5M21 3l-7.5 7.5M8 21H3v-5M3 21l7.5-7.5M16 21h5v-5M21 21l-6-6M8 3H3v5M3 3l6 6"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            シャッフル
+          </button>
           {/* 施設名のON/OFFスイッチ（ラベルは状態を持たず、スイッチ位置と色で状態を示す） */}
           <button
             type="button"
@@ -210,7 +256,16 @@ export default function SelectPage() {
           </button>
         </div>
 
-        <SpotGrid spots={spots} selectedIds={selectedIds} onToggle={toggleSpot} showNames={showNames} />
+        {/* orderedIds 確定後に描画（SSRとの順序不一致を避ける）。key=spot.id のため
+            シャッフルしても各カードは再マウントされず、取得済み写真はそのまま */}
+        {orderedIds && (
+          <SpotGrid
+            spots={orderedIds.map((id) => spotsById.get(id)!)}
+            selectedIds={selectedIds}
+            onToggle={toggleSpot}
+            showNames={showNames}
+          />
+        )}
       </div>
 
       {/* フローティングアクションバー */}
