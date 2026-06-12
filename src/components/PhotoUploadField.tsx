@@ -3,22 +3,37 @@
 /**
  * 写真選択フィールド（機能3の投稿画面用）
  *
- * ファイル選択 → クライアント側リサイズ（lib/imageResize.ts、長辺1600px JPEG）→
- * プレビュー表示。親には File ではなく**リサイズ済み Blob** を渡す
- * （Storage 無料枠保護のため、生データをそのままアップロードさせない）。
+ * ファイル選択 → 切り抜き調整モーダル（CropModal: ドラッグ/ピンチで自由に調整）→
+ * 確定した範囲を JPEG 化してプレビュー表示。親には File ではなく
+ * **切り抜き・縮小済み Blob** を渡す（Storage 無料枠保護のため、生データを上げない）。
+ * 元ファイルを保持しているので「範囲を調整」でいつでも切り抜き直せる。
  */
 import { useEffect, useRef, useState } from "react";
-import { resizeImageToJpeg } from "@/lib/imageResize";
+import CropModal from "@/components/CropModal";
 
 interface PhotoUploadFieldProps {
   photo: Blob | null;
   onChange: (photo: Blob | null) => void;
 }
 
+const previewButtonStyle: React.CSSProperties = {
+  cursor: "pointer",
+  background: "rgba(247,245,240,.95)",
+  border: "1px solid #d8d2c0",
+  borderRadius: "100px",
+  padding: "8px 14px",
+  fontSize: "12px",
+  fontWeight: 600,
+  color: "#2c3e2d",
+  letterSpacing: ".06em",
+  fontFamily: "var(--font-sans)",
+};
+
 export default function PhotoUploadField({ photo, onChange }: PhotoUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // 切り抜き直しのために元ファイルを保持する
+  const [rawFile, setRawFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // プレビュー URL は photo から生成し、差し替え時に必ず revoke する
@@ -32,20 +47,12 @@ export default function PhotoUploadField({ photo, onChange }: PhotoUploadFieldPr
     return () => URL.revokeObjectURL(url);
   }, [photo]);
 
-  const handleFile = async (file: File | undefined) => {
+  const handleFile = (file: File | undefined) => {
     if (!file) return;
-    setProcessing(true);
-    setError(null);
-    try {
-      onChange(await resizeImageToJpeg(file));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "画像の読み込みに失敗しました");
-      onChange(null);
-    } finally {
-      setProcessing(false);
-      // 同じファイルを選び直せるよう input をリセット
-      if (inputRef.current) inputRef.current.value = "";
-    }
+    setRawFile(file);
+    setCropOpen(true); // 選んだらまず切り抜き調整へ
+    // 同じファイルを選び直せるよう input をリセット
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   return (
@@ -60,7 +67,7 @@ export default function PhotoUploadField({ photo, onChange }: PhotoUploadFieldPr
 
       {previewUrl ? (
         <div style={{ position: "relative" }}>
-          {/* リサイズ済み Blob のローカルプレビュー（next/image 不要） */}
+          {/* 切り抜き済み Blob のローカルプレビュー（next/image 不要） */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={previewUrl}
@@ -74,32 +81,24 @@ export default function PhotoUploadField({ photo, onChange }: PhotoUploadFieldPr
               display: "block",
             }}
           />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            style={{
-              position: "absolute", right: "10px", bottom: "10px",
-              cursor: "pointer",
-              background: "rgba(247,245,240,.95)",
-              border: "1px solid #d8d2c0",
-              borderRadius: "100px",
-              padding: "8px 16px",
-              fontSize: "12px", fontWeight: 600, color: "#2c3e2d",
-              letterSpacing: ".06em",
-              fontFamily: "var(--font-sans)",
-            }}
-          >
-            選び直す
-          </button>
+          <div style={{ position: "absolute", right: "10px", bottom: "10px", display: "flex", gap: "8px" }}>
+            {rawFile && (
+              <button type="button" onClick={() => setCropOpen(true)} style={previewButtonStyle}>
+                範囲を調整
+              </button>
+            )}
+            <button type="button" onClick={() => inputRef.current?.click()} style={previewButtonStyle}>
+              選び直す
+            </button>
+          </div>
         </div>
       ) : (
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          disabled={processing}
           style={{
             width: "100%",
-            cursor: processing ? "default" : "pointer",
+            cursor: "pointer",
             background: "rgba(255,255,255,.72)",
             border: "1.5px dashed #b6cbac",
             borderRadius: "16px",
@@ -112,17 +111,23 @@ export default function PhotoUploadField({ photo, onChange }: PhotoUploadFieldPr
         >
           <span style={{ display: "block", fontSize: "26px", lineHeight: 1, marginBottom: "10px" }}>＋</span>
           <span style={{ display: "block", fontSize: "13px", fontWeight: 600, letterSpacing: ".08em" }}>
-            {processing ? "画像を準備中…" : "写真を選ぶ"}
+            写真を選ぶ
           </span>
           <span style={{ display: "block", fontSize: "10.5px", color: "#8fa888", marginTop: "6px", letterSpacing: ".04em" }}>
-            自動で縮小してからアップロードされます
+            選んだあとに表示範囲を自由に調整できます
           </span>
         </button>
       )}
 
-      {error && (
-        <p style={{ fontSize: "12px", color: "#e05252", margin: "8px 0 0" }}>{error}</p>
-      )}
+      {/* 切り抜き調整モーダル */}
+      <CropModal
+        file={cropOpen ? rawFile : null}
+        onCancel={() => setCropOpen(false)}
+        onCropped={(blob) => {
+          onChange(blob);
+          setCropOpen(false);
+        }}
+      />
     </div>
   );
 }

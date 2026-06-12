@@ -234,7 +234,8 @@ nasu-tabi/
 │   │   ├── PageShell.tsx        # 共通ページシェル（機能3の新ページ用。RouteShellの一般化）
 │   │   ├── NicknameModal.tsx    # ニックネーム入力モーダル（匿名サインイン + profiles upsert）
 │   │   ├── SpotSearchPicker.tsx # スポット部分一致検索ピッカー
-│   │   ├── PhotoUploadField.tsx # 写真選択 → リサイズ → プレビュー
+│   │   ├── PhotoUploadField.tsx # 写真選択 → 切り抜き調整 → プレビュー
+│   │   ├── CropModal.tsx        # 切り抜き調整モーダル（react-easy-crop、4:3固定）
 │   │   ├── TripEntryEditor.tsx  # 旅記録エントリの編集（追加・並べ替え・削除）
 │   │   ├── TripCard.tsx         # 旅記録一覧カード
 │   │   ├── UserPhoto.tsx        # 投稿写真の表示（Storage パス → 公開URL）
@@ -365,7 +366,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前
 ### Storage
 
 - Public バケット `photos`、パスは `{user_id}/{uuid}.jpg`。DBにはパスのみ保存し、URL化は `publicPhotoUrl()`（`src/lib/photoUrl.ts`）に集約。
-- **アップロード前にクライアント側で長辺1600px・JPEG(0.82)に縮小**（`src/lib/imageResize.ts`）。無料枠1GB保護のため省略不可。
+- **アップロード前に切り抜き調整 → 長辺1600px・JPEG(0.82)化**（`CropModal` + `src/lib/imageResize.ts`）。ファイル選択後に react-easy-crop のモーダルでドラッグ/ピンチ/スライダーで表示範囲を調整できる（アスペクト比 4:3 固定。自動の中央切り抜きへの違和感からのユーザー要望、2026-06-12）。元ファイルは PhotoUploadField が保持し「範囲を調整」で何度でも切り抜き直せる。縮小は無料枠1GB保護のため省略不可。
 - 投稿写真は自前ストレージなので Google 規約の制約外（保存・地図表示も可）。セクション5のGoogle写真ルールはそのまま。
 
 ### データアクセス
