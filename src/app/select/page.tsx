@@ -6,15 +6,15 @@ import SpotGrid from "@/components/SpotGrid";
 import DepartureSelector from "@/components/DepartureSelector";
 import GrainOverlay from "@/components/GrainOverlay";
 import { encodeRouteQuery } from "@/lib/routeQuery";
+// /route から「選び直す」で戻ったときに選択状態を復元するためのキー
+// （ホームの「はじめる」はこのキーを破棄して新規スタートする）
+import { SELECT_STATE_KEY as STORAGE_KEY } from "@/lib/selectState";
 import type { Spot } from "@/types/spot";
 import type { DeparturePoint, TripType } from "@/types/departure";
 import spotsData from "@/../data/spots.json";
 
 const spots = spotsData as Spot[];
 const spotsById = new Map(spots.map((s) => [s.id, s]));
-
-// /route から「選び直す」で戻ったときに選択状態を復元するためのキー
-const STORAGE_KEY = "nasu-select-state";
 
 interface StoredState {
   selectedIds: string[];
