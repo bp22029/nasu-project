@@ -8,9 +8,11 @@ interface SpotGridProps {
   selectedIds: string[];
   onToggle: (id: string) => void;
   showNames?: boolean;
+  /** シャッフルのたびに増える値。SpotCard が表示写真を選び直すトリガー */
+  shuffleNonce?: number;
 }
 
-export default function SpotGrid({ spots, selectedIds, onToggle, showNames = true }: SpotGridProps) {
+export default function SpotGrid({ spots, selectedIds, onToggle, showNames = true, shuffleNonce = 0 }: SpotGridProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
       {spots.map((spot, i) => (
@@ -22,6 +24,7 @@ export default function SpotGrid({ spots, selectedIds, onToggle, showNames = tru
           index={i}
           selectionOrder={selectedIds.includes(spot.id) ? selectedIds.indexOf(spot.id) + 1 : undefined}
           showName={showNames}
+          shuffleNonce={shuffleNonce}
         />
       ))}
     </div>

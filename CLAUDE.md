@@ -373,5 +373,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前
 - 投稿者がアップロード時に「スポット選択の画像に使ってもOK」を選べる（`GridConsentCheckbox`、**初期値ON**）。単体投稿は `posts.show_in_grid`、旅記録は**投稿単位で1つ** `trips.show_in_grid`（エントリごとではない）。
 - `GET /api/photos/[spotId]` が Google 写真（最大1枚）と許可済み投稿写真（最大4枚、posts と trip_entries の両方から）をマージして返す。APIのキーは placeId から **spots.json の id に変更済み**（投稿写真は placeId と無関係のため）。
 - SpotCard は複数枚をカルーセル表示（右端の上下ボタン + n/m カウンタ）。クレジットは写真ごとに切替: Google写真=撮影者名 + Google（規約上必須）、投稿写真=ニックネーム。
+- **最初に表示する写真はランダム選出**（Google+投稿写真から。ユーザー確認済みの方針: 写真ごとにカードを増やすのではなく1スポット=1カードを維持し、訪れるたびに違う一枚が出ることで「写真が増えて画面が変わる」体験を作る）。**シャッフルボタンで表示写真も選び直す**（select ページ→SpotGrid→SpotCard へ `shuffleNonce` を渡す。カードは key=spot.id で再マウントされないため nonce 変化をトリガーにし、写真の再取得はしない）。
 - カード全体は `<div role="button">`（内側に写真送りの `<button>` を置くため。`<button>` のネストはHTML不正）。
 - 既存DBへの適用は `supabase/migration-002-grid-photos.sql`（新規プロジェクトは schema.sql に含まれる）。
