@@ -20,12 +20,13 @@ create table public.profiles (
 --    spots.json の id は公開後に変更・削除しないこと。
 -- ============================================================
 create table public.posts (
-  id         uuid primary key default gen_random_uuid(),
-  user_id    uuid not null default auth.uid() references public.profiles(id) on delete cascade,
-  spot_id    text not null,
-  photo_path text not null,              -- Storage 内パス（{user_id}/{uuid}.jpg）
-  caption    text check (char_length(caption) <= 200),
-  created_at timestamptz not null default now()
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  spot_id      text not null,
+  photo_path   text not null,            -- Storage 内パス（{user_id}/{uuid}.jpg）
+  caption      text check (char_length(caption) <= 200),
+  show_in_grid boolean not null default true, -- /select グリッドへの掲載許可（投稿者が選択）
+  created_at   timestamptz not null default now()
 );
 create index posts_user_idx on public.posts (user_id, created_at desc);
 create index posts_created_idx on public.posts (created_at desc);
@@ -36,12 +37,13 @@ create index posts_created_idx on public.posts (created_at desc);
 --    （ルート画面起点の投稿のみ。手動作成は null）
 -- ============================================================
 create table public.trips (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null default auth.uid() references public.profiles(id) on delete cascade,
-  title       text not null check (char_length(title) between 1 and 60),
-  comment     text check (char_length(comment) <= 500),
-  route_query text,
-  created_at  timestamptz not null default now()
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  title        text not null check (char_length(title) between 1 and 60),
+  comment      text check (char_length(comment) <= 500),
+  route_query  text,
+  show_in_grid boolean not null default true, -- 旅記録内の写真の /select グリッド掲載許可（投稿単位）
+  created_at   timestamptz not null default now()
 );
 create index trips_created_idx on public.trips (created_at desc);
 create index trips_user_idx on public.trips (user_id, created_at desc);

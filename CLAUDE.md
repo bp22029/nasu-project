@@ -36,7 +36,10 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 
 - ✅ **基盤**: 匿名認証＋ニックネーム（`src/lib/auth.ts`、遅延発火）、DBスキーマ（`supabase/schema.sql`）、Storageセットアップ手順（`supabase/SETUP.md`）
 - ✅ **単体投稿**（`/post`）: 写真1枚 + スポット（部分一致検索で選択）+ 任意キャプション
-- ❌ **旅記録投稿**（`/trips/new`）・**投稿一覧/詳細**（`/trips`, `/trips/[id]`）・**マイページ**（`/me`）は未実装
+- ✅ **旅記録投稿**（`/trips/new`）: 訪問順エントリ（写真任意）。/route の「この旅を記録する」から訪問順プレフィル、ホームから空で新規作成（画面共通）
+- ✅ **投稿一覧/詳細**（`/trips`, `/trips/[id]`）: 旅記録のみ新着順で公開表示。詳細に route_query があれば「このルートを地図で見る」
+- ✅ **グリッド連携**: 掲載許可された投稿写真を /select のカードに Google 写真とあわせてカルーセル表示（セクション14参照）
+- ❌ **マイページ**（`/me`）は未実装
 
 ---
 
@@ -143,7 +146,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 
 - **ルート計算は独立関数**: `calculateRoute(selectedSpots, departure, tripType, avoidTolls) → RouteResult`（`src/lib/calculateRoute.ts`）。機能2は「診断結果からスポット配列を生成してこの関数に渡す」だけで追加できる。
 - **ルート条件はURLで表現**: `/route?spots=..&dep=..&trip=..&tolls=..`（エンコード/デコードは `src/lib/routeQuery.ts`）。機能2（診断）は診断結果からこのURLを組み立てて遷移するだけでルート画面を丸ごと再利用できる。URLなのでアンケートでのルート共有・リロード復元もできる。
-- **写真取得は独立APIルート**: `GET /api/photos/[placeId]`（`src/app/api/photos/[placeId]/route.ts`）。機能3は投稿DBからの写真をこのエンドポイントに追加するだけで対応できる。
+- **写真取得は独立APIルート**: `GET /api/photos/[spotId]`（`src/app/api/photos/[spotId]/route.ts`）。キーは spots.json の id で、サーバー側で placeId を引いて Google 写真を取得し、機能3の許可済み投稿写真をマージして返す（対応済み）。
 - **`tags` フィールドが空配列で確保済み**: `data/spots.json` の全スポットに `"tags": []` がある。機能2のマッチングロジックをここに追記する。
 
 機能3は Supabase 等のDBと最低限の投稿者管理が必要。今回は触らない。
@@ -159,7 +162,10 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 | `/` | ホーム（スタート画面）。「はじめる」で `/select` へ |
 | `/select` | 出発地 + 写真グリッドでスポット選択。「設計する」で `/route?...` へ |
 | `/route?spots=..&dep=..&trip=..&tolls=..` | ルート結果（地図 + タイムライン）。URL単体で共有・リロード可能 |
-| `/post` | 単体投稿（機能3）。写真 + スポット検索選択 + 任意キャプション。ホームからの導線は未設置（URL直アクセス） |
+| `/post` | 単体投稿（機能3）。写真 + スポット検索選択 + 任意キャプション + グリッド掲載許可 |
+| `/trips` | 旅記録一覧（機能3）。旅記録のみ新着順・公開（ログイン不要） |
+| `/trips/[id]` | 旅記録詳細（機能3）。訪問順エントリ + route_query があればルート画面へのリンク |
+| `/trips/new` | 旅記録作成（機能3）。/route からのプレフィル有/無で画面共通 |
 
 - `/select` の選択状態は sessionStorage（キー `nasu-select-state`）に保存され、「← 選び直す」で戻っても維持される。
 - `dep` はプリセットID（`nasushiobara-station` 等）。GPS現在地は `dep=gps&lat=..&lng=..`。
@@ -208,11 +214,14 @@ nasu-tabi/
 │   │   ├── select/page.tsx      # スポット選択（/select、選択状態は sessionStorage に保存）
 │   │   ├── route/page.tsx       # ルート結果（/route?spots=..&dep=..、計算 + 地図 + タイムライン）
 │   │   ├── post/page.tsx        # 単体投稿（/post、機能3）
+│   │   ├── trips/page.tsx       # 旅記録一覧（/trips、機能3）
+│   │   ├── trips/[id]/page.tsx  # 旅記録詳細（機能3）
+│   │   ├── trips/new/page.tsx   # 旅記録作成（機能3、プレフィル対応）
 │   │   ├── layout.tsx
 │   │   ├── globals.css
 │   │   └── api/
 │   │       ├── route/route.ts           # POST /api/route
-│   │       └── photos/[placeId]/route.ts # GET /api/photos/[placeId]
+│   │       └── photos/[spotId]/route.ts # GET /api/photos/[spotId]（Google + 投稿写真をマージ）
 │   ├── components/
 │   │   ├── Map.tsx              # Leaflet地図（SSR無効、polyline・マーカー）
 │   │   ├── SpotCard.tsx         # スポットカード（写真取得・選択状態）
@@ -223,13 +232,18 @@ nasu-tabi/
 │   │   ├── PageShell.tsx        # 共通ページシェル（機能3の新ページ用。RouteShellの一般化）
 │   │   ├── NicknameModal.tsx    # ニックネーム入力モーダル（匿名サインイン + profiles upsert）
 │   │   ├── SpotSearchPicker.tsx # スポット部分一致検索ピッカー
-│   │   └── PhotoUploadField.tsx # 写真選択 → リサイズ → プレビュー
+│   │   ├── PhotoUploadField.tsx # 写真選択 → リサイズ → プレビュー
+│   │   ├── TripEntryEditor.tsx  # 旅記録エントリの編集（追加・並べ替え・削除）
+│   │   ├── TripCard.tsx         # 旅記録一覧カード
+│   │   ├── UserPhoto.tsx        # 投稿写真の表示（Storage パス → 公開URL）
+│   │   └── GridConsentCheckbox.tsx # グリッド掲載許可チェック（/post と /trips/new で共用）
 │   ├── lib/
 │   │   ├── calculateRoute.ts    # ルート計算の独立関数（拡張の差し込み口）
 │   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
 │   │   ├── ors.ts               # ORS API クライアント（Matrix / Directions）
 │   │   ├── tsp.ts               # 自前TSP（全探索 / 最近傍法）
 │   │   ├── supabase/client.ts   # Supabase ブラウザクライアント（lazy singleton）
+│   │   ├── supabase/server.ts   # Supabase サーバークライアント（/api/photos 用、anonキー）
 │   │   ├── auth.ts              # 匿名認証 + プロフィールのヘルパー
 │   │   ├── imageResize.ts       # 投稿写真のクライアント側縮小（長辺1600px JPEG）
 │   │   ├── spotSearch.ts        # スポット部分一致検索（正規化付き）
@@ -353,3 +367,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前
 ### /route → 旅記録のプレフィル受け渡し
 
 - URL の `spots=` は**選択順であって TSP 後の訪問順ではない**ため、`/route` の「この旅を記録する」押下時に sessionStorage キー `nasu-trip-draft`（`TripDraft` 型、`src/types/post.ts`）へ訪問順 spotIds + routeQuery を保存し、`/trips/new` が読んでプレフィルする。投稿完了時に削除、24時間で失効。
+
+### 投稿写真の /select グリッド掲載（許可制）
+
+- 投稿者がアップロード時に「スポット選択の画像に使ってもOK」を選べる（`GridConsentCheckbox`、**初期値ON**）。単体投稿は `posts.show_in_grid`、旅記録は**投稿単位で1つ** `trips.show_in_grid`（エントリごとではない）。
+- `GET /api/photos/[spotId]` が Google 写真（最大1枚）と許可済み投稿写真（最大4枚、posts と trip_entries の両方から）をマージして返す。APIのキーは placeId から **spots.json の id に変更済み**（投稿写真は placeId と無関係のため）。
+- SpotCard は複数枚をカルーセル表示（右端の上下ボタン + n/m カウンタ）。クレジットは写真ごとに切替: Google写真=撮影者名 + Google（規約上必須）、投稿写真=ニックネーム。
+- カード全体は `<div role="button">`（内側に写真送りの `<button>` を置くため。`<button>` のネストはHTML不正）。
+- 既存DBへの適用は `supabase/migration-002-grid-photos.sql`（新規プロジェクトは schema.sql に含まれる）。

@@ -17,6 +17,7 @@ import PageShell from "@/components/PageShell";
 import SpotSearchPicker from "@/components/SpotSearchPicker";
 import PhotoUploadField from "@/components/PhotoUploadField";
 import NicknameModal from "@/components/NicknameModal";
+import GridConsentCheckbox from "@/components/GridConsentCheckbox";
 import { ensureSignedInWithProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Spot } from "@/types/spot";
@@ -35,6 +36,7 @@ export default function PostPage() {
   const [spot, setSpot] = useState<Spot | null>(null);
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [caption, setCaption] = useState("");
+  const [showInGrid, setShowInGrid] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -59,6 +61,7 @@ export default function PostPage() {
       spot_id: spot.id,
       photo_path: photoPath,
       caption: caption.trim() || null,
+      show_in_grid: showInGrid,
     });
     if (insertError) {
       // DB 行が作れなかったら写真も消しておく（孤児ファイル防止のベストエフォート）
@@ -201,6 +204,11 @@ export default function PostPage() {
               fontFamily: "var(--font-sans)",
             }}
           />
+        </div>
+
+        {/* グリッド掲載の許可（初期値ON） */}
+        <div style={{ marginBottom: "30px" }}>
+          <GridConsentCheckbox checked={showInGrid} onChange={setShowInGrid} />
         </div>
 
         {error && (

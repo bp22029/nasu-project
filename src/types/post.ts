@@ -13,6 +13,8 @@ export interface Post {
   spot_id: string; // data/spots.json の id（非正規化）
   photo_path: string; // Storage 内パス（{user_id}/{uuid}.jpg）
   caption: string | null;
+  /** /select グリッドへの掲載許可（投稿者がアップロード時に選択。初期値 true） */
+  show_in_grid: boolean;
   created_at: string;
   /** `select('*, profiles(nickname)')` で展開した投稿者名 */
   profiles?: Pick<Profile, "nickname"> | null;
@@ -26,6 +28,8 @@ export interface Trip {
   comment: string | null;
   /** /route の encodeRouteQuery 文字列（ルート画面起点のときのみ。手動作成は null） */
   route_query: string | null;
+  /** 旅記録内の写真の /select グリッド掲載許可（投稿単位で1つ。初期値 true） */
+  show_in_grid: boolean;
   created_at: string;
   profiles?: Pick<Profile, "nickname"> | null;
   trip_entries?: TripEntry[];

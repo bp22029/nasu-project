@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import spotsData from "@/../data/spots.json";
 import PageShell from "@/components/PageShell";
 import NicknameModal from "@/components/NicknameModal";
+import GridConsentCheckbox from "@/components/GridConsentCheckbox";
 import TripEntryEditor, { newDraftEntry, type DraftEntry } from "@/components/TripEntryEditor";
 import { ensureSignedInWithProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
@@ -50,6 +51,7 @@ export default function TripNewPage() {
   const [title, setTitle] = useState("");
   const [comment, setComment] = useState("");
   const [entries, setEntries] = useState<DraftEntry[]>([]);
+  const [showInGrid, setShowInGrid] = useState(true);
   const [routeQuery, setRouteQuery] = useState<string | null>(null);
   const [prefilled, setPrefilled] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -115,6 +117,7 @@ export default function TripNewPage() {
           title: title.trim(),
           comment: comment.trim() || null,
           route_query: routeQuery,
+          show_in_grid: showInGrid,
         })
         .select("id")
         .single();
@@ -258,6 +261,11 @@ export default function TripNewPage() {
             onChange={(e) => setComment(e.target.value)}
             style={{ ...inputStyle, resize: "vertical", lineHeight: 1.7 }}
           />
+        </div>
+
+        {/* グリッド掲載の許可（旅記録は投稿単位で1つ。初期値ON） */}
+        <div style={{ marginBottom: "30px" }}>
+          <GridConsentCheckbox checked={showInGrid} onChange={setShowInGrid} />
         </div>
 
         {error && (
