@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import spotsData from "@/../data/spots.json";
+import { SPOTS } from "@/lib/spots";
 import type { Spot } from "@/types/spot";
 import type { TripType } from "@/types/departure";
 import { calculateRoute } from "@/lib/calculateRoute";
 
-const allSpots = spotsData as Spot[];
+const allSpots = SPOTS;
 
 interface RequestBody {
   spotIds: string[];

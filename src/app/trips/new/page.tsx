@@ -17,7 +17,6 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import spotsData from "@/../data/spots.json";
 import PageShell from "@/components/PageShell";
 import NicknameModal from "@/components/NicknameModal";
 import GridConsentCheckbox from "@/components/GridConsentCheckbox";
@@ -25,9 +24,8 @@ import TripEntryEditor, { newDraftEntry, type DraftEntry } from "@/components/Tr
 import { ensureSignedInWithProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 import { TRIP_DRAFT_KEY, TRIP_DRAFT_MAX_AGE_MS, type TripDraft } from "@/types/post";
+import { SPOTS } from "@/lib/spots";
 import type { Spot } from "@/types/spot";
-
-const SPOTS = spotsData as Spot[];
 
 const labelStyle: React.CSSProperties = {
   display: "block",

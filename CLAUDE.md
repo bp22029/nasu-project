@@ -23,8 +23,10 @@
 - **出発地の選択**: 那須塩原駅 / 道の駅 那須高原友愛の森 / 那須IC / GPS現在地 の4択
 - **周遊 / 片道の切替**: 周遊は出発地へ戻る閉じた経路、片道は開いた経路
 - **有料道路の回避オプション**: トグルで切替。出発地がプリセットなら一般道デフォルト、GPS現在地なら有料道路OKデフォルト
-- **写真**: Google Places API (New) で動的取得。グリッドに表示（地図には載せない）
-- **観光地データ**: 13件（`data/spots.json`）
+- **写真**: Google Places API (New) で動的取得。グリッドに表示（地図には載せない）。**カードが画面に近づいてから取得する遅延読み込み**（約200スポットを一斉取得するとAPI消費が激しいため）
+- **観光地データ**: 2モードを `NEXT_PUBLIC_SPOTS_MODE` で切替（`src/lib/spots.ts` が単一参照点）
+  - **debug（既定）**: 13件（`data/spots.json`）— 開発中の写真API節約用
+  - **full**: 約200件（`data/spots-full.json`、`data/nasu_spot_v1.csv` 由来）— 本番用。Vercel に `NEXT_PUBLIC_SPOTS_MODE=full` を設定する
 
 ### ❌ 機能2（未着手）— 那須旅診断
 
@@ -110,9 +112,16 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 - **山頂など車道のない地点は、最寄りの駐車場・ロープウェイ乗り場の座標を使う**（セクション11-開発メモ参照）。
 - `tags` は機能2（診断）用に空配列で確保。現在は使わない。
 
-**現在の13件**: 茶臼岳 / 鹿の湯 / 殺生石 / 那須温泉神社 / 那須ロープウェイ / 那須どうぶつ王国 / 那須サファリパーク / 那須高原りんどう湖ファミリー牧場 / 南ヶ丘牧場 / チーズガーデン 那須本店 / GOOD NEWS NEIGHBORS / 那須ステンドグラス美術館 / 道の駅 那須高原友愛の森
+**debug の13件**: 茶臼岳 / 鹿の湯 / 殺生石 / 那須温泉神社 / 那須ロープウェイ / 那須どうぶつ王国 / 那須サファリパーク / 那須高原りんどう湖ファミリー牧場 / 南ヶ丘牧場 / チーズガーデン 那須本店 / GOOD NEWS NEIGHBORS / 那須ステンドグラス美術館 / 道の駅 那須高原友愛の森
 
-スポット追加時は `scripts/fetch-spots.ts` を参考に座標とplaceIdを取得する（実行: `npx tsx scripts/fetch-spots.ts`）。
+### 本番データ（spots-full.json、約200件）
+
+- `data/nasu_spot_v1.csv`（調査データ: 場所/カテゴリー/ジャンル/座標）から `scripts/build-spots-full.ts` で生成する（実行: `npx tsx scripts/build-spots-full.ts`）。
+- **既存13件は同じ id のまま含まれる**（CSVの重複行は既存に統合し、ジャンルを tags に取り込む。表記ゆれは スクリプト内 `MANUAL_ALIAS` で対応）→ モードを切り替えても DB の spot_id 参照は壊れない。
+- 新規スポットの id は名前の md5 先頭8桁（`s-xxxxxxxx`）。名前から決まるのでCSVの並び替えに影響されない。**公開後の id は変更・削除しない**ルールはそのまま。
+- placeId は Places Text Search の **IDs Only SKU（FieldMask=places.id）= 無料**で取得。CSV座標を locationBias にして誤マッチを防ぐ。
+- `tags` には CSV のカテゴリー・ジャンルが入っている（機能2の診断マッチングにそのまま使える）。
+- 注意: CSV の座標は現地調査ベースのため、**車道に吸着できない地点があるとルート計算が失敗する**（セクション11）。ORSエラーが出たスポットは座標を駐車場等に補正して再生成する。
 
 ---
 
@@ -203,9 +212,12 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 ```
 nasu-tabi/
 ├── data/
-│   └── spots.json               # 観光地マスタ（13件）
+│   ├── spots.json               # 観光地マスタ debug用（13件）
+│   ├── spots-full.json          # 観光地マスタ 本番用（約200件、build-spots-full.ts で生成）
+│   └── nasu_spot_v1.csv         # 本番スポットの調査データ（spots-full.json の元）
 ├── scripts/
-│   └── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
+│   ├── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
+│   └── build-spots-full.ts      # spots-full.json 生成（CSV + 既存13件をマージ、placeId取得）
 ├── supabase/
 │   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行）
 │   └── SETUP.md                 # Supabaseプロジェクトのセットアップ手順
@@ -250,7 +262,8 @@ nasu-tabi/
 │   │   ├── auth.ts              # 匿名認証 + プロフィールのヘルパー
 │   │   ├── imageResize.ts       # 投稿写真のクライアント側縮小（長辺1600px JPEG）
 │   │   ├── spotSearch.ts        # スポット部分一致検索（正規化付き）
-│   │   ├── spots.ts             # スポットマスタ参照ヘルパー（spotNameOf）
+│   │   ├── spots.ts             # スポットマスタの単一参照点（debug/fullモード切替 + spotNameOf）
+│   │   ├── selectState.ts       # /select 選択状態の sessionStorage キー
 │   │   └── photoUrl.ts          # Storage 公開URLヘルパー
 │   └── types/
 │       ├── spot.ts              # Spot 型
@@ -337,6 +350,7 @@ GOOGLE_PLACES_API_KEY=（Places API (New) 有効化済み。APIキーの制限�
 ORS_API_KEY=（openrouteservice.org で発行した新形式トークン。旧 eyJ... 形式は不可）
 NEXT_PUBLIC_SUPABASE_URL=（Supabase の Project URL。機能3用）
 NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前提のキーで防壁はRLS）
+NEXT_PUBLIC_SPOTS_MODE=（debug=13件（開発用・既定） / full=約200件。Vercel は full を設定）
 ```
 
 - `NEXT_PUBLIC_` の2つはブラウザから supabase-js で直アクセスするため必須。**service_role key は使わない・どこにも置かない**。

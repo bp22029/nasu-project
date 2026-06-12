@@ -68,6 +68,10 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
   const [photoIndex, setPhotoIndex] = useState(0);
   const [photoLoading, setPhotoLoading] = useState(true);
   const [hovered, setHovered] = useState(false);
+  // 画面に近づいたカードだけ写真を取得する（本番は約200スポットあるため、
+  // 全カード一斉に取得すると /select を開くたびに Google API を数百回消費してしまう）
+  const [visible, setVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   // シャッフル時の写真選び直し用（effect から最新の photos を読むため）
   const photosRef = useRef<PhotoItem[]>([]);
   // 出現アニメーションの遅延は初回マウント時の位置で固定する。
@@ -75,6 +79,27 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
   const appearDelay = useRef(0.38 + index * 0.04).current;
 
   useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "600px 0px" } // 画面の少し手前から先読みしてスクロールを待たせない
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return; // 画面に近づくまで取得しない
     const debugOff =
       process.env.NEXT_PUBLIC_DEBUG_NO_PHOTOS === "true" ||
       (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("noPhotos"));
@@ -95,7 +120,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
       .catch(() => {})
       .finally(() => { if (!cancelled) setPhotoLoading(false); });
     return () => { cancelled = true; };
-  }, [spot.id]);
+  }, [spot.id, visible]);
 
   // シャッフルボタンで並びだけでなく表示写真も選び直す（カードは再マウントされないため
   // nonce の変化をトリガーにする。写真の再取得はしない）
@@ -121,6 +146,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
 
   return (
     <div
+      ref={cardRef}
       role="button"
       tabIndex={0}
       onClick={onToggle}
