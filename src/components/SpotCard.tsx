@@ -11,6 +11,8 @@ interface SpotCardProps {
   routeNumber?: number;
   index?: number;
   selectionOrder?: number;
+  /** 施設名の表示（「直感で選ぶ」ために隠せる。撮影者クレジットは規約上常に表示） */
+  showName?: boolean;
 }
 
 interface PhotoItem {
@@ -26,7 +28,7 @@ function cardGradient(i: number): string {
   return `linear-gradient(${145 + (i * 9) % 40}deg, ${c1}, ${c2})`;
 }
 
-export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder }: SpotCardProps) {
+export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder, showName = true }: SpotCardProps) {
   const [photo, setPhoto] = useState<PhotoItem | null>(null);
   const [photoLoading, setPhotoLoading] = useState(!!spot.placeId);
   const [hovered, setHovered] = useState(false);
@@ -136,21 +138,27 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
         </span>
       )}
 
-      {/* Bottom caption: name + optional attribution */}
+      {/* Bottom caption: name (toggleable) + attribution (always visible per Google policy) */}
       <div className="absolute left-0 right-0 bottom-0" style={{
-        padding: "38px 14px 14px", zIndex: 3,
-        background: "linear-gradient(0deg, rgba(20,28,16,.62) 0%, rgba(20,28,16,.22) 55%, transparent 100%)",
+        padding: showName ? "38px 14px 14px" : "20px 14px 9px",
+        zIndex: 3,
+        background: showName
+          ? "linear-gradient(0deg, rgba(20,28,16,.62) 0%, rgba(20,28,16,.22) 55%, transparent 100%)"
+          : "linear-gradient(0deg, rgba(20,28,16,.4) 0%, transparent 100%)",
+        transition: "padding .3s, background .3s",
       }}>
-        <div style={{
-          fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "16px",
-          lineHeight: 1.32, color: "#f6f4ed", letterSpacing: ".03em",
-          textShadow: "0 1px 8px rgba(0,0,0,.3)",
-        }}>
-          {spot.name}
-        </div>
+        {showName && (
+          <div style={{
+            fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "16px",
+            lineHeight: 1.32, color: "#f6f4ed", letterSpacing: ".03em",
+            textShadow: "0 1px 8px rgba(0,0,0,.3)",
+          }}>
+            {spot.name}
+          </div>
+        )}
         {photo?.authorAttributions?.[0] && (
           <p style={{
-            fontSize: "8px", color: "rgba(255,255,255,.65)", marginTop: "3px",
+            fontSize: "8px", color: "rgba(255,255,255,.65)", marginTop: showName ? "3px" : 0,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
             {photo.authorAttributions[0].displayName} · Google

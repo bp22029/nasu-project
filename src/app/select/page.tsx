@@ -20,6 +20,7 @@ interface StoredState {
   departure: DeparturePoint | null;
   tripType: TripType;
   avoidTolls: boolean;
+  showNames?: boolean;
 }
 
 export default function SelectPage() {
@@ -29,6 +30,8 @@ export default function SelectPage() {
   const [tripType, setTripType] = useState<TripType>("oneway");
   // 現在地（GPS）出発のときはデフォルト false（有料OK）、プリセットは true（一般道推奨）→ユーザーが切替可
   const [avoidTolls, setAvoidTolls] = useState(true);
+  // 施設名の表示。デフォルトは表示、「直感で選ぶ」ために非表示へ切替できる
+  const [showNames, setShowNames] = useState(true);
   const [restored, setRestored] = useState(false);
   // 設計ボタン押下時に出発地が未選択なら、出発地セクションへスクロールして点滅で誘導する
   const [departureFlash, setDepartureFlash] = useState(false);
@@ -45,6 +48,7 @@ export default function SelectPage() {
         if (s.departure?.id && typeof s.departure.lat === "number") setDeparture(s.departure);
         if (s.tripType === "roundtrip" || s.tripType === "oneway") setTripType(s.tripType);
         if (typeof s.avoidTolls === "boolean") setAvoidTolls(s.avoidTolls);
+        if (typeof s.showNames === "boolean") setShowNames(s.showNames);
       }
     } catch { /* 壊れた保存データは無視して初期状態で開始 */ }
     setRestored(true);
@@ -52,9 +56,9 @@ export default function SelectPage() {
 
   useEffect(() => {
     if (!restored) return;
-    const state: StoredState = { selectedIds, departure, tripType, avoidTolls };
+    const state: StoredState = { selectedIds, departure, tripType, avoidTolls, showNames };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [restored, selectedIds, departure, tripType, avoidTolls]);
+  }, [restored, selectedIds, departure, tripType, avoidTolls, showNames]);
 
   const toggleSpot = useCallback((id: string) => {
     setSelectedIds((prev) =>
@@ -175,9 +179,22 @@ export default function SelectPage() {
           <span style={{ fontSize: "11px", letterSpacing: ".26em", color: "#8fa888", textTransform: "uppercase" }}>Spots</span>
           <span style={{ fontSize: "12px", letterSpacing: ".14em", color: "#5a7d5a" }}>ピンときた写真を選ぶ</span>
           <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
+          {/* 施設名の表示/非表示トグル（直感で選びたい人は隠せる） */}
+          <button type="button" onClick={() => setShowNames((v) => !v)} style={{
+            flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer",
+            padding: "7px 12px", borderRadius: "100px",
+            border: showNames ? "1px solid #e5e0d3" : "1px solid #b6cbac",
+            background: showNames ? "rgba(255,255,255,.7)" : "#e9f0e4",
+            fontSize: "11.5px", fontWeight: 600, fontFamily: "var(--font-sans)",
+            color: "#5a7d5a", letterSpacing: ".06em",
+            transition: "background .2s, border-color .2s",
+          }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: showNames ? "#8fa888" : "#5a7d5a", transition: "background .2s" }} />
+            {showNames ? "施設名を隠す" : "施設名を表示"}
+          </button>
         </div>
 
-        <SpotGrid spots={spots} selectedIds={selectedIds} onToggle={toggleSpot} />
+        <SpotGrid spots={spots} selectedIds={selectedIds} onToggle={toggleSpot} showNames={showNames} />
       </div>
 
       {/* フローティングアクションバー */}
