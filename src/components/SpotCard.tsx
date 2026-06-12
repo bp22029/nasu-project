@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Spot } from "@/types/spot";
 
@@ -20,18 +20,29 @@ interface PhotoItem {
   authorAttributions: Array<{ displayName: string; uri?: string }>;
 }
 
-function cardGradient(i: number): string {
-  const hue = 118 + (i * 13) % 64;
-  const light = 0.62 + ((i * 7) % 20) / 100;
+// プレースホルダー色は spot.id から決める（グリッド内の位置に依存させない）。
+// シャッフルで並びが変わっても同じスポットは常に同じ見た目になる。
+function idHash(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function cardGradient(seed: number): string {
+  const hue = 118 + (seed * 13) % 64;
+  const light = 0.62 + ((seed * 7) % 20) / 100;
   const c1 = `oklch(${(light + 0.12).toFixed(2)} 0.05 ${hue})`;
   const c2 = `oklch(${(light - 0.18).toFixed(2)} 0.06 ${(hue + 22) % 360})`;
-  return `linear-gradient(${145 + (i * 9) % 40}deg, ${c1}, ${c2})`;
+  return `linear-gradient(${145 + (seed * 9) % 40}deg, ${c1}, ${c2})`;
 }
 
 export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder, showName = true }: SpotCardProps) {
   const [photo, setPhoto] = useState<PhotoItem | null>(null);
   const [photoLoading, setPhotoLoading] = useState(!!spot.placeId);
   const [hovered, setHovered] = useState(false);
+  // 出現アニメーションの遅延は初回マウント時の位置で固定する。
+  // シャッフルで index が変わったときに style が変化してアニメが再発火するのを防ぐ
+  const appearDelay = useRef(0.38 + index * 0.04).current;
 
   useEffect(() => {
     const debugOff =
@@ -64,7 +75,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
         background: "#f0ede4",
         cursor: "pointer",
         isolation: "isolate",
-        animationDelay: `${0.38 + index * 0.04}s`,
+        animationDelay: `${appearDelay}s`,
         boxShadow: selected
           ? "0 16px 36px -16px rgba(90,125,90,.6)"
           : hovered
@@ -88,7 +99,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
             unoptimized
           />
         ) : (
-          <div className="w-full h-full" style={{ background: cardGradient(index) }}>
+          <div className="w-full h-full" style={{ background: cardGradient(idHash(spot.id)) }}>
             <div className="absolute inset-0" style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
               opacity: .08, mixBlendMode: "overlay",
