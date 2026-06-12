@@ -79,14 +79,22 @@ npm run dev
 
 ## 観光地データ
 
-`data/spots.json` に13件のスポットが登録されている。  
-スポットを追加する場合は `scripts/fetch-spots.ts` を参考に座標と `placeId` を取得する。
+スポットデータは2モードあり、環境変数 `NEXT_PUBLIC_SPOTS_MODE` で切り替える。
+
+| モード | データ | 用途 |
+|---|---|---|
+| `debug`（既定） | `data/spots.json`（13件） | 開発用。Google写真APIの消費を抑える |
+| `full` | `data/spots-full.json`（約200件） | 本番用。Vercel に `NEXT_PUBLIC_SPOTS_MODE=full` を設定 |
+
+本番データは調査CSV（`data/nasu_spot_v1.csv`）から生成する:
 
 ```bash
-npx tsx scripts/fetch-spots.ts
+npx tsx scripts/build-spots-full.ts
 ```
 
-> **注意**: 座標はGoogle Places由来にせず、国土地理院またはOSMから取得すること。山頂など車道のない地点は最寄りの駐車場・ロープウェイ乗り場の座標を使うこと。
+スポット選択画面の写真は、カードが画面に近づいてから取得する（遅延読み込み）。
+
+> **注意**: 座標はGoogle Places由来にせず、調査データ・国土地理院・OSMから取得すること。山頂など車道のない地点は最寄りの駐車場・ロープウェイ乗り場の座標を使うこと（ルート計算が失敗する）。
 
 ## ライセンス
 

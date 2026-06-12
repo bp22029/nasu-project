@@ -15,16 +15,13 @@
  */
 
 import { NextResponse } from "next/server";
-import spotsData from "@/../data/spots.json";
+import { SPOTS } from "@/lib/spots";
 import { getSupabaseServer } from "@/lib/supabase/server";
-import type { Spot } from "@/types/spot";
 
 // Next.js は GET Route Handler とその中の fetch をデフォルトでキャッシュする。
 // このAPIはキャッシュ厳禁: Google 写真URLの保存は規約違反（CLAUDE.md セクション5）、
 // 投稿写真は削除・掲載許可の変更が即時反映されないと「消したのに残る」事故になる。
 export const dynamic = "force-dynamic";
-
-const SPOTS = spotsData as Spot[];
 
 const PLACES_BASE = "https://places.googleapis.com/v1";
 // Google 写真は1枚に絞る（media API の呼び出し数 = スポット数で済む）

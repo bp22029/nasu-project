@@ -12,7 +12,6 @@
  */
 import Link from "next/link";
 import { useState } from "react";
-import spotsData from "@/../data/spots.json";
 import PageShell from "@/components/PageShell";
 import SpotSearchPicker from "@/components/SpotSearchPicker";
 import PhotoUploadField from "@/components/PhotoUploadField";
@@ -20,9 +19,8 @@ import NicknameModal from "@/components/NicknameModal";
 import GridConsentCheckbox from "@/components/GridConsentCheckbox";
 import { ensureSignedInWithProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
+import { SPOTS } from "@/lib/spots";
 import type { Spot } from "@/types/spot";
-
-const SPOTS = spotsData as Spot[];
 
 const labelStyle: React.CSSProperties = {
   display: "block",

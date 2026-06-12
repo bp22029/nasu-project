@@ -1,0 +1,2980 @@
+[
+  {
+    "id": "chausu",
+    "name": "茶臼岳",
+    "lat": 37.12521705270146,
+    "lng": 139.98047376709303,
+    "placeId": "ChIJp11ahRGLH2ARXP3zd88uErk",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "1人旅・友達・男子旅",
+      "名所"
+    ],
+    "description": "那須連山の主峰。ロープウェイで気軽に高山の眺望が楽しめる。"
+  },
+  {
+    "id": "shikanoyu",
+    "name": "鹿の湯",
+    "lat": 37.09846597391375,
+    "lng": 140.00110477208693,
+    "placeId": "ChIJL26YcR6KH2ARg69TXLH2t0U",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内",
+      "1人旅・カップル・友達",
+      "温泉"
+    ],
+    "description": "那須温泉発祥の地とされる1300年の歴史を持つ共同浴場。"
+  },
+  {
+    "id": "sesshooseki",
+    "name": "殺生石",
+    "lat": 37.09952300194355,
+    "lng": 140.00028503994778,
+    "placeId": "ChIJNSzP5BeKH2AR7hI8smN0cfQ",
+    "tags": [
+      "全季節",
+      "自然・レジャー",
+      "外",
+      "1人旅・ファミリー・カップル・友達",
+      "名所"
+    ],
+    "description": "九尾の狐伝説が残る奇岩。周囲から硫黄ガスが噴出する天然の景勝地。"
+  },
+  {
+    "id": "nasu-shrine",
+    "name": "那須温泉神社",
+    "lat": 37.09952300194355,
+    "lng": 140.00028503994778,
+    "placeId": "ChIJWSfbbRiKH2ARnOmknKbcFVg",
+    "tags": [],
+    "description": "那須温泉の守護神を祀る古社。杉木立の参道が荘厳な雰囲気を醸す。"
+  },
+  {
+    "id": "nasu-ropeway",
+    "name": "那須ロープウェイ",
+    "lat": 37.12521705270146,
+    "lng": 139.98047376709303,
+    "placeId": "ChIJpYltswOLH2AR6G-UyFcuPrc",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "1人旅・カップル・友達・男子旅",
+      "レジャー"
+    ],
+    "description": "茶臼岳山頂近くまでを結ぶロープウェイ。山頂からは関東平野を一望。"
+  },
+  {
+    "id": "nasu-animal-kingdom",
+    "name": "那須どうぶつ王国",
+    "lat": 37.13210374708774,
+    "lng": 140.03920670454718,
+    "placeId": "ChIJkYSq9pQgIGARinf0dqZ1xio",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "内外",
+      "ファミリー・カップル・友達",
+      "レジャー"
+    ],
+    "description": "国内最大級の動物園。スナネコやアルパカとの近距離ふれあいが人気。"
+  },
+  {
+    "id": "nasu-safari",
+    "name": "那須サファリパーク",
+    "lat": 37.05938324965025,
+    "lng": 140.00619985229326,
+    "placeId": "ChIJOYOAK82JH2AR9hJst91UYN8",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "内外",
+      "ファミリー・カップル・友達",
+      "レジャー"
+    ],
+    "description": "車内から野生動物を間近に観察できるサファリ形式の動物園。"
+  },
+  {
+    "id": "rindoko",
+    "name": "那須高原りんどう湖ファミリー牧場",
+    "lat": 37.04228989670839,
+    "lng": 140.047006132449,
+    "placeId": "ChIJ_c2NCdsnIGARNxBudsZDuCM",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー・カフェ・レストラン",
+      "内外",
+      "ファミリー・カップル・友達",
+      "レジャー"
+    ],
+    "description": "湖畔に広がる牧場型レジャー施設。ヨーロッパ風の景観とアクティビティ。"
+  },
+  {
+    "id": "minamigaoka",
+    "name": "南ヶ丘牧場",
+    "lat": 37.078900323590865,
+    "lng": 140.00068228545692,
+    "placeId": "ChIJjZqwvOuJH2ARZHWhikijbEE",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー・カフェ・レストラン",
+      "外",
+      "ファミリー・カップル・友達",
+      "レジャー"
+    ],
+    "description": "ガーンジィ牛の牧場。自家製ソフトクリームやチーズが名物。"
+  },
+  {
+    "id": "cheese-garden",
+    "name": "チーズガーデン 那須本店",
+    "lat": 37.02909037147016,
+    "lng": 140.02353345231936,
+    "placeId": "ChIJQ87NsAAoIGAR5p5YHAc4RK4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン・レジャー",
+      "内外",
+      "全構成",
+      "ショップ"
+    ],
+    "description": "那須を代表する土産菓子「御用邸チーズケーキ」の本店。カフェも併設。"
+  },
+  {
+    "id": "good-news",
+    "name": "GOOD NEWS",
+    "lat": 37.02552190142865,
+    "lng": 140.02872252777183,
+    "placeId": "ChIJt20xss0pIGARcYsnvlo9GPU",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "ショップ"
+    ],
+    "description": "地元那須の生産者と繋がる複合施設。飲食・雑貨・体験が集まる。"
+  },
+  {
+    "id": "stained-glass",
+    "name": "那須ステンドグラス美術館",
+    "lat": 37.066183026053785,
+    "lng": 140.02570599294992,
+    "placeId": "ChIJLxTcQ4InIGAR-8iqskO5Xoo",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "美術館"
+    ],
+    "description": "英国の古城を再現した建物に、本物のステンドグラスを展示する美術館。"
+  },
+  {
+    "id": "michi-no-eki",
+    "name": "道の駅 那須高原友愛の森",
+    "lat": 37.04094596687232,
+    "lng": 140.01335471346536,
+    "placeId": "ChIJ77XAMxmIH2ARCY-Xaqdv4kY",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内外",
+      "全構成",
+      "道の駅"
+    ],
+    "description": "那須の農産物・土産物が揃う道の駅。地元の工芸品展示も。"
+  },
+  {
+    "id": "s-84833a78",
+    "name": "Alma Cafe",
+    "lat": 37.04886435664442,
+    "lng": 140.03966420887235,
+    "placeId": "ChIJwyMVSAAnIGARuv0cB5tUffU",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-00b2adb5",
+    "name": "aux paradis　カフェ",
+    "lat": 36.94218124617874,
+    "lng": 140.14680852347587,
+    "placeId": "ChIJq-7C7XwtIGARMoUzchr--rY",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-b773a557",
+    "name": "Cafe MoonRiver",
+    "lat": 37.06379443800706,
+    "lng": 140.00825423809513,
+    "placeId": "ChIJ3W4abh2JH2ARE5HA_uloirc",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-ca864a6f",
+    "name": "Cafe&Pie Taragon nasu Ⅱ",
+    "lat": 37.06183324041068,
+    "lng": 140.01429537116482,
+    "placeId": "ChIJF91DuyyIH2ARdGzskLg2mCk",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-098e9e64",
+    "name": "CoppiceGARDEN",
+    "lat": 37.019474269097465,
+    "lng": 140.0280772526777,
+    "placeId": "ChIJP7NokBkoIGARZGWK4js8EdI",
+    "tags": [
+      "全季節",
+      "自然・レジャー",
+      "内外",
+      "カップル・友達・女子旅",
+      "自然"
+    ],
+    "description": "自然"
+  },
+  {
+    "id": "s-31202a3e",
+    "name": "EL BAROLO",
+    "lat": 37.05788100370436,
+    "lng": 140.01212820831933,
+    "placeId": "ChIJh-KtPSyIH2AR6ZwBZ4MbfkM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-c4b1eb26",
+    "name": "Flange",
+    "lat": 37.01900776674795,
+    "lng": 140.02803325068098,
+    "placeId": "ChIJk4cmFxooIGARJvpEgUqORxE",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "雑貨屋"
+    ],
+    "description": "雑貨屋"
+  },
+  {
+    "id": "s-a7ee4f39",
+    "name": "GOOD NEWS DAIRY",
+    "lat": 37.02336392691038,
+    "lng": 140.03000653350594,
+    "placeId": "ChIJa_zVtcApIGARYiqqA5k0U0w",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-4ee50317",
+    "name": "GOOD NEWS FACTORY",
+    "lat": 37.02600894158675,
+    "lng": 140.03044134942976,
+    "placeId": "ChIJ09UNyxwpIGARw8td_fyWy5E",
+    "tags": [
+      "全季節",
+      "レジャー・カフェ・レストラン",
+      "内外",
+      "全構成",
+      "商業施設"
+    ],
+    "description": "商業施設"
+  },
+  {
+    "id": "s-77d9131c",
+    "name": "HAPPY HOME",
+    "lat": 37.005913661098425,
+    "lng": 140.03359034634323,
+    "placeId": "ChIJr-xcUbwpIGARJTNAirX06Bg",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "雑貨屋"
+    ],
+    "description": "雑貨屋"
+  },
+  {
+    "id": "s-c63ead6c",
+    "name": "Hawaii coffe HONU",
+    "lat": 37.06631670454408,
+    "lng": 140.012846273011,
+    "placeId": "ChIJ5WipkwyJH2ARNPyJbOHJqqM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-09b471e6",
+    "name": "Hungry Beagles　FARM&CAFE",
+    "lat": 37.03028167451212,
+    "lng": 140.02200883584115,
+    "placeId": "ChIJJZBFEIsnIGARfaifqq1gkqc",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-e7c7841f",
+    "name": "JARDAIN BLANC",
+    "lat": 37.07583954305675,
+    "lng": 140.06463054185224,
+    "placeId": "ChIJuQPuK1ImIGARueLoCwGMY6U",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "雑貨屋"
+    ],
+    "description": "雑貨屋"
+  },
+  {
+    "id": "s-abb9b6d5",
+    "name": "jazz zero",
+    "lat": 37.09797379066776,
+    "lng": 140.03639522630903,
+    "placeId": "ChIJU9vUawAnIGARkhUtqoISe2c",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ",
+      "ショップ"
+    ],
+    "description": "カフェ・ショップ"
+  },
+  {
+    "id": "s-50833c23",
+    "name": "KANEL BREAD NASU",
+    "lat": 37.02610036898432,
+    "lng": 140.02282160846556,
+    "placeId": "ChIJlzXfSAApIGARXSSZsv3H0iE",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ",
+      "ベーカリー"
+    ],
+    "description": "カフェ・ベーカリー"
+  },
+  {
+    "id": "s-a9a95345",
+    "name": "KIDS PLAYGROUND//NASU",
+    "lat": 37.02633761328433,
+    "lng": 140.0301782742803,
+    "placeId": "ChIJKzkmbn8pIGARNnnNvArzfQc",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-1cfaa057",
+    "name": "KIDS PlLAYGROUND//NASU",
+    "lat": 37.026306651509465,
+    "lng": 140.02992481781098,
+    "placeId": "ChIJKzkmbn8pIGARNnnNvArzfQc",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-0bc5ad75",
+    "name": "KiliKili Coffee Roaster Nasu",
+    "lat": 37.03283865542175,
+    "lng": 140.0593344731987,
+    "placeId": "ChIJz1EtW_kpIGAReJGAXnnJ2zI",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ",
+      "ベーカリー"
+    ],
+    "description": "カフェ・ベーカリー"
+  },
+  {
+    "id": "s-76363a3e",
+    "name": "KOZARU(那須の森の空中アスレチック)",
+    "lat": 37.06352051908203,
+    "lng": 139.9660776703936,
+    "placeId": "ChIJdf52bXKJH2ARBAWDPK47mVQ",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "ファミリー・友達・男子旅",
+      "レジャー"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-8a50abe1",
+    "name": "KUROBOSHI SWEETS NASU",
+    "lat": 37.044236612397604,
+    "lng": 140.0159861388213,
+    "placeId": "ChIJzbWfRWqJH2ARBto6qQb4J2M",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-f7c584c2",
+    "name": "LOVE-LABO basic cafe",
+    "lat": 37.019531660691804,
+    "lng": 140.13153328114967,
+    "placeId": "ChIJx3P9Q1MvIGARQWjliuEQQE8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-6b45808d",
+    "name": "mamechamame Nasu Coffee Roastery and Dish",
+    "lat": 37.05141323297528,
+    "lng": 140.0102314748677,
+    "placeId": "ChIJC6xthmaJH2AR1KaJj2NyI_8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-ed56382b",
+    "name": "My Style Garden Studio",
+    "lat": 37.056684040203486,
+    "lng": 140.0077504005621,
+    "placeId": "ChIJO0QUviaIH2AR-ZlUpXcxyZw",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-2b5f0b91",
+    "name": "NASU IONO CAMPSITE",
+    "lat": 36.953364655434775,
+    "lng": 140.1580103368003,
+    "placeId": "ChIJgzrSr7ctIGAR22aUcjEIQU8",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿・カフェ・レストラン",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "飲食店",
+      "宿泊施設"
+    ],
+    "description": "飲食店・宿泊施設"
+  },
+  {
+    "id": "s-e481aa3f",
+    "name": "Nasu Sauna Stay",
+    "lat": 37.08982381289646,
+    "lng": 140.03638322703694,
+    "placeId": "ChIJiVM-fQAnIGAR78vYSeQMS7w",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-dfeda137",
+    "name": "NASU SHOZO CAFE",
+    "lat": 37.05552441979067,
+    "lng": 140.01351229297592,
+    "placeId": "ChIJ211TzCiIH2ARz96jLUx3vxE",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-e0ca4e64",
+    "name": "NOZARU（那須の森の空中アスレチック）",
+    "lat": 37.06636809342332,
+    "lng": 139.96808661696434,
+    "placeId": "ChIJdf52bXKJH2ARBAWDPK47mVQ",
+    "tags": [
+      "春・夏・秋",
+      "レジャー・アドベンチャー",
+      "外",
+      "ファミリー・カップル・友達",
+      "レジャー",
+      "体験"
+    ],
+    "description": "レジャー・体験"
+  },
+  {
+    "id": "s-af3ea046",
+    "name": "ONIBUS COFFEE 那須店",
+    "lat": 37.070469610972985,
+    "lng": 140.02164424963405,
+    "placeId": "ChIJY-PT4ikpIGARBu6BZ64rCd0",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-287c03fa",
+    "name": "RESTAURANT　OHARA",
+    "lat": 37.01913839929043,
+    "lng": 140.12042830024515,
+    "placeId": "ChIJiSMjH8IuIGAR5Gsh0vB3Lgk",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-3f099c49",
+    "name": "somon Atelier",
+    "lat": 37.074672982430606,
+    "lng": 140.01023738623485,
+    "placeId": "ChIJcVW-IpaJH2ARUMPJw2XHkxU",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "雑貨屋"
+    ],
+    "description": "雑貨屋"
+  },
+  {
+    "id": "s-d1b69b0b",
+    "name": "SUDA COFFEE",
+    "lat": 37.032402810505424,
+    "lng": 140.0205912906923,
+    "placeId": "ChIJ5ZQlOv8nIGARFWjHIFIm_jo",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-cdebf20d",
+    "name": "Sweets&LessonLove-Labo",
+    "lat": 37.02032789847375,
+    "lng": 140.13144740630491,
+    "placeId": "ChIJx3P9Q1MvIGARQWjliuEQQE8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-1de5f6d4",
+    "name": "UNICO embrace olive burger & cafe",
+    "lat": 37.06906712701791,
+    "lng": 140.0266345616486,
+    "placeId": "ChIJA7HmJP4nIGARfaaqUWFNdag",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-6f022433",
+    "name": "WHITE LAMP",
+    "lat": 37.06013590653603,
+    "lng": 140.01034592907362,
+    "placeId": "ChIJhQUU-9aJH2ARoND-eullkMo",
+    "tags": [
+      "全季節",
+      "自然・温泉・宿",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-68362154",
+    "name": "WHITE NOTE",
+    "lat": 37.026017335379045,
+    "lng": 140.02390325409576,
+    "placeId": "ChIJFW82vBiIH2ARIShhiqV7tig",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "雑貨屋"
+    ],
+    "description": "雑貨屋"
+  },
+  {
+    "id": "s-441328ea",
+    "name": "アジアンオールドバザール那須",
+    "lat": 37.06281613791348,
+    "lng": 140.01208346765725,
+    "placeId": "ChIJ1XYYFNOJH2ARtGO9Z0KbY2k",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "ショップ"
+    ],
+    "description": "ショップ"
+  },
+  {
+    "id": "s-a5d94bbc",
+    "name": "あづまや精肉店",
+    "lat": 37.0182510973884,
+    "lng": 140.12202348114957,
+    "placeId": "ChIJO7V7V-ouIGARTB6fi1hExpA",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・ファミリー・友達",
+      "スーパー"
+    ],
+    "description": "スーパー"
+  },
+  {
+    "id": "s-eb6d019f",
+    "name": "アビルキャンプリゾート那須",
+    "lat": 37.07158102290691,
+    "lng": 140.0736801523163,
+    "placeId": "ChIJ1U2sxnonIGARnhYXC7tp4o0",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "キャンプ場"
+    ],
+    "description": "キャンプ場"
+  },
+  {
+    "id": "s-ec29293a",
+    "name": "あまたにチーズ工房",
+    "lat": 37.090455898562674,
+    "lng": 140.01666420417956,
+    "placeId": "ChIJB4Mz0-KJH2ARnhF81i4P8Uc",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・ファミリー・カップル・友達・女子旅",
+      "ショップ"
+    ],
+    "description": "ショップ"
+  },
+  {
+    "id": "s-569fd7e9",
+    "name": "あるぱーく ALPARK",
+    "lat": 37.10979378313078,
+    "lng": 140.05080420790873,
+    "placeId": "ChIJM42cewAnIGARBC8ai_8Dq4o",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "ファミリー・カップル・友達",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-1a9db0a2",
+    "name": "うつわカフェロータス (cafe Lotus)",
+    "lat": 37.03955151577065,
+    "lng": 140.00393021978485,
+    "placeId": "ChIJMXM9dRaIH2ARe9rugpn-nPY",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-9acf7492",
+    "name": "うどん匠人 岡本",
+    "lat": 37.068665866939995,
+    "lng": 140.04348937800182,
+    "placeId": "ChIJJ4RhkaMnIGARsf95Xv9FaCg",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-9959631a",
+    "name": "エヌカカオチョコレート",
+    "lat": 37.044134604911804,
+    "lng": 140.01705535346716,
+    "placeId": "ChIJh3HQlx-IH2ARshMzuzvoHE4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-870f28fa",
+    "name": "お菓子の城 那須ハートランド",
+    "lat": 37.01726726904383,
+    "lng": 140.0304880399437,
+    "placeId": "ChIJgZoNGxcoIGARuYDPuNiFJB4",
+    "tags": [
+      "全季節",
+      "レジャー・カフェ・レストラン",
+      "内",
+      "ファミリー・カップル・友達・女子旅",
+      "お土産",
+      "体験施設"
+    ],
+    "description": "お土産・体験施設"
+  },
+  {
+    "id": "s-5f312ae5",
+    "name": "お食事処　庄屋",
+    "lat": 37.07886026976569,
+    "lng": 140.00144571496932,
+    "placeId": "ChIJAz1xm-uJH2ARTrzBXY48iG4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-199ce0c4",
+    "name": "カーロ・フォレスタ那須高原ヴォルペ",
+    "lat": 37.08107149684022,
+    "lng": 140.00671353799586,
+    "placeId": "ChIJHZZTM8OJH2AREK_-4DzZLaU",
+    "tags": [
+      "全季節",
+      "温泉・宿・カフェ・レストラン",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "飲食店",
+      "宿泊施設"
+    ],
+    "description": "飲食店・宿泊施設"
+  },
+  {
+    "id": "s-75d712fb",
+    "name": "カフェ　杉と胡桃",
+    "lat": 37.02137299278622,
+    "lng": 140.02775890998507,
+    "placeId": "ChIJSdAfyBooIGARn39iBQ_KIY4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-62d80c40",
+    "name": "カフェファシル",
+    "lat": 37.03210566845455,
+    "lng": 140.02166902675486,
+    "placeId": "ChIJrQ-P_v4nIGARCvpl1iSN0Og",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-4046c837",
+    "name": "キャンドルハウスシュシュ/クリスマスタウン",
+    "lat": 37.04332168719832,
+    "lng": 140.00595534494735,
+    "placeId": "ChIJLe4rzzyIH2ARrlTwhJafPHg",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達・女子旅",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-0b590a34",
+    "name": "クリスタルハンター",
+    "lat": 37.02180391963176,
+    "lng": 140.03778147521908,
+    "placeId": "ChIJaYhB5pgpIGARbXJTMwsUMvA",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-acc11967",
+    "name": "こっこランド那須FCG",
+    "lat": 37.05693334677941,
+    "lng": 140.0852807234803,
+    "placeId": "ChIJc_jQfh4mIGARtQd8KOAI5oY",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "キャンプ場"
+    ],
+    "description": "キャンプ場"
+  },
+  {
+    "id": "s-a4f4e1b9",
+    "name": "ごはんや　麦",
+    "lat": 37.042919838603574,
+    "lng": 140.00832845841586,
+    "placeId": "ChIJk5VeSj2IH2AR17aGfNuLFsM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-63f54087",
+    "name": "ザパインプライベートサウナラウンジ",
+    "lat": 37.09684014987652,
+    "lng": 140.04267635416466,
+    "placeId": "ChIJz4YyGAAnIGAR5uHKIrzH3gU",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内",
+      "カップル・友達・女子旅",
+      "サウナ"
+    ],
+    "description": "サウナ"
+  },
+  {
+    "id": "s-aa032592",
+    "name": "サンバレー美術館",
+    "lat": 37.08784933621137,
+    "lng": 140.0050965825212,
+    "placeId": "ChIJwx2vmfGJH2ARZWr94wM3FYk",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-9c7c3a80",
+    "name": "ジャム工房ベリー",
+    "lat": 37.07033386385832,
+    "lng": 140.01295675416375,
+    "placeId": "ChIJ-TQtGwCJH2ARoZ9e4yrgUCg",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ",
+      "ショップ"
+    ],
+    "description": "カフェ・ショップ"
+  },
+  {
+    "id": "s-3a13283e",
+    "name": "ジョイア・ミーア　那須本店",
+    "lat": 37.06754349684352,
+    "lng": 140.01308937301098,
+    "placeId": "ChIJaTQNSNGJH2ARTRnkW2RT9xM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-47bb7660",
+    "name": "しらさぎ湖",
+    "lat": 37.09557441449226,
+    "lng": 140.03967581164255,
+    "placeId": "ChIJlfiPJlQnIGARVazYXXj5Tf0",
+    "tags": [
+      "春・夏・秋",
+      "自然",
+      "外",
+      "1人旅・カップル・友達"
+    ],
+    "description": "自然"
+  },
+  {
+    "id": "s-a5ba24da",
+    "name": "スーパースター博物館",
+    "lat": 37.00843311870563,
+    "lng": 140.0320952676694,
+    "placeId": "ChIJO-p3XDooIGARAdr3APJwGMo",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "博物館"
+    ],
+    "description": "博物館"
+  },
+  {
+    "id": "s-29fa03fe",
+    "name": "スーパーせきマート 黒田原音羽店",
+    "lat": 37.02224076924732,
+    "lng": 140.1189682410669,
+    "placeId": "ChIJPeu5PcMuIGARQOuHzwtGgVs",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・ファミリー・友達",
+      "スーパー"
+    ],
+    "description": "スーパー"
+  },
+  {
+    "id": "s-9dc17355",
+    "name": "ステーキハウス寿楽 本店",
+    "lat": 37.077440294802905,
+    "lng": 140.0139783706348,
+    "placeId": "ChIJ-c0kJtyJH2ARcCd62Y-LRfA",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-f7e59878",
+    "name": "ゼロイチ×KUROBOSHI",
+    "lat": 37.02170962204658,
+    "lng": 140.12004498114965,
+    "placeId": "ChIJr4MTdAEvIGARRY6oukHdAp4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-b2c03ad8",
+    "name": "ゼロイチカスタマイズCafe",
+    "lat": 37.021679668909414,
+    "lng": 140.11994842511868,
+    "placeId": "ChIJr4MTdAEvIGARRY6oukHdAp4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-404d7196",
+    "name": "そば工房 五色庵",
+    "lat": 37.038943870824326,
+    "lng": 140.01562138161745,
+    "placeId": "ChIJt34WRhyIH2AR5USL3bZRCI4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-5647613d",
+    "name": "ダイユー黒田原店",
+    "lat": 37.01916929775593,
+    "lng": 140.1204699964911,
+    "placeId": "ChIJo8AaHsIuIGARgfhe2XW_42c",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・ファミリー・友達",
+      "スーパー"
+    ],
+    "description": "スーパー"
+  },
+  {
+    "id": "s-b511ba0a",
+    "name": "チーズケーキ工房MANIWAFARM",
+    "lat": 37.07354531415054,
+    "lng": 140.08266171183453,
+    "placeId": "ChIJHfxKamomIGARDov5Ou6r1qk",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-47d49faf",
+    "name": "ちふり　やすらぎの森",
+    "lat": 37.07888499916812,
+    "lng": 140.10206526531738,
+    "placeId": "ChIJo5uQYTklIGAR4_IS-pforDw",
+    "tags": [
+      "春・夏・秋",
+      "自然",
+      "外",
+      "1人旅・ファミリー・カップル・友達"
+    ],
+    "description": "自然"
+  },
+  {
+    "id": "s-acb068a4",
+    "name": "つつじ吊り橋",
+    "lat": 37.10447722445795,
+    "lng": 140.00002591231853,
+    "placeId": "ChIJ1_fNCheLH2ARvTKIxEYgsJI",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "1人旅・ファミリー・カップル・友達・女子旅",
+      "名所"
+    ],
+    "description": "名所"
+  },
+  {
+    "id": "s-648a044f",
+    "name": "つるこキッチン",
+    "lat": 37.04897785101609,
+    "lng": 140.0071121134945,
+    "placeId": "ChIJB_SPXimJH2ARBjgKyGjBW20",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-29967ce9",
+    "name": "ティーガーデン　ナチュール",
+    "lat": 37.02954301389402,
+    "lng": 140.05251935231465,
+    "placeId": "ChIJWRthTWQoIGARrZq9C4t9EB4",
+    "tags": [
+      "春・夏・秋",
+      "自然・カフェ・レストラン",
+      "内外",
+      "カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-19ab4a74",
+    "name": "トリックアート ミケランジェロ館",
+    "lat": 37.03152937221457,
+    "lng": 140.03589182074933,
+    "placeId": "ChIJycppvQsoIGARn7_CBTIU0H4",
+    "tags": [
+      "全季節",
+      "アート・体験",
+      "内",
+      "ファミリー・カップル・友達",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-8769e688",
+    "name": "トリックアートの館",
+    "lat": 37.031239789786945,
+    "lng": 140.03058688294468,
+    "placeId": "ChIJjTs6Dg8oIGAR0pgr8FRri1I",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-93fd9022",
+    "name": "トリックアート迷宮?館",
+    "lat": 37.031115768221966,
+    "lng": 140.03537544041123,
+    "placeId": "ChIJje1J6gsoIGARNSUR3CVX890",
+    "tags": [
+      "全季節",
+      "アート・体験",
+      "内",
+      "ファミリー・カップル・友達",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-0d693301",
+    "name": "トレイルビレッジ那須",
+    "lat": 37.097954697260015,
+    "lng": 140.05957710635363,
+    "placeId": "ChIJJXjG4wYnIGARtSoTIgObqAA",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-7e18f6a7",
+    "name": "トレジャーストーンパーク",
+    "lat": 37.05014664304154,
+    "lng": 140.03102050907216,
+    "placeId": "ChIJN0BwGO0nIGAR6VpvFfzHFvU",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-f3ffc5dd",
+    "name": "なすのすな",
+    "lat": 37.03463657377906,
+    "lng": 140.03861362905752,
+    "placeId": "ChIJYeyN0UqJH2ARx_QqJel89KA",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達・女子旅",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-9716e71b",
+    "name": "なす高原YUMOTO CAMP",
+    "lat": 37.07414816962959,
+    "lng": 140.0100750677106,
+    "placeId": "ChIJpx5ESQCJH2ARJ1LhcaiEtdc",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-843654c2",
+    "name": "ハーブの店花薄荷",
+    "lat": 37.033871908312705,
+    "lng": 140.02044302790807,
+    "placeId": "ChIJVyRLxPgnIGARMXCh-MdH1P4",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "ショップ"
+    ],
+    "description": "ショップ"
+  },
+  {
+    "id": "s-56e0105a",
+    "name": "バジルの葉",
+    "lat": 37.079929768051855,
+    "lng": 140.00086302468276,
+    "placeId": "ChIJ0ZaJh-yJH2ARHYfoG3ycEyY",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-b09d7e0c",
+    "name": "パン工房ベル・フルール",
+    "lat": 37.067841694984374,
+    "lng": 140.0132390856566,
+    "placeId": "ChIJZ5YiN9GJH2ARWEkK6a1qVso",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-38e3251d",
+    "name": "フルーツパーク森の風",
+    "lat": 37.049415592601065,
+    "lng": 140.0408110865317,
+    "placeId": "ChIJe56CaPQnIGARlftp2ZuKrHg",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー・カフェ・レストラン",
+      "外",
+      "ファミリー・カップル・友達・女子旅",
+      "レジャー"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-f04ac65d",
+    "name": "ペニーレイン那須店",
+    "lat": 37.068931675464455,
+    "lng": 139.99996780998694,
+    "placeId": "ChIJL2y7F8eJH2ARi-eGRfmfPMU",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ",
+      "ベーカリー"
+    ],
+    "description": "カフェ・ベーカリー"
+  },
+  {
+    "id": "s-7589b535",
+    "name": "ボリジ",
+    "lat": 37.05608841212725,
+    "lng": 140.01336724330412,
+    "placeId": "ChIJMVDAyy6IH2ARojxZuA6OtLE",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-988783f5",
+    "name": "ホリビア/ポミエ",
+    "lat": 37.031598420796136,
+    "lng": 140.0427074382475,
+    "placeId": "ChIJARTTiUopIGARz88Nq--OYO8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-1484a07f",
+    "name": "ぽんぽこの森FAMILY CAMP場",
+    "lat": 37.08424486048988,
+    "lng": 140.00639006031605,
+    "placeId": "ChIJbxCpw0mJH2ARYwzeLFtVwXM",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-31f4c078",
+    "name": "ミスタービーフ",
+    "lat": 37.08018968638843,
+    "lng": 140.01438984417584,
+    "placeId": "ChIJQXg3Bd6JH2ARzASN8gw4EV0",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-6be3c145",
+    "name": "ムースファミリーキャンプリゾート",
+    "lat": 37.00109712259092,
+    "lng": 140.136211567665,
+    "placeId": "ChIJE9Oiup8tIGAR1PPxBQsXhzA",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-18ef4e7f",
+    "name": "メロンパン工房 Cafe サンタフェ",
+    "lat": 37.041479776546915,
+    "lng": 140.01443869279692,
+    "placeId": "ChIJ_68FmUCJH2AR1w6VHrTnqXw",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-584f7987",
+    "name": "ラ・ヴィータ・エ・ベッラ那須高原",
+    "lat": 37.0906950882118,
+    "lng": 140.01135079333744,
+    "placeId": "ChIJjcE_GR6KH2ARpzl6uDENi9I",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-3fc4bf5a",
+    "name": "ラーメンたかはし",
+    "lat": 36.94563221169448,
+    "lng": 140.04587676811843,
+    "placeId": "ChIJWx4DeVorIGAR13kUQP9XY_A",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-125988ba",
+    "name": "レストラン蒸氣汽関車",
+    "lat": 37.02638949325908,
+    "lng": 140.03023024213823,
+    "placeId": "ChIJU-QDbQ8oIGAR4oyrR5vkxS8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-c23b765b",
+    "name": "わくわく体験館",
+    "lat": 37.046807622499436,
+    "lng": 140.0468460062954,
+    "placeId": "ChIJfVlKHNsnIGARp5b9MTBtDTw",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達・女子旅"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-f7f8b855",
+    "name": "芦野温泉",
+    "lat": 36.98918175331733,
+    "lng": 140.14890321145734,
+    "placeId": "ChIJYzO8yN8tIGARfK12NHO95ww",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内",
+      "1人旅・カップル・友達",
+      "温泉"
+    ],
+    "description": "温泉"
+  },
+  {
+    "id": "s-41e3552a",
+    "name": "芦野城跡",
+    "lat": 37.00106319308791,
+    "lng": 140.166420414567,
+    "placeId": "ChIJgTSMj9MtIGARdHzkYG5lHlQ",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "1人旅・カップル・友達",
+      "名所"
+    ],
+    "description": "名所"
+  },
+  {
+    "id": "s-6d28970a",
+    "name": "英国伝統紅茶館アンティーズ",
+    "lat": 37.06866625190413,
+    "lng": 140.00233611086855,
+    "placeId": "ChIJGwW9QsaJH2AR4CwhH376OEc",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-772a35fe",
+    "name": "加仁家麺房",
+    "lat": 37.01333919734343,
+    "lng": 140.12799739819346,
+    "placeId": "ChIJvVLlzTAvIGAR9S5vFfOwwdo",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-d83dc029",
+    "name": "菓子工房 Katsumi那須",
+    "lat": 37.02709358753488,
+    "lng": 140.14679399649125,
+    "placeId": "ChIJlXvie14uIGARLWN9ogDuISM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "ケーキ屋"
+    ],
+    "description": "ケーキ屋"
+  },
+  {
+    "id": "s-17a22837",
+    "name": "殻々工房　カラカラコウボウ",
+    "lat": 37.05072768748517,
+    "lng": 140.00646529649225,
+    "placeId": "ChIJO8wWUjCIH2ARgr5zTPp0vFQ",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達",
+      "バー"
+    ],
+    "description": "バー"
+  },
+  {
+    "id": "s-51e847ee",
+    "name": "喜文亭",
+    "lat": 37.02067159680777,
+    "lng": 140.11740450828543,
+    "placeId": "ChIJQ404bMMuIGARFsuHTJguFLQ",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-8cac947f",
+    "name": "喫茶新川屋",
+    "lat": 36.996793892263604,
+    "lng": 140.14975473697191,
+    "placeId": "ChIJIfkr23ItIGARUG2kpMa7OgM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ",
+      "喫茶"
+    ],
+    "description": "カフェ・喫茶"
+  },
+  {
+    "id": "s-8c4dd1ab",
+    "name": "弓乃湯",
+    "lat": 37.00802103678922,
+    "lng": 140.02357216090073,
+    "placeId": "ChIJkaffmEgpIGARtC8Qf_jXYcg",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内",
+      "1人旅・カップル・友達",
+      "温泉"
+    ],
+    "description": "温泉"
+  },
+  {
+    "id": "s-9be75f25",
+    "name": "旧青木家那須別邸",
+    "lat": 37.00129528695409,
+    "lng": 139.9850651621438,
+    "placeId": "ChIJ5zaScLyHH2ARqIKxxMXN32M",
+    "tags": [
+      "全季節",
+      "歴史・文化",
+      "内外",
+      "ファミリー・カップル・友達",
+      "博物館"
+    ],
+    "description": "博物館"
+  },
+  {
+    "id": "s-c66fc2db",
+    "name": "京や",
+    "lat": 37.017778890868634,
+    "lng": 140.13097480381617,
+    "placeId": "ChIJ-eDrl5IuIGARieO4URt_fS4",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-3ec2611d",
+    "name": "兼ちゃんのうどん屋だよ",
+    "lat": 37.05548534549317,
+    "lng": 140.0925642013361,
+    "placeId": "ChIJGXX5KQApIGARWHJc2R2MdjY",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-f7677aeb",
+    "name": "源泉　那須山　令和の湯",
+    "lat": 37.0185150063698,
+    "lng": 140.03142072866643,
+    "placeId": "ChIJjbdk4RYoIGARMGBhpHZSkoo",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内",
+      "1人旅・カップル・友達",
+      "温泉"
+    ],
+    "description": "温泉"
+  },
+  {
+    "id": "s-e566ee55",
+    "name": "吾妻窯",
+    "lat": 37.02421161941282,
+    "lng": 140.02143059836527,
+    "placeId": "ChIJSYJQNQIoIGARveUdsLD8aPM",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達・女子旅",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-86965c10",
+    "name": "黒田原駅前みんなの店",
+    "lat": 37.0233821844434,
+    "lng": 140.11980683699275,
+    "placeId": "ChIJD3G6w8IuIGARLQRyWZ1J6oI",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内外",
+      "全構成",
+      "道の駅"
+    ],
+    "description": "道の駅"
+  },
+  {
+    "id": "s-42459287",
+    "name": "黒田原神社",
+    "lat": 37.019614346904866,
+    "lng": 140.11785231370544,
+    "placeId": "ChIJK73ecOouIGARfBbEVJm3uLQ",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "外",
+      "1人旅・カップル・友達",
+      "名所"
+    ],
+    "description": "名所"
+  },
+  {
+    "id": "s-eb54c565",
+    "name": "菜の花畑",
+    "lat": 37.010729554221804,
+    "lng": 140.15039588732398,
+    "placeId": "ChIJOc0C690vIGARUNanRT2z3I0",
+    "tags": [
+      "春",
+      "自然",
+      "外",
+      "カップル・友達・女子旅"
+    ],
+    "description": "自然"
+  },
+  {
+    "id": "s-d845ee8a",
+    "name": "手打ちそば　小椋",
+    "lat": 37.050258728497106,
+    "lng": 140.03828082389728,
+    "placeId": "ChIJI70_FOonIGARFurFfjxO0JU",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-5363f85b",
+    "name": "小太郎茶屋",
+    "lat": 36.96128520847781,
+    "lng": 139.82792243988777,
+    "placeId": "ChIJG53XYG6QH2ARxQ0huQ8s5ec",
+    "tags": [
+      "春・夏・秋",
+      "カフェ・レストラン・自然",
+      "内外",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-a7707bdd",
+    "name": "沼ッ原湿原",
+    "lat": 37.10674357811907,
+    "lng": 139.93121862078476,
+    "placeId": "ChIJYUFuCISMH2ARJx7_ttPyeEE",
+    "tags": [
+      "春・夏・秋",
+      "自然",
+      "外",
+      "1人旅・カップル・友達・男子旅"
+    ],
+    "description": "自然"
+  },
+  {
+    "id": "s-4fec5ad7",
+    "name": "焼き菓子店 蕾（つぼみ）",
+    "lat": 37.073225477722254,
+    "lng": 140.0960232216335,
+    "placeId": "ChIJ1WZs5cIuIGARbdTQiloOzwQ",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "カフェ",
+      "飲食店"
+    ],
+    "description": "カフェ・飲食店"
+  },
+  {
+    "id": "s-15e50c78",
+    "name": "新那須温泉",
+    "lat": 37.09994933298083,
+    "lng": 140.00040108302156,
+    "placeId": "ChIJ80TG3_qJH2ARABUc12Rgfk8",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内",
+      "1人旅・カップル・友達",
+      "温泉"
+    ],
+    "description": "温泉"
+  },
+  {
+    "id": "s-c91a4541",
+    "name": "森と遊ぶ「香りの蒸留所」",
+    "lat": 37.0438811428645,
+    "lng": 140.00918086029068,
+    "placeId": "ChIJkXY81C6JH2ARzzpUo-zy2Gg",
+    "tags": [
+      "全季節",
+      "自然・レジャー",
+      "内外",
+      "カップル・友達・女子旅",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-de122af3",
+    "name": "森のVoiVoi",
+    "lat": 37.05386778396865,
+    "lng": 140.01428576580946,
+    "placeId": "ChIJRSnyq7wpIGARr8DOqRAKzu8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-c872ffcf",
+    "name": "森のカフェ　風雅",
+    "lat": 37.078259446527454,
+    "lng": 140.01239150744354,
+    "placeId": "ChIJKdGKTb-JH2AR6cxoKTxG5RA",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-7ef4d492",
+    "name": "森林ノ牧場　那須",
+    "lat": 37.10198818164072,
+    "lng": 140.13323029649428,
+    "placeId": "ChIJJ3quk68lIGARsZPjVcpOpms",
+    "tags": [
+      "春・夏・秋",
+      "自然・カフェ・レストラン",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-a7ada396",
+    "name": "薪ストーブとコーヒーの店cafe st.Croix(サンクロワ)",
+    "lat": 37.04237610907915,
+    "lng": 140.01810995416258,
+    "placeId": "ChIJ-09rR1GJH2ARmgnk7JPuT5s",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-499c5d51",
+    "name": "水車の里　瑞穂蔵",
+    "lat": 37.08152300489434,
+    "lng": 140.01390630851913,
+    "placeId": "ChIJs0WYb8qJH2ARAjh13xRxZZ8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-96dcb5b1",
+    "name": "瑞玉珈琲　mizutama coffee",
+    "lat": 37.043031101469296,
+    "lng": 140.01197824406182,
+    "placeId": "ChIJdTkzGACJH2AR6L8PW_Jra_I",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-ee57a586",
+    "name": "石の愉楽",
+    "lat": 37.03994119878859,
+    "lng": 140.01477407792433,
+    "placeId": "ChIJKxosqR2IH2ARn0_qEHA8G40",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・女子旅"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-717fcef8",
+    "name": "石臼挽手打蕎麦　丹凜",
+    "lat": 37.07209085625257,
+    "lng": 140.0034605327966,
+    "placeId": "ChIJgUGaL_6JH2AR5rOHQ9nQaiE",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-30e594af",
+    "name": "戦争博物館",
+    "lat": 37.06176383742067,
+    "lng": 140.01228788358702,
+    "placeId": "ChIJi_0HPuiJH2ARsq5oyHxTBJk",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・友達・男子旅",
+      "博物館"
+    ],
+    "description": "博物館"
+  },
+  {
+    "id": "s-60d16a16",
+    "name": "相田みつお　那須ギャラリー",
+    "lat": 37.039302037202184,
+    "lng": 140.01552878303156,
+    "placeId": "ChIJ22uQVxyIH2AReRuyeVWAuC0",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-1c7323e2",
+    "name": "大衆食堂　さつき",
+    "lat": 37.09209122840887,
+    "lng": 140.0604049354115,
+    "placeId": "ChIJbZpOmuImIGARCqmZDiIQeUU",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-e480a21c",
+    "name": "茶屋 卯三郎",
+    "lat": 37.0463180092473,
+    "lng": 140.0183888507226,
+    "placeId": "ChIJ4UcGUieIH2AR0KWkM0cmbo8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-a6575101",
+    "name": "中村屋志水",
+    "lat": 37.019973326941056,
+    "lng": 140.11865441183235,
+    "placeId": "ChIJs-V8scMuIGAR4iwS8pXpyOU",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ",
+      "ベーカリー"
+    ],
+    "description": "カフェ・ベーカリー"
+  },
+  {
+    "id": "s-655fafa5",
+    "name": "鉄板焼肉　吉田屋",
+    "lat": 37.03565772750279,
+    "lng": 140.13113982661977,
+    "placeId": "ChIJiTfnz_IvIGAR-_Pd0XhqwLI",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-132a4609",
+    "name": "東山道那須温泉",
+    "lat": 36.948556134374144,
+    "lng": 140.1519581504501,
+    "placeId": "ChIJCbIfHqYtIGARiLDEEy08ruM",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内",
+      "1人旅・カップル・友達",
+      "温泉"
+    ],
+    "description": "温泉"
+  },
+  {
+    "id": "s-ab7af22f",
+    "name": "藤城清治美術館",
+    "lat": 37.08391861959788,
+    "lng": 140.00434444497293,
+    "placeId": "ChIJmUeE5_GJH2ARww_fIhWCUh4",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-e92bac69",
+    "name": "陶芸体験教室　亀工房",
+    "lat": 37.08307322876505,
+    "lng": 140.01377903703033,
+    "placeId": "ChIJR35n1OCJH2ARvCIrqbEvbHk",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達・女子旅",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-9edf5fde",
+    "name": "道の駅　東山道伊王野",
+    "lat": 36.95442970973301,
+    "lng": 140.1563874221484,
+    "placeId": "ChIJM3m6KTwtIGARwgMrr0e8K6A",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内外",
+      "全構成",
+      "道の駅"
+    ],
+    "description": "道の駅"
+  },
+  {
+    "id": "s-fdf75536",
+    "name": "那須　花と森の体験",
+    "lat": 37.01737801528987,
+    "lng": 140.0320480951621,
+    "placeId": "ChIJIzsxVhYoIGARebqYGdOyLoA",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "レジャー"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-bc8da6e8",
+    "name": "那須　北匠庵",
+    "lat": 37.080978189123805,
+    "lng": 140.0089012800949,
+    "placeId": "ChIJq6rGLOaJH2ARgs35eehruN0",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-104d6541",
+    "name": "那須・芦野　石の美術館",
+    "lat": 36.99209125872437,
+    "lng": 140.1632681449151,
+    "placeId": "ChIJAXINCZYtIGARvOU1s-DnJFc",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-631b80c6",
+    "name": "那須661 ワインヒルズGrill",
+    "lat": 37.04154083143783,
+    "lng": 140.0431882848454,
+    "placeId": "ChIJj5EPlCwnIGARDKDOI94GWMY",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン・レジャー",
+      "内",
+      "カップル・友達・女子旅",
+      "ショップ"
+    ],
+    "description": "ショップ"
+  },
+  {
+    "id": "s-824eec9c",
+    "name": "那須オルゴール美術館",
+    "lat": 37.04474445205126,
+    "lng": 140.0279697597501,
+    "placeId": "ChIJ31zqv_EnIGARvshNoIE7Vdc",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "美術館"
+    ],
+    "description": "美術館"
+  },
+  {
+    "id": "s-d0072608",
+    "name": "那須ガーデンアウトレット",
+    "lat": 36.96929672849789,
+    "lng": 139.98667448755418,
+    "placeId": "ChIJP-Lr4HsqIGARuseQWDZRstA",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内外",
+      "全構成",
+      "アウトレット"
+    ],
+    "description": "アウトレット"
+  },
+  {
+    "id": "s-a0abeac9",
+    "name": "那須カフェテラスV8",
+    "lat": 37.03152302704034,
+    "lng": 140.03407267562594,
+    "placeId": "ChIJbZIa0BkpIGAROFuf_PetiZ8",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-29eaa8a8",
+    "name": "那須クラシックカー博物館",
+    "lat": 37.02730844646513,
+    "lng": 140.0337998035986,
+    "placeId": "ChIJMX2ZcQ4oIGARrxUq6FpAV1s",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "博物館"
+    ],
+    "description": "博物館"
+  },
+  {
+    "id": "s-1d6887a0",
+    "name": "那須クレシオン　カフェ",
+    "lat": 37.071092501455794,
+    "lng": 140.12241973697482,
+    "placeId": "ChIJ6YAIsiMlIGARI9pRcSugwkM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-f9e00486",
+    "name": "那須ジャージー",
+    "lat": 37.148118929204436,
+    "lng": 140.116421626738,
+    "placeId": "ChIJ4RQNy5QlIGARMddiEI3lN_A",
+    "tags": [
+      "春・夏・秋",
+      "カフェ・レストラン・自然",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-68b798b3",
+    "name": "那須テディベア・ミュージアム",
+    "lat": 37.049268966058975,
+    "lng": 140.03958166210805,
+    "placeId": "ChIJMZ7RJiQqIGAR87JbeJxKEtU",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "ファミリー・カップル・友達・女子旅"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-96c85ffb",
+    "name": "那須ハイランドパーク",
+    "lat": 37.06725689705362,
+    "lng": 139.9629828032408,
+    "placeId": "ChIJ32-TNGyJH2ARK-2UXfZV9V0",
+    "tags": [
+      "春・夏・秋",
+      "レジャー",
+      "外",
+      "ファミリー・カップル・友達"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-521f7320",
+    "name": "那須バギーパーク",
+    "lat": 37.07817370589232,
+    "lng": 140.00262160345775,
+    "placeId": "ChIJnyJ1zuuJH2ARgGGuvhvtVC8",
+    "tags": [
+      "春・夏・秋",
+      "レジャー",
+      "外",
+      "1人旅・友達・男子旅"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-8d93a6ec",
+    "name": "那須ハミルの森",
+    "lat": 37.041037109230466,
+    "lng": 140.01526990736227,
+    "placeId": "ChIJj5YXWbaJH2AR5sAAa-AoykY",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-2ecd9efa",
+    "name": "那須フラワーワールド",
+    "lat": 37.10938197755529,
+    "lng": 140.0830485983173,
+    "placeId": "ChIJAQCstlQvIGARwEJ6UwRJGvE",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "ファミリー・カップル・友達・女子旅",
+      "自然"
+    ],
+    "description": "自然"
+  },
+  {
+    "id": "s-51edfdfa",
+    "name": "那須プレリーオートキャンプ場",
+    "lat": 37.10351333664711,
+    "lng": 140.07398628307183,
+    "placeId": "ChIJSa59IQAnIGARy2YejSMvqmM",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-0f7466fb",
+    "name": "那須モータースポーツランド",
+    "lat": 36.97122598673167,
+    "lng": 140.12743946668195,
+    "placeId": "ChIJF7xhblssIGARvGvLlcC0noI",
+    "tags": [
+      "春・夏・秋",
+      "レジャー",
+      "外",
+      "1人旅・友達・男子旅"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-5fd1d11f",
+    "name": "那須ユートピア　サウナ",
+    "lat": 36.98449661418835,
+    "lng": 140.2075220679661,
+    "placeId": "ChIJCdIyNG4zIGARFFMWeFxgPmU",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "1人旅・カップル・友達・女子旅",
+      "温泉",
+      "サウナ"
+    ],
+    "description": "温泉・サウナ"
+  },
+  {
+    "id": "s-b7d484ce",
+    "name": "那須ラスクテラス",
+    "lat": 37.041720476964144,
+    "lng": 140.0149149830333,
+    "placeId": "ChIJqX3mvR6IH2ARGbLMl5JqRxA",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-d3d360dc",
+    "name": "那須リゾートショッピングパーク６６１ＳＴ",
+    "lat": 37.00794759327829,
+    "lng": 140.03172746580776,
+    "placeId": "ChIJbzuRWzooIGARQ7AG_m8RBFY",
+    "tags": [
+      "全季節",
+      "レジャー・カフェ・レストラン",
+      "内外",
+      "全構成",
+      "ショップ"
+    ],
+    "description": "ショップ"
+  },
+  {
+    "id": "s-eaefdd4b",
+    "name": "那須ワールドモンキーパーク",
+    "lat": 37.03527091466298,
+    "lng": 140.0485036080209,
+    "placeId": "ChIJbQrsGEcpIGARpglIv0iuGqI",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "内外",
+      "ファミリー・カップル・友達",
+      "レジャー"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-f0e82585",
+    "name": "那須わっぱ　おだやか",
+    "lat": 37.080483323141266,
+    "lng": 140.00747841349448,
+    "placeId": "ChIJwXlU12WJH2ARzozp97YIHPQ",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-5c9017f0",
+    "name": "那須温泉グランピングNenn",
+    "lat": 37.03306101596509,
+    "lng": 140.02119683699905,
+    "placeId": "ChIJB7qHPtgnIGARKqJ-iqTZQVs",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-8da2735a",
+    "name": "那須温泉ストリーム",
+    "lat": 37.06354641509362,
+    "lng": 140.00890748511208,
+    "placeId": "ChIJK4GhcdKJH2AR98K974yddjA",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "1人旅・カップル・友達",
+      "温泉",
+      "宿泊施設"
+    ],
+    "description": "温泉・宿泊施設"
+  },
+  {
+    "id": "s-ded56a08",
+    "name": "那須渓流パーク",
+    "lat": 37.07777642805736,
+    "lng": 139.9988269900718,
+    "placeId": "ChIJ9TGkMJOJH2ARGTEHTKDL2HE",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "パーク"
+    ],
+    "description": "パーク"
+  },
+  {
+    "id": "s-cb16e5d7",
+    "name": "那須御用邸",
+    "lat": 37.11814354832299,
+    "lng": 140.00832710636635,
+    "placeId": "ChIJQ87NsAAoIGAR5p5YHAc4RK4",
+    "tags": [
+      "全季節",
+      "自然・レジャー",
+      "外",
+      "1人旅・カップル・友達",
+      "名所"
+    ],
+    "description": "名所"
+  },
+  {
+    "id": "s-795c0088",
+    "name": "那須高原HERB's",
+    "lat": 37.062697066563786,
+    "lng": 140.00084440633168,
+    "placeId": "ChIJ90t-d8mJH2ARlUc_jAApr8E",
+    "tags": [
+      "春・夏・秋",
+      "自然・カフェ・レストラン",
+      "内外",
+      "カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-229a012f",
+    "name": "那須高原アカルパ",
+    "lat": 37.098735852559535,
+    "lng": 140.06126595978412,
+    "placeId": "ChIJi7rwSuAmIGARdjv4X6V0M2g",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-fb2e26b9",
+    "name": "那須高原オートキャンプ場　クアトロぺロス",
+    "lat": 37.05267271755183,
+    "lng": 140.0516431797287,
+    "placeId": "ChIJwXt1owYnIGARd4_dX1qVx5Q",
+    "tags": [
+      "春・夏・秋",
+      "自然・温泉・宿",
+      "外",
+      "ファミリー・カップル・友達・男子旅",
+      "キャンプ場"
+    ],
+    "description": "キャンプ場"
+  },
+  {
+    "id": "s-02187699",
+    "name": "那須高原ステーキとハンバーグの店 Outburst&Ponta",
+    "lat": 37.057682685489,
+    "lng": 140.01192409928672,
+    "placeId": "ChIJ4-l8OSyIH2ARbVEL1LK_UkA",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-acec7a30",
+    "name": "那須高原バル",
+    "lat": 37.047816448346104,
+    "lng": 140.01326093981413,
+    "placeId": "ChIJc81wm26JH2ARQAoltwJPcs0",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-c6c86446",
+    "name": "那須高原パンのいえ　クーロンヌ　リネア",
+    "lat": 37.045833731390786,
+    "lng": 140.00553591183342,
+    "placeId": "ChIJvfHahDuIH2ARmamS8U2UAhk",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "ベーカリー"
+    ],
+    "description": "ベーカリー"
+  },
+  {
+    "id": "s-d087a04a",
+    "name": "那須高原みちのく　民芸店　喫茶コーナー",
+    "lat": 37.09578364841027,
+    "lng": 140.00148644363128,
+    "placeId": "ChIJFVoJ9x6KH2ARTJP4-nwDFKE",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-1a686b27",
+    "name": "那須高原農園いちごの森",
+    "lat": 37.02028453403324,
+    "lng": 140.0311819676768,
+    "placeId": "ChIJJ0eMDBcoIGARUiTVBrTTvIA",
+    "tags": [
+      "冬・春",
+      "自然・レジャー",
+      "内",
+      "ファミリー・カップル・友達・女子旅",
+      "体験"
+    ],
+    "description": "体験"
+  },
+  {
+    "id": "s-b5db430b",
+    "name": "那須国際射撃場",
+    "lat": 37.00648832635025,
+    "lng": 140.02692245343547,
+    "placeId": "ChIJTUe9_SQoIGARY1QH0gUe7ZM",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内外",
+      "1人旅・友達・男子旅"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-000a93f9",
+    "name": "那須昆虫ワールド",
+    "lat": 37.040220761128964,
+    "lng": 140.0171013904332,
+    "placeId": "ChIJr6ODDcInIGAREtY-hNvlqm4",
+    "tags": [
+      "全季節",
+      "レジャー・カフェ・レストラン",
+      "内",
+      "ファミリー・カップル・友達",
+      "美術館",
+      "カフェ"
+    ],
+    "description": "美術館・カフェ"
+  },
+  {
+    "id": "s-653d15a9",
+    "name": "那須疏水公園",
+    "lat": 37.038004748981194,
+    "lng": 139.98617127662115,
+    "placeId": "ChIJ60BVQluIH2ARQGScMA_J_C4",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "ファミリー・カップル・友達",
+      "公園"
+    ],
+    "description": "公園"
+  },
+  {
+    "id": "s-3a371396",
+    "name": "那須茶寮",
+    "lat": 37.06019744273606,
+    "lng": 140.01207129355817,
+    "placeId": "ChIJF91DuyyIH2ARFLhd2HsIB4s",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-06824a52",
+    "name": "那須平成の森",
+    "lat": 37.11725351438911,
+    "lng": 140.00722540546732,
+    "placeId": "ChIJH_Z-nimIH2ARma-otZqgNqI",
+    "tags": [
+      "春・夏・秋",
+      "自然",
+      "外",
+      "1人旅・ファミリー・カップル・友達",
+      "公園"
+    ],
+    "description": "公園"
+  },
+  {
+    "id": "s-e9b19231",
+    "name": "那須陽光ゴルフクラブ",
+    "lat": 37.02189814526111,
+    "lng": 140.17070755896788,
+    "placeId": "ChIJvzm-0gguIGARuUbadVW2ops",
+    "tags": [
+      "春・夏・秋",
+      "レジャー",
+      "外",
+      "1人旅・友達・男子旅"
+    ],
+    "description": "レジャー"
+  },
+  {
+    "id": "s-d6055e18",
+    "name": "那須歴史探訪館",
+    "lat": 36.989898123592916,
+    "lng": 140.16493186711674,
+    "placeId": "ChIJoavxS5YtIGARM-9mAR4eg24",
+    "tags": [
+      "全季節",
+      "レジャー",
+      "内",
+      "1人旅・ファミリー・カップル・友達",
+      "美術館",
+      "博物館"
+    ],
+    "description": "美術館・博物館"
+  },
+  {
+    "id": "s-f2721556",
+    "name": "那須珈琲CafeLaDetente",
+    "lat": 37.020714179634076,
+    "lng": 140.11953465767195,
+    "placeId": "ChIJvR5nAMMuIGARonxvEX80hGY",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-c4b7fbeb",
+    "name": "芭蕉庵",
+    "lat": 36.98929927941783,
+    "lng": 140.16311846437915,
+    "placeId": "ChIJs-ET3U0tIGARRXiTFabU8YM",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-101d4b41",
+    "name": "八幡のつつじ群落",
+    "lat": 37.111898123805794,
+    "lng": 140.00395952261184,
+    "placeId": "ChIJjcE_GR6KH2ARbZ2V1auIbUY",
+    "tags": [
+      "春",
+      "自然",
+      "外",
+      "1人旅・カップル・友達・女子旅"
+    ],
+    "description": "自然"
+  },
+  {
+    "id": "s-a2a1020d",
+    "name": "非電化カフェ",
+    "lat": 37.06106620322785,
+    "lng": 140.0959919118341,
+    "placeId": "ChIJJzQkhwEmIGARywQkFHs0VkI",
+    "tags": [
+      "春・夏・秋",
+      "自然・カフェ・レストラン",
+      "内外",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-bb7a9d72",
+    "name": "穂ほ笑みの森",
+    "lat": 36.93980065272841,
+    "lng": 140.12210813881725,
+    "placeId": "ChIJB-uiUV0tIGARw7Y619W1c9I",
+    "tags": [
+      "春・夏・秋",
+      "自然・カフェ・レストラン",
+      "内外",
+      "カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-7b025a7e",
+    "name": "無垢の音",
+    "lat": 37.060231423314,
+    "lng": 139.97818906770192,
+    "placeId": "ChIJdbGUMUKJH2ARWaWlEunSGc4",
+    "tags": [
+      "全季節",
+      "温泉・宿",
+      "内外",
+      "ファミリー・カップル・友達・女子旅",
+      "宿泊施設"
+    ],
+    "description": "宿泊施設"
+  },
+  {
+    "id": "s-46295f8d",
+    "name": "麺屋 すがぞう",
+    "lat": 37.038317762510964,
+    "lng": 140.0977114779618,
+    "placeId": "ChIJ5QVPPdE7IGARYr7D5547Bnk",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-06f10e0e",
+    "name": "麺工房式右衛門",
+    "lat": 36.96089420709427,
+    "lng": 140.18232610461752,
+    "placeId": "ChIJydbOmrstIGARbvIXynQH4xo",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "全構成",
+      "飲食店"
+    ],
+    "description": "飲食店"
+  },
+  {
+    "id": "s-fdab84d8",
+    "name": "遊行柳",
+    "lat": 36.99519228211663,
+    "lng": 140.1653224265194,
+    "placeId": "ChIJ6XS_pictIGARBuXDavC2Kjo",
+    "tags": [
+      "全季節",
+      "自然・レジャー",
+      "外",
+      "1人旅・カップル・友達",
+      "遺跡"
+    ],
+    "description": "遺跡"
+  },
+  {
+    "id": "s-b697dbc9",
+    "name": "余笹川　ふれあい公園",
+    "lat": 37.01834373924139,
+    "lng": 140.1106896285249,
+    "placeId": "ChIJax-FocUuIGARgvOG-6BBK0M",
+    "tags": [
+      "春・夏・秋",
+      "自然・レジャー",
+      "外",
+      "ファミリー・カップル・友達",
+      "公園"
+    ],
+    "description": "公園"
+  },
+  {
+    "id": "s-e42da798",
+    "name": "妖精の森 メッツァラウハ",
+    "lat": 37.0539881034824,
+    "lng": 140.01513468295914,
+    "placeId": "ChIJO9IDpCiIH2AREbLoieDPUio",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  },
+  {
+    "id": "s-9b4ebd6a",
+    "name": "恋人の聖地展望台",
+    "lat": 37.10510379288387,
+    "lng": 139.99572606663506,
+    "placeId": "ChIJ_ZPX1QKLH2ARMMTX4SRThcc",
+    "tags": [
+      "全季節",
+      "自然・レジャー",
+      "外",
+      "カップル・友達・女子旅",
+      "名所"
+    ],
+    "description": "名所"
+  },
+  {
+    "id": "s-4ea63fe9",
+    "name": "苺氷り那須本舗",
+    "lat": 37.062548490226206,
+    "lng": 140.012136946022,
+    "placeId": "ChIJCe_KFDGJH2AR4jTqaYJGr0k",
+    "tags": [
+      "全季節",
+      "カフェ・レストラン",
+      "内",
+      "1人旅・カップル・友達・女子旅",
+      "カフェ"
+    ],
+    "description": "カフェ"
+  }
+]

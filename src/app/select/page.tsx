@@ -9,11 +9,11 @@ import { encodeRouteQuery } from "@/lib/routeQuery";
 // /route から「選び直す」で戻ったときに選択状態を復元するためのキー
 // （ホームの「はじめる」はこのキーを破棄して新規スタートする）
 import { SELECT_STATE_KEY as STORAGE_KEY } from "@/lib/selectState";
-import type { Spot } from "@/types/spot";
 import type { DeparturePoint, TripType } from "@/types/departure";
-import spotsData from "@/../data/spots.json";
+// デバッグ13件/本番200件は NEXT_PUBLIC_SPOTS_MODE で切替（src/lib/spots.ts）
+import { SPOTS } from "@/lib/spots";
 
-const spots = spotsData as Spot[];
+const spots = SPOTS;
 const spotsById = new Map(spots.map((s) => [s.id, s]));
 
 interface StoredState {
