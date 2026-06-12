@@ -152,8 +152,8 @@ export default function TripDetailPage() {
               </span>
             </div>
             {entry.photo_path && (
-              <div className="relative overflow-hidden" style={{
-                aspectRatio: "4 / 3",
+              // 投稿者が切り抜きで決めた縦横比のまま表示する（枠で再度切らない）
+              <div className="overflow-hidden" style={{
                 borderRadius: "18px",
                 border: "1px solid rgba(143,168,136,.35)",
                 boxShadow: "0 16px 36px -20px rgba(36,48,25,.4)",
@@ -161,7 +161,7 @@ export default function TripDetailPage() {
                 <UserPhoto
                   path={entry.photo_path}
                   alt={spotNameOf(entry.spot_id)}
-                  sizes="(max-width: 640px) 100vw, 560px"
+                  natural
                 />
               </div>
             )}

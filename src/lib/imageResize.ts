@@ -47,6 +47,34 @@ export async function cropImageToJpeg(file: File, crop: CropArea): Promise<Blob>
 }
 
 /**
+ * 切り抜かずに全体を JPEG 化する（CropModal の「切り抜かずに使う」用）。
+ * 元の縦横比を維持したまま長辺 1600px に縮小する。
+ */
+export async function resizeImageToJpeg(file: File): Promise<Blob> {
+  const bitmap = await decodeImage(file);
+  try {
+    const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("画像の処理に失敗しました（canvas 未対応）");
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY)
+    );
+    if (!blob) throw new Error("画像の変換に失敗しました");
+    return blob;
+  } finally {
+    if ("close" in bitmap) bitmap.close();
+  }
+}
+
+/**
  * createImageBitmap が使えればそれを、なければ <img> 経由でデコードする。
  * HEIC 等ブラウザがデコードできない形式はここで例外になる
  * （呼び出し側で「JPEG/PNG を選んでください」と案内する）。
