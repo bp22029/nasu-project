@@ -13,6 +13,8 @@ interface SpotCardProps {
   selectionOrder?: number;
   /** 施設名の表示（「直感で選ぶ」ために隠せる。撮影者クレジットは規約上常に表示） */
   showName?: boolean;
+  /** シャッフルのたびに増える値。表示写真をランダムに選び直す */
+  shuffleNonce?: number;
 }
 
 // /api/photos/[spotId] のレスポンス。Google 写真と投稿写真（機能3）が混在する
@@ -61,11 +63,13 @@ const arrowStyle: React.CSSProperties = {
   padding: 0,
 };
 
-export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder, showName = true }: SpotCardProps) {
+export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder, showName = true, shuffleNonce = 0 }: SpotCardProps) {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [photoLoading, setPhotoLoading] = useState(true);
   const [hovered, setHovered] = useState(false);
+  // シャッフル時の写真選び直し用（effect から最新の photos を読むため）
+  const photosRef = useRef<PhotoItem[]>([]);
   // 出現アニメーションの遅延は初回マウント時の位置で固定する。
   // シャッフルで index が変わったときに style が変化してアニメが再発火するのを防ぐ
   const appearDelay = useRef(0.38 + index * 0.04).current;
@@ -80,12 +84,32 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
     fetch(`/api/photos/${encodeURIComponent(spot.id)}`)
       .then((r) => r.json())
       .then((data: { photos?: PhotoItem[] }) => {
-        if (!cancelled && data.photos) setPhotos(data.photos);
+        if (!cancelled && data.photos) {
+          setPhotos(data.photos);
+          photosRef.current = data.photos;
+          // 最初に見せる写真は Google + 投稿写真からランダムに選ぶ
+          // （訪れるたびに違う一枚が出る。「写真が増えて画面が変わる」体験の核）
+          setPhotoIndex(Math.floor(Math.random() * Math.max(1, data.photos.length)));
+        }
       })
       .catch(() => {})
       .finally(() => { if (!cancelled) setPhotoLoading(false); });
     return () => { cancelled = true; };
   }, [spot.id]);
+
+  // シャッフルボタンで並びだけでなく表示写真も選び直す（カードは再マウントされないため
+  // nonce の変化をトリガーにする。写真の再取得はしない）
+  useEffect(() => {
+    if (shuffleNonce === 0) return;
+    const p = photosRef.current;
+    if (p.length < 2) return;
+    setPhotoIndex((prev) => {
+      // 必ず今と違う写真にする（「変わった感」を保証する）
+      let next = Math.floor(Math.random() * p.length);
+      if (next === prev) next = (next + 1) % p.length;
+      return next;
+    });
+  }, [shuffleNonce]);
 
   const photo = photos[photoIndex] ?? null;
   const badgeNum = routeNumber ?? selectionOrder;

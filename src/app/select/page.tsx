@@ -55,6 +55,8 @@ export default function SelectPage() {
   // 表示順（スポットidの配列）。SSRとのハイドレーション不一致を避けるため、
   // マウント後に確定するまで null にしてグリッドを描画しない
   const [orderedIds, setOrderedIds] = useState<string[] | null>(null);
+  // シャッフルのたびに増える値。SpotCard が表示写真をランダムに選び直すトリガー
+  const [shuffleNonce, setShuffleNonce] = useState(0);
   const [restored, setRestored] = useState(false);
   // 設計ボタン押下時に出発地が未選択なら、出発地セクションへスクロールして点滅で誘導する
   const [departureFlash, setDepartureFlash] = useState(false);
@@ -209,7 +211,10 @@ export default function SelectPage() {
           {/* シャッフルボタン（表示順のみ入れ替え。選択状態・取得済み写真は維持される） */}
           <button
             type="button"
-            onClick={() => setOrderedIds((prev) => (prev ? shuffleIds(prev) : prev))}
+            onClick={() => {
+              setOrderedIds((prev) => (prev ? shuffleIds(prev) : prev));
+              setShuffleNonce((n) => n + 1); // 表示写真も選び直す
+            }}
             style={{
               flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer",
               padding: "7px 13px", borderRadius: "100px",
@@ -264,6 +269,7 @@ export default function SelectPage() {
             selectedIds={selectedIds}
             onToggle={toggleSpot}
             showNames={showNames}
+            shuffleNonce={shuffleNonce}
           />
         )}
       </div>
