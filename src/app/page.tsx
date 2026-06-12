@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GrainOverlay from "@/components/GrainOverlay";
 
@@ -136,6 +137,25 @@ export default function Home() {
               </svg>
             </span>
           </button>
+
+          {/* 副次導線（機能3）: 旅の記録・写真投稿 */}
+          <div className="start-subtitle flex items-center gap-5" style={{
+            marginTop: "26px", fontSize: "12.5px", letterSpacing: ".1em",
+          }}>
+            <Link href="/trips/new" style={{
+              color: "#5a7d5a", textDecoration: "underline", textUnderlineOffset: "5px",
+              textDecorationColor: "rgba(90,125,90,.4)",
+            }}>
+              旅を記録する
+            </Link>
+            <span style={{ width: "1px", height: "12px", background: "#8fa888", opacity: 0.5 }} />
+            <Link href="/post" style={{
+              color: "#5a7d5a", textDecoration: "underline", textUnderlineOffset: "5px",
+              textDecorationColor: "rgba(90,125,90,.4)",
+            }}>
+              写真を投稿する
+            </Link>
+          </div>
         </div>
 
         {/* フッターメタ情報 */}

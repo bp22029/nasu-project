@@ -8,6 +8,7 @@ import RouteTimeline from "@/components/RouteTimeline";
 import GrainOverlay from "@/components/GrainOverlay";
 import { decodeRouteQuery } from "@/lib/routeQuery";
 import type { RouteResult } from "@/types/route";
+import { TRIP_DRAFT_KEY, type TripDraft } from "@/types/post";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
@@ -82,10 +83,24 @@ function RouteIndexLine() {
 }
 
 function RouteContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
   const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 「この旅を記録する」: TSP最適化後の訪問順を sessionStorage 経由で
+  // /trips/new に引き継ぐ（URL の spots= は選択順なので使わない。CLAUDE.md セクション14）
+  const handleRecordTrip = () => {
+    if (!routeResult) return;
+    const draft: TripDraft = {
+      spotIds: routeResult.orderedSpots.map((s) => s.id),
+      routeQuery: queryString,
+      createdAt: Date.now(),
+    };
+    sessionStorage.setItem(TRIP_DRAFT_KEY, JSON.stringify(draft));
+    router.push("/trips/new");
+  };
 
   useEffect(() => {
     const decoded = decodeRouteQuery(new URLSearchParams(queryString));
@@ -225,6 +240,31 @@ function RouteContent() {
         animationDelay: ".34s",
       }}>
         <RouteTimeline result={routeResult} />
+      </div>
+
+      {/* 旅記録への導線（機能3）: 訪問順をプレフィルして /trips/new へ */}
+      <div className="sel-rise flex flex-col items-center" style={{ marginTop: "30px", animationDelay: ".42s" }}>
+        <button
+          type="button"
+          onClick={handleRecordTrip}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "12px",
+            cursor: "pointer",
+            background: "#2c3e2d", color: "#f3f1ea", border: "none",
+            fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
+            padding: "14px 28px", borderRadius: "100px",
+            boxShadow: "0 14px 30px -16px rgba(36,48,25,.7)",
+            fontFamily: "var(--font-sans)",
+          }}
+        >
+          この旅を記録する
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <p style={{ fontSize: "11px", color: "#8fa888", letterSpacing: ".08em", marginTop: "10px" }}>
+          訪問地が入った状態で旅の記録をはじめられます
+        </p>
       </div>
     </RouteShell>
   );
