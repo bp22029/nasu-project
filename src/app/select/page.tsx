@@ -179,18 +179,34 @@ export default function SelectPage() {
           <span style={{ fontSize: "11px", letterSpacing: ".26em", color: "#8fa888", textTransform: "uppercase" }}>Spots</span>
           <span style={{ fontSize: "12px", letterSpacing: ".14em", color: "#5a7d5a" }}>ピンときた写真を選ぶ</span>
           <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
-          {/* 施設名の表示/非表示トグル（直感で選びたい人は隠せる） */}
-          <button type="button" onClick={() => setShowNames((v) => !v)} style={{
-            flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer",
-            padding: "7px 12px", borderRadius: "100px",
-            border: showNames ? "1px solid #e5e0d3" : "1px solid #b6cbac",
-            background: showNames ? "rgba(255,255,255,.7)" : "#e9f0e4",
-            fontSize: "11.5px", fontWeight: 600, fontFamily: "var(--font-sans)",
-            color: "#5a7d5a", letterSpacing: ".06em",
-            transition: "background .2s, border-color .2s",
-          }}>
-            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: showNames ? "#8fa888" : "#5a7d5a", transition: "background .2s" }} />
-            {showNames ? "施設名を隠す" : "施設名を表示"}
+          {/* 施設名のON/OFFスイッチ（ラベルは状態を持たず、スイッチ位置と色で状態を示す） */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showNames}
+            aria-label="施設名の表示"
+            onClick={() => setShowNames((v) => !v)}
+            style={{
+              flexShrink: 0, display: "inline-flex", alignItems: "center", gap: "8px",
+              background: "none", border: "none", cursor: "pointer", padding: "4px 0",
+            }}
+          >
+            <span style={{ fontSize: "11.5px", fontWeight: 600, fontFamily: "var(--font-sans)", color: "#5a7d5a", letterSpacing: ".06em" }}>
+              施設名
+            </span>
+            <span style={{
+              position: "relative", width: "36px", height: "21px", borderRadius: "100px", flexShrink: 0,
+              background: showNames ? "#5a7d5a" : "#d8d4c6",
+              boxShadow: "inset 0 1px 2px rgba(36,48,25,.18)",
+              transition: "background .2s",
+            }}>
+              <span style={{
+                position: "absolute", top: "2.5px", left: showNames ? "17.5px" : "2.5px",
+                width: "16px", height: "16px", borderRadius: "50%", background: "#fff",
+                boxShadow: "0 1px 3px rgba(36,48,25,.35)",
+                transition: "left .2s cubic-bezier(.2,.7,.2,1)",
+              }} />
+            </span>
           </button>
         </div>
 
