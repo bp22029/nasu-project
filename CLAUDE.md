@@ -294,6 +294,16 @@ v2-souデザインの初期実装は動作が重く、以下を禁止手法と�
 - **`mix-blend-mode`**: 全画面の再合成を強いる。グレインは通常合成 + 低opacityで十分
 - **カーソル追従パララックス（rAFループ）**: 毎フレームJSが走る。背景の動きはCSSアニメーション（transform のみの drift と小さなリングの morph）に限定する
 
+### Next.js は Route Handler 内の fetch をキャッシュする（写真APIで実害が出た）
+
+Next.js 14 は GET Route Handler と、その中で実行される `fetch`（**supabase-js が内部で使う fetch も含む**）をデフォルトで Data Cache に載せる。このため `/api/photos` で「投稿を削除したのに /select に写真が残り続ける」「Google 写真URLがキャッシュされ規約違反になる」事故が起きた（2026-06-12）。
+
+対策（両方必要）:
+- Route Handler に `export const dynamic = "force-dynamic"` を宣言する
+- 外部 fetch に `cache: "no-store"` を付ける。supabase-js は `createClient(..., { global: { fetch: (i, init) => fetch(i, { ...init, cache: "no-store" }) } })` で素通しにする（`src/lib/supabase/server.ts`）
+
+サーバー側で新しい外部APIや supabase クエリを追加するときは、毎回この点を確認すること。
+
 ### .env.local を変更したら dev サーバーを再起動する
 
 `npm run dev` 実行中に `.env.local` を書き換えても、Next.js の dev サーバーは環境変数をホットリロードしない。変更後は一度サーバーを止めて `npm run dev` し直す。
