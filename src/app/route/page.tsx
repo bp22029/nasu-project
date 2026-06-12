@@ -2,34 +2,80 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import RouteTimeline from "@/components/RouteTimeline";
+import GrainOverlay from "@/components/GrainOverlay";
+import { useParallax } from "@/lib/useParallax";
 import { decodeRouteQuery } from "@/lib/routeQuery";
 import type { RouteResult } from "@/types/route";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-500 text-sm">
-      地図を読み込み中...
+    <div className="w-full h-full flex items-center justify-center" style={{ background: "#edeae1", color: "#8fa888", fontSize: "12px", letterSpacing: ".14em" }}>
+      地図を読み込み中…
     </div>
   ),
 });
 
-function CenteredMessage({ children }: { children: React.ReactNode }) {
+// 背景・グレイン・トップバーを共通化したシェル。計算中/エラー/結果のどの状態でも
+// ホーム・選択画面と同じ世界観を保つ。
+function RouteShell({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const parallaxLayers = useParallax(2);
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-[#f7f5f0] px-6">
-      {children}
-    </div>
+    <main className="min-h-screen" style={{ background: "#f7f5f0", color: "#243019" }}>
+      {/* 背景有機形状フィールド */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+        <div ref={el => { parallaxLayers.current[0] = el; }} className="start-parallax" data-depth="18"
+          style={{ position: "absolute", right: "-8%", top: "-12%", width: "480px", height: "480px" }}>
+          <div className="start-drift" style={{ "--dur": "34s" } as React.CSSProperties}>
+            <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 38% 32%, #b9cdb0, #6c9069)", filter: "blur(42px)", opacity: .26, "--mdur": "28s" } as React.CSSProperties} />
+          </div>
+        </div>
+        <div ref={el => { parallaxLayers.current[1] = el; }} className="start-parallax" data-depth="36"
+          style={{ position: "absolute", left: "-9%", bottom: "-8%", width: "380px", height: "380px" }}>
+          <div className="start-drift" style={{ "--dur": "29s" } as React.CSSProperties}>
+            <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 40% 35%, #e6efe0, #b6cbac)", filter: "blur(36px)", opacity: .38, "--mdur": "31s" } as React.CSSProperties} />
+          </div>
+        </div>
+      </div>
+
+      <GrainOverlay fixed />
+
+      {/* トップバー */}
+      <header className="sticky top-0 flex items-center justify-between" style={{
+        zIndex: 20,
+        padding: "18px clamp(20px, 5vw, 64px)",
+        background: "linear-gradient(180deg, #f7f5f0 62%, rgba(247,245,240,0))",
+        pointerEvents: "none",
+      }}>
+        <button type="button" className="sel-back" style={{ pointerEvents: "auto" }} onClick={() => router.push("/select")}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          選び直す
+        </button>
+        <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>N&nbsp;A&nbsp;S&nbsp;U</span>
+      </header>
+
+      <div className="relative" style={{ zIndex: 2, maxWidth: "980px", margin: "0 auto", padding: "4px clamp(20px, 5vw, 64px) 90px" }}>
+        {children}
+      </div>
+    </main>
   );
 }
 
-function BackToSelectLink({ label = "← 選び直す" }: { label?: string }) {
+// 03 — ROUTE のインデックスライン（結果/計算中/エラーで共用）
+function RouteIndexLine() {
   return (
-    <Link href="/select" className="text-[#5a7d5a] text-sm font-medium underline underline-offset-4">
-      {label}
-    </Link>
+    <div className="sel-rise flex items-baseline gap-[14px] mb-[22px]" style={{ animationDelay: ".05s" }}>
+      <span style={{ fontFamily: "var(--font-serif)", fontSize: "15px", color: "#5a7d5a", letterSpacing: ".1em" }}>03</span>
+      <span style={{ width: "56px", height: "1px", background: "#8fa888", opacity: .7, transform: "translateY(-4px)", flexShrink: 0 }} />
+      <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>ROUTE</span>
+    </div>
   );
 }
 
@@ -78,65 +124,119 @@ function RouteContent() {
 
   if (error) {
     return (
-      <CenteredMessage>
-        <p className="text-sm text-[#b91c1c]">⚠ {error}</p>
-        <BackToSelectLink label="← スポットを選び直す" />
-      </CenteredMessage>
+      <RouteShell>
+        <RouteIndexLine />
+        <h1 className="sel-rise" style={{
+          fontFamily: "var(--font-serif)", fontWeight: 600,
+          fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, letterSpacing: ".03em",
+          color: "#243019", marginBottom: "18px", animationDelay: ".12s",
+        }}>
+          ルートを描けませんでした。
+        </h1>
+        <p className="sel-rise" style={{ fontSize: "13px", color: "#9a4a3a", letterSpacing: ".05em", lineHeight: 1.9, marginBottom: "30px", animationDelay: ".2s" }}>
+          ⚠ {error}
+        </p>
+        <Link href="/select" className="sel-rise" style={{
+          display: "inline-flex", alignItems: "center", gap: "12px",
+          background: "#2c3e2d", color: "#f3f1ea",
+          fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
+          padding: "13px 24px", borderRadius: "100px",
+          boxShadow: "0 14px 30px -16px rgba(36,48,25,.7)",
+          animationDelay: ".26s",
+        }}>
+          ← スポットを選び直す
+        </Link>
+      </RouteShell>
     );
   }
 
   if (!routeResult) {
     return (
-      <CenteredMessage>
-        <span className="animate-spin" style={{
-          width: "34px", height: "34px", borderRadius: "50%", display: "inline-block",
-          border: "3px solid rgba(90,125,90,.25)", borderTopColor: "#5a7d5a",
-        }} />
-        <p style={{ fontSize: "12px", letterSpacing: ".2em", color: "#5a7d5a" }}>道なりルートを計算中…</p>
-      </CenteredMessage>
+      <RouteShell>
+        <RouteIndexLine />
+        <div className="sel-rise flex flex-col items-center justify-center text-center" style={{ paddingTop: "16vh", animationDelay: ".12s" }}>
+          <span className="animate-spin" style={{
+            width: "36px", height: "36px", borderRadius: "50%", display: "inline-block",
+            border: "3px solid rgba(90,125,90,.22)", borderTopColor: "#5a7d5a", marginBottom: "26px",
+          }} />
+          <p style={{
+            fontFamily: "var(--font-serif)", fontWeight: 600,
+            fontSize: "clamp(20px, 2.6vw, 28px)", letterSpacing: ".06em", color: "#243019", marginBottom: "10px",
+          }}>
+            ルートを描いています。
+          </p>
+          <p style={{ fontSize: "12px", letterSpacing: ".18em", color: "#8fa888" }}>
+            道なりの経路と巡る順番を計算中…
+          </p>
+        </div>
+      </RouteShell>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f5f0]">
-      <header className="bg-white border-b border-[#e5e0d3] sticky top-0 z-10">
-        <div className="max-w-[900px] mx-auto px-5 py-4">
-          <Link href="/select" className="text-[#5a7d5a] text-xs font-medium mb-2 block">
-            ← 選び直す
-          </Link>
-          <p className="text-[11px] tracking-[4px] text-[#5a7d5a] font-medium mb-0.5">
-            Y O U R  R O U T E
-          </p>
-          <h2 className="text-xl font-bold text-[#2c3e2d]">あなたの那須ルート</h2>
-          <p className="text-xs text-[#6b7d6b] mt-0.5">
-            {routeResult.orderedSpots.length}スポット /{" "}
-            {routeResult.tripType === "roundtrip" ? "周遊" : "片道"} /{" "}
-            {routeResult.avoidTolls ? "一般道" : "有料道路OK"}
-          </p>
-        </div>
-      </header>
+    <RouteShell>
+      <RouteIndexLine />
 
-      <div className="max-w-[900px] mx-auto px-4 py-6 pb-16">
-        <div className="h-[360px] rounded-2xl overflow-hidden border border-[#e5e0d3] mb-5">
-          <Map
-            routeSpots={routeResult.orderedSpots}
-            departure={routeResult.departure}
-            tripType={routeResult.tripType}
-            routeGeoJSON={routeResult.geojson}
-          />
-        </div>
-        <div className="bg-white rounded-[14px] border border-[#e5e0d3] overflow-hidden">
-          <RouteTimeline result={routeResult} />
-        </div>
+      {/* 見出し */}
+      <h1 className="sel-rise" style={{
+        fontFamily: "var(--font-serif)", fontWeight: 600,
+        fontSize: "clamp(30px, 4.6vw, 56px)", lineHeight: 1.16, letterSpacing: ".03em",
+        color: "#243019", marginBottom: "14px", animationDelay: ".12s",
+      }}>
+        あなたの<span style={{ color: "#5a7d5a" }}>那須</span>ルート。
+      </h1>
+
+      {/* 条件メタ情報 */}
+      <div className="sel-rise flex items-center gap-4 flex-wrap" style={{
+        fontSize: "11.5px", letterSpacing: ".18em", color: "#5a7d5a", marginBottom: "34px", animationDelay: ".2s",
+      }}>
+        <span>{routeResult.orderedSpots.length} スポット</span>
+        <span style={{ width: "1px", height: "12px", background: "#8fa888", opacity: .5 }} />
+        <span>{routeResult.tripType === "roundtrip" ? "周遊" : "片道"}</span>
+        <span style={{ width: "1px", height: "12px", background: "#8fa888", opacity: .5 }} />
+        <span>{routeResult.avoidTolls ? "一般道" : "有料道路OK"}</span>
       </div>
-    </main>
+
+      {/* 地図カード */}
+      <div className="sel-rise isolate overflow-hidden" style={{
+        height: "clamp(320px, 46vh, 440px)",
+        borderRadius: "22px",
+        border: "1px solid rgba(143,168,136,.35)",
+        boxShadow: "0 22px 50px -22px rgba(36,48,25,.4)",
+        marginBottom: "22px",
+        animationDelay: ".26s",
+      }}>
+        <Map
+          routeSpots={routeResult.orderedSpots}
+          departure={routeResult.departure}
+          tripType={routeResult.tripType}
+          routeGeoJSON={routeResult.geojson}
+        />
+      </div>
+
+      {/* タイムラインカード */}
+      <div className="sel-rise overflow-hidden" style={{
+        background: "rgba(255,255,255,.78)",
+        backdropFilter: "blur(10px)",
+        borderRadius: "22px",
+        border: "1px solid rgba(143,168,136,.35)",
+        boxShadow: "0 22px 50px -22px rgba(36,48,25,.3)",
+        animationDelay: ".34s",
+      }}>
+        <RouteTimeline result={routeResult} />
+      </div>
+    </RouteShell>
   );
 }
 
 export default function RoutePage() {
   // useSearchParams は Suspense 境界の内側でしか使えない（Next.js App Router の制約）
   return (
-    <Suspense fallback={<CenteredMessage><p style={{ fontSize: "12px", color: "#5a7d5a" }}>読み込み中…</p></CenteredMessage>}>
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "#f7f5f0" }}>
+        <p style={{ fontSize: "12px", letterSpacing: ".2em", color: "#8fa888" }}>読み込み中…</p>
+      </main>
+    }>
       <RouteContent />
     </Suspense>
   );

@@ -33,12 +33,12 @@ function FitBoundsToSpots({ spots }: { spots: Spot[] }) {
   return null;
 }
 
-// 番号付き丸アイコン
+// 番号付き丸アイコン（タイムラインのバッジと同じ深緑）
 function createNumberIcon(num: number) {
   return L.divIcon({
     html: `<div style="
-      background:#2563eb;
-      color:white;
+      background:#2c3e2d;
+      color:#f3f1ea;
       width:28px;
       height:28px;
       border-radius:50%;
@@ -60,12 +60,12 @@ function createNumberIcon(num: number) {
 const NASU_CENTER: [number, number] = [37.07, 140.0];
 const INITIAL_ZOOM = 12;
 
-// 出発地マーカー（緑色）
+// 出発地マーカー（タイムラインの「出」バッジと同じ若緑）
 function createDepartureIcon() {
   return L.divIcon({
     html: `<div style="
-      background:#16a34a;
-      color:white;
+      background:#5a7d5a;
+      color:#f3f1ea;
       width:28px;
       height:28px;
       border-radius:50%;
@@ -122,9 +122,14 @@ export default function Map({ spots = [], routeSpots, departure, tripType, route
             { id: "_dep", lat: departure.lat, lng: departure.lng } as Spot,
             ...routeSpots,
           ]} />
+          {/* 白の縁取り + 深緑の本線。森が多い地図でも線が埋もれない */}
           <Polyline
             positions={polylinePositions}
-            pathOptions={{ color: "#2563eb", weight: 5, opacity: 0.85 }}
+            pathOptions={{ color: "#ffffff", weight: 9, opacity: 0.9 }}
+          />
+          <Polyline
+            positions={polylinePositions}
+            pathOptions={{ color: "#2c3e2d", weight: 5, opacity: 0.9 }}
           />
 
           {/* 出発地マーカー（緑） */}

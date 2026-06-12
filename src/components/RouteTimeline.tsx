@@ -27,36 +27,44 @@ export default function RouteTimeline({ result }: RouteTimelineProps) {
     ...(tripType === "roundtrip" ? [departure.name] : []),
   ];
 
-  const modeLabel = tripType === "roundtrip" ? "周遊（出発地へ戻る）" : "片道";
-
   return (
-    <div className="px-6 py-4">
+    <div style={{ padding: "26px clamp(20px, 4vw, 34px) 28px" }}>
       {/* 有料道路が含まれる場合の注記 */}
       {!avoidTolls && (
-        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3 text-xs text-amber-800">
-          <span>🛣️</span>
-          <span className="flex-1">有料道路が含まれる場合があります。</span>
+        <div className="flex items-center gap-2 flex-wrap" style={{
+          background: "#f3ede0", border: "1px solid #d8c79e", borderRadius: "12px",
+          padding: "9px 14px", marginBottom: "20px", fontSize: "11.5px", color: "#8a6d2e", letterSpacing: ".04em",
+        }}>
+          <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#c39a3e", flexShrink: 0 }} />
+          <span className="flex-1" style={{ minWidth: "180px" }}>有料道路が含まれる場合があります。</span>
           <a
             href="https://www.driveplaza.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#5a7d5a] underline underline-offset-1 whitespace-nowrap"
+            style={{ color: "#8a6d2e", fontWeight: 600, textDecoration: "underline", textUnderlineOffset: "3px", whiteSpace: "nowrap" }}
           >
-            料金を調べる↗
+            料金を調べる ↗
           </a>
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-bold text-[#2c3e2d]">
-          ルート（{orderedSpots.length}スポット / {modeLabel}）
-        </h2>
-        <span className="text-xs text-[#6b7d6b]">
-          {formatDuration(totalDuration)} · {formatDistance(totalDistance)}
-        </span>
+      {/* カードヘッダー: 小ラベル + 合計 */}
+      <div className="flex items-end justify-between gap-3 flex-wrap" style={{ marginBottom: "20px" }}>
+        <div className="flex items-center gap-3">
+          <span style={{ fontSize: "10.5px", letterSpacing: ".26em", color: "#8fa888", textTransform: "uppercase" }}>Itinerary</span>
+          <span style={{ fontSize: "12px", letterSpacing: ".14em", color: "#5a7d5a" }}>旅程</span>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span style={{ fontFamily: "var(--font-serif)", fontSize: "24px", fontWeight: 700, color: "#2c3e2d", lineHeight: 1 }}>
+            {formatDuration(totalDuration)}
+          </span>
+          <span style={{ fontSize: "11.5px", letterSpacing: ".1em", color: "#8fa888" }}>
+            / {formatDistance(totalDistance)}
+          </span>
+        </div>
       </div>
 
-      <ol className="space-y-0">
+      <ol>
         {labels.map((label, i) => {
           const isStart = i === 0;
           const isEnd = i === labels.length - 1;
@@ -66,22 +74,36 @@ export default function RouteTimeline({ result }: RouteTimelineProps) {
           return (
             <li key={i}>
               {/* ウェイポイント行 */}
-              <div className="flex items-center gap-3 py-1.5">
+              <div className="flex items-center gap-3" style={{ padding: "5px 0" }}>
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 shadow text-xs font-bold
-                    ${isDeparture ? "bg-[#5a7d5a] text-white" : "bg-[#2c3e2d] text-white"}`}
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: "29px", height: "29px", borderRadius: "50%",
+                    background: isDeparture ? "#5a7d5a" : "#2c3e2d",
+                    color: "#f3f1ea", fontSize: "12px", fontWeight: 700,
+                    border: "1.5px solid rgba(255,255,255,.85)",
+                    boxShadow: "0 6px 14px -6px rgba(36,48,25,.55)",
+                  }}
                 >
                   {isDeparture ? (isStart ? "出" : "戻") : spotNumber}
                 </div>
-                <span className="text-sm font-medium text-[#2c3e2d]">{label}</span>
+                <span style={{
+                  fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "15.5px",
+                  letterSpacing: ".04em", color: "#243019",
+                }}>
+                  {label}
+                </span>
               </div>
 
               {/* 区間情報（最後のウェイポイント以外） */}
               {i < segments.length && (
-                <div className="flex items-center gap-2 ml-[14px] pl-6 border-l-2 border-[#e5e0d3] py-1">
-                  <span className="text-base">🚗</span>
-                  <span className="text-xs text-[#6b7d6b]">
-                    {formatDuration(segments[i].duration)}（{formatDistance(segments[i].distance)}）
+                <div className="flex items-center gap-2" style={{
+                  marginLeft: "14px", paddingLeft: "26px", padding: "7px 0 7px 26px",
+                  borderLeft: "2px solid #e5e0d3",
+                }}>
+                  <span style={{ fontSize: "11.5px", letterSpacing: ".1em", color: "#8fa888" }}>
+                    車で {formatDuration(segments[i].duration)}
+                    <span style={{ opacity: .75 }}>（{formatDistance(segments[i].distance)}）</span>
                   </span>
                 </div>
               )}
