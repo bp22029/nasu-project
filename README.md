@@ -15,6 +15,7 @@
 - **周遊 / 片道**: 出発地へ戻るルートと、開いたルートの切り替え
 - **有料道路の回避**: トグルで一般道のみに限定可能
 - **共有できるルートURL**: ルート結果は `/route?spots=..&dep=..&trip=..&tolls=..` のURLで表現され、リンク共有・リロード復元ができる
+- **写真投稿（単体）**: 旅先の写真をスポットと一緒に投稿できる（`/post`）。スポットは部分一致検索で選択。投稿者はニックネームのみの匿名アカウント（メールアドレス等は不要）
 
 ## ページ構成
 
@@ -23,6 +24,7 @@
 | `/` | ホーム（スタート画面） |
 | `/select` | 出発地・スポット選択 |
 | `/route?spots=..&dep=..` | ルート結果（地図 + タイムライン） |
+| `/post` | 写真の単体投稿（機能3） |
 
 ## 技術スタック
 
@@ -33,6 +35,7 @@
 | 地図 | Leaflet + OpenStreetMap |
 | 経路探索 | OpenRouteService (ORS) `driving-car` |
 | 写真 | Google Places API (New) |
+| 投稿（DB/認証/ストレージ） | Supabase（匿名認証 + Postgres + Storage） |
 
 ## セットアップ
 
@@ -49,10 +52,13 @@ npm install
 ```
 GOOGLE_PLACES_API_KEY=...
 ORS_API_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
 - `GOOGLE_PLACES_API_KEY`: Google Cloud Console で **Places API (New)** を有効化したキー。APIキーの制限は「なし」または「IPアドレス」に設定すること（HTTPリファラー制限は不可）。
 - `ORS_API_KEY`: [openrouteservice.org](https://openrouteservice.org/dev/#/) で発行した新形式トークン（長い16進数の文字列）。
+- `NEXT_PUBLIC_SUPABASE_*`: 写真投稿機能用。Supabase プロジェクトの作成手順は [supabase/SETUP.md](supabase/SETUP.md) を参照。
 
 ### 3. 開発サーバーの起動
 
