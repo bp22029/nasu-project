@@ -30,9 +30,13 @@
 
 診断結果からスポット配列を生成して `calculateRoute` に渡す設計。差し込み口は用意済み（セクション8参照）。
 
-### ❌ 機能3（未着手）— 写真投稿
+### 🔶 機能3（一部実装済み）— 写真投稿
 
-Supabase等のDBと投稿者管理が必要。写真取得関数を差し替えるだけで対応できる設計（セクション8参照）。
+Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像はセクション14参照。
+
+- ✅ **基盤**: 匿名認証＋ニックネーム（`src/lib/auth.ts`、遅延発火）、DBスキーマ（`supabase/schema.sql`）、Storageセットアップ手順（`supabase/SETUP.md`）
+- ✅ **単体投稿**（`/post`）: 写真1枚 + スポット（部分一致検索で選択）+ 任意キャプション
+- ❌ **旅記録投稿**（`/trips/new`）・**投稿一覧/詳細**（`/trips`, `/trips/[id]`）・**マイページ**（`/me`）は未実装
 
 ---
 
@@ -46,6 +50,7 @@ Supabase等のDBと投稿者管理が必要。写真取得関数を差し替え�
 | 経路探索 | **OpenRouteService (ORS)** `driving-car` | OSMベース。道なり経路・距離・時間・有料道路回避 |
 | 巡回順最適化 | **自前TSP**（全探索/最近傍） | ORS の時間行列を入力に使う（`src/lib/tsp.ts`） |
 | 写真 | **Google Places API (New)** | placeId で動的取得。グリッドに表示 |
+| 投稿（機能3） | **Supabase**（無料枠） | 匿名認証 + Postgres + Storage。ブラウザから supabase-js 直アクセス（防壁はRLS） |
 | バージョン管理 | Git + GitHub | |
 | デプロイ（任意） | Vercel | |
 
@@ -154,6 +159,7 @@ Supabase等のDBと投稿者管理が必要。写真取得関数を差し替え�
 | `/` | ホーム（スタート画面）。「はじめる」で `/select` へ |
 | `/select` | 出発地 + 写真グリッドでスポット選択。「設計する」で `/route?...` へ |
 | `/route?spots=..&dep=..&trip=..&tolls=..` | ルート結果（地図 + タイムライン）。URL単体で共有・リロード可能 |
+| `/post` | 単体投稿（機能3）。写真 + スポット検索選択 + 任意キャプション。ホームからの導線は未設置（URL直アクセス） |
 
 - `/select` の選択状態は sessionStorage（キー `nasu-select-state`）に保存され、「← 選び直す」で戻っても維持される。
 - `dep` はプリセットID（`nasushiobara-station` 等）。GPS現在地は `dep=gps&lat=..&lng=..`。
@@ -193,11 +199,15 @@ nasu-tabi/
 │   └── spots.json               # 観光地マスタ（13件）
 ├── scripts/
 │   └── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
+├── supabase/
+│   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行）
+│   └── SETUP.md                 # Supabaseプロジェクトのセットアップ手順
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx             # ホーム（/ スタート画面）
 │   │   ├── select/page.tsx      # スポット選択（/select、選択状態は sessionStorage に保存）
 │   │   ├── route/page.tsx       # ルート結果（/route?spots=..&dep=..、計算 + 地図 + タイムライン）
+│   │   ├── post/page.tsx        # 単体投稿（/post、機能3）
 │   │   ├── layout.tsx
 │   │   ├── globals.css
 │   │   └── api/
@@ -209,18 +219,28 @@ nasu-tabi/
 │   │   ├── SpotGrid.tsx         # 2列グリッド
 │   │   ├── DepartureSelector.tsx # 出発地選択UI（プリセット + GPS）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
-│   │   └── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
+│   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
+│   │   ├── PageShell.tsx        # 共通ページシェル（機能3の新ページ用。RouteShellの一般化）
+│   │   ├── NicknameModal.tsx    # ニックネーム入力モーダル（匿名サインイン + profiles upsert）
+│   │   ├── SpotSearchPicker.tsx # スポット部分一致検索ピッカー
+│   │   └── PhotoUploadField.tsx # 写真選択 → リサイズ → プレビュー
 │   ├── lib/
 │   │   ├── calculateRoute.ts    # ルート計算の独立関数（拡張の差し込み口）
 │   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
 │   │   ├── ors.ts               # ORS API クライアント（Matrix / Directions）
-│   │   └── tsp.ts               # 自前TSP（全探索 / 最近傍法）
+│   │   ├── tsp.ts               # 自前TSP（全探索 / 最近傍法）
+│   │   ├── supabase/client.ts   # Supabase ブラウザクライアント（lazy singleton）
+│   │   ├── auth.ts              # 匿名認証 + プロフィールのヘルパー
+│   │   ├── imageResize.ts       # 投稿写真のクライアント側縮小（長辺1600px JPEG）
+│   │   ├── spotSearch.ts        # スポット部分一致検索（正規化付き）
+│   │   └── photoUrl.ts          # Storage 公開URLヘルパー
 │   └── types/
 │       ├── spot.ts              # Spot 型
 │       ├── route.ts             # RouteResult / RouteSegment 型
-│       └── departure.ts         # DeparturePoint 型 + PRESET_DEPARTURES
+│       ├── departure.ts         # DeparturePoint 型 + PRESET_DEPARTURES
+│       └── post.ts              # Profile / Post / Trip / TripEntry / TripDraft 型
 ├── .env.local                   # APIキー（Git管理外）
-├── next.config.mjs              # Google画像ドメインの remotePatterns 設定
+├── next.config.mjs              # Google画像・Supabase Storage の remotePatterns 設定
 └── CLAUDE.md                    # このファイル
 ```
 
@@ -287,6 +307,49 @@ v2-souデザインの初期実装は動作が重く、以下を禁止手法と�
 ```
 GOOGLE_PLACES_API_KEY=（Places API (New) 有効化済み。APIキーの制限は「なし」か「IPアドレス」に設定）
 ORS_API_KEY=（openrouteservice.org で発行した新形式トークン。旧 eyJ... 形式は不可）
+NEXT_PUBLIC_SUPABASE_URL=（Supabase の Project URL。機能3用）
+NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前提のキーで防壁はRLS）
 ```
 
-`.gitignore` に `.env*` が含まれていることを必ず確認する。
+- `NEXT_PUBLIC_` の2つはブラウザから supabase-js で直アクセスするため必須。**service_role key は使わない・どこにも置かない**。
+- Vercel デプロイ時は同じ変数を Vercel の Environment Variables にも設定する。
+- `.gitignore` に `.env*` が含まれていることを必ず確認する。
+
+---
+
+## 14. 機能3（写真投稿）の設計
+
+詳細な手順・SQLは `supabase/SETUP.md` / `supabase/schema.sql` が正本。ここでは設計判断だけ記録する。
+
+### 認証 — 匿名認証＋ニックネーム（遅延発火）
+
+- メール等の個人情報は集めない（演習アプリの倫理面配慮）。閲覧はログイン不要。
+- **投稿ボタンを押した瞬間**に `signInAnonymously()` → profiles 未作成なら `NicknameModal` を挟む（`ensureSignedInWithProfile()`、`src/lib/auth.ts`）。無駄な匿名MAUを増やさないため `/me` 直アクセス等では発火しない。
+- セッションは localStorage 永続化（同一ブラウザ = 同一ユーザー。ブラウザデータ削除で別ユーザーになる点は演習として許容）。
+- 将来 Google ログインを足す場合は `linkIdentity()` で user_id 不変のまま紐付け可能（スキーマ変更不要）。
+
+### DB（4テーブル + RLS）
+
+- `profiles`（ニックネーム）/ `posts`（単体投稿）/ `trips`（旅記録）/ `trip_entries`（順番付き訪問エントリ）。
+- RLS: 読み取りは全公開、書き込みは本人のみ。FK は `profiles(id)` に張り `select('*, profiles(nickname)')` で投稿者名を1クエリ展開。
+- **spot_id は spots.json の文字列IDを text 保存（正規化しない）**。マスタはGit管理のJSONが正本。**公開後の spots.json の id は変更・削除しない**こと（リネームは name のみ）。
+- `trips.route_query` に `encodeRouteQuery` 文字列を保存（ルート画面起点のみ）→ 詳細ページから `/route?{route_query}` でルート画面を丸ごと再利用できる。
+
+### Storage
+
+- Public バケット `photos`、パスは `{user_id}/{uuid}.jpg`。DBにはパスのみ保存し、URL化は `publicPhotoUrl()`（`src/lib/photoUrl.ts`）に集約。
+- **アップロード前にクライアント側で長辺1600px・JPEG(0.82)に縮小**（`src/lib/imageResize.ts`）。無料枠1GB保護のため省略不可。
+- 投稿写真は自前ストレージなので Google 規約の制約外（保存・地図表示も可）。セクション5のGoogle写真ルールはそのまま。
+
+### データアクセス
+
+- Next.js API Route を介さず**ブラウザから supabase-js 直接**（`src/lib/supabase/client.ts` の `getSupabase()`）。書き込み保護はRLSで完結し、API Routeを挟んでも防御は増えないため。
+- 複数テーブル書き込み（旅記録）は「①写真全アップロード → ②trips insert → ③trip_entries insert、③失敗時は trips を delete」の順序で原子性を代替する。
+
+### スポット検索
+
+- `src/lib/spotSearch.ts`: NFKC正規化 + 小文字化 + カタカナ→ひらがな + 空白除去 してから name/description を部分一致。「ちーず」→チーズガーデン、文中の語でもヒット。200件規模でもクライアント filter で十分（1ms未満）。
+
+### /route → 旅記録のプレフィル受け渡し
+
+- URL の `spots=` は**選択順であって TSP 後の訪問順ではない**ため、`/route` の「この旅を記録する」押下時に sessionStorage キー `nasu-trip-draft`（`TripDraft` 型、`src/types/post.ts`）へ訪問順 spotIds + routeQuery を保存し、`/trips/new` が読んでプレフィルする。投稿完了時に削除、24時間で失効。
