@@ -5,7 +5,6 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import SpotGrid from "@/components/SpotGrid";
 import DepartureSelector from "@/components/DepartureSelector";
 import GrainOverlay from "@/components/GrainOverlay";
-import { useParallax } from "@/lib/useParallax";
 import { encodeRouteQuery } from "@/lib/routeQuery";
 import type { Spot } from "@/types/spot";
 import type { DeparturePoint, TripType } from "@/types/departure";
@@ -34,7 +33,6 @@ export default function SelectPage() {
   // 設計ボタン押下時に出発地が未選択なら、出発地セクションへスクロールして点滅で誘導する
   const [departureFlash, setDepartureFlash] = useState(false);
   const departureSectionRef = useRef<HTMLDivElement | null>(null);
-  const gridParallaxLayers = useParallax(3);
 
   // sessionStorage から選択状態を復元（ルート画面から戻ってきたとき用）
   useEffect(() => {
@@ -86,24 +84,27 @@ export default function SelectPage() {
 
   return (
     <main className="min-h-screen bg-[#f7f5f0]">
-      {/* 背景有機形状フィールド */}
+      {/* 背景有機形状フィールド（blurフィルタ不使用・透明フェードのグラデーションで軽量化） */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-        <div ref={el => { gridParallaxLayers.current[0] = el; }} className="start-parallax" data-depth="16"
-          style={{ position: "absolute", right: "-6%", top: "-8%", width: "520px", height: "520px" }}>
+        <div className="start-parallax" style={{ right: "-6%", top: "-8%", width: "520px", height: "520px" }}>
           <div className="start-drift" style={{ "--dur": "34s" } as React.CSSProperties}>
-            <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 38% 32%, #b9cdb0, #6c9069)", filter: "blur(40px)", opacity: .32, "--mdur": "27s" } as React.CSSProperties} />
+            <div className="start-blob" style={{
+              background: "radial-gradient(closest-side at 42% 38%, #aec7a4, rgba(108,144,105,.5) 55%, rgba(108,144,105,0) 98%)",
+              opacity: .38,
+            }} />
           </div>
         </div>
-        <div ref={el => { gridParallaxLayers.current[1] = el; }} className="start-parallax" data-depth="44"
-          style={{ position: "absolute", right: "10%", top: "8%", width: "240px", height: "240px" }}>
+        <div className="start-parallax" style={{ right: "10%", top: "8%", width: "240px", height: "240px" }}>
           <div className="start-drift" style={{ "--dur": "28s" } as React.CSSProperties}>
             <div className="start-ring" style={{ "--start-rc": "rgba(90,125,90,.28)", "--mdur": "30s" } as React.CSSProperties} />
           </div>
         </div>
-        <div ref={el => { gridParallaxLayers.current[2] = el; }} className="start-parallax" data-depth="22"
-          style={{ position: "absolute", left: "-10%", bottom: "-6%", width: "420px", height: "420px" }}>
+        <div className="start-parallax" style={{ left: "-10%", bottom: "-6%", width: "420px", height: "420px" }}>
           <div className="start-drift" style={{ "--dur": "38s" } as React.CSSProperties}>
-            <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 40% 35%, #e6efe0, #b6cbac)", filter: "blur(38px)", opacity: .4, "--mdur": "31s" } as React.CSSProperties} />
+            <div className="start-blob" style={{
+              background: "radial-gradient(closest-side at 44% 40%, #e6efe0, rgba(182,203,172,.55) 55%, rgba(182,203,172,0) 98%)",
+              opacity: .45,
+            }} />
           </div>
         </div>
       </div>
@@ -184,8 +185,8 @@ export default function SelectPage() {
         <div style={{
           display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap",
           padding: "12px 12px 12px 18px",
-          background: "rgba(247,245,240,.82)",
-          backdropFilter: "blur(16px) saturate(1.2)",
+          // backdrop-filter はスクロールごとに背後の再ぼかしが走り重いため、不透明度高めの単色で代替
+          background: "rgba(247,245,240,.95)",
           border: "1px solid rgba(143,168,136,.35)",
           borderRadius: "22px",
           boxShadow: "0 22px 50px -22px rgba(36,48,25,.5)",

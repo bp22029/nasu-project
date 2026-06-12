@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import RouteTimeline from "@/components/RouteTimeline";
 import GrainOverlay from "@/components/GrainOverlay";
-import { useParallax } from "@/lib/useParallax";
 import { decodeRouteQuery } from "@/lib/routeQuery";
 import type { RouteResult } from "@/types/route";
 
@@ -23,22 +22,25 @@ const Map = dynamic(() => import("@/components/Map"), {
 // ホーム・選択画面と同じ世界観を保つ。
 function RouteShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const parallaxLayers = useParallax(2);
 
   return (
     <main className="min-h-screen" style={{ background: "#f7f5f0", color: "#243019" }}>
-      {/* 背景有機形状フィールド */}
+      {/* 背景有機形状フィールド（blurフィルタ不使用・透明フェードのグラデーションで軽量化） */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-        <div ref={el => { parallaxLayers.current[0] = el; }} className="start-parallax" data-depth="18"
-          style={{ position: "absolute", right: "-8%", top: "-12%", width: "480px", height: "480px" }}>
+        <div className="start-parallax" style={{ right: "-8%", top: "-12%", width: "480px", height: "480px" }}>
           <div className="start-drift" style={{ "--dur": "34s" } as React.CSSProperties}>
-            <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 38% 32%, #b9cdb0, #6c9069)", filter: "blur(42px)", opacity: .26, "--mdur": "28s" } as React.CSSProperties} />
+            <div className="start-blob" style={{
+              background: "radial-gradient(closest-side at 42% 38%, #aec7a4, rgba(108,144,105,.5) 55%, rgba(108,144,105,0) 98%)",
+              opacity: .3,
+            }} />
           </div>
         </div>
-        <div ref={el => { parallaxLayers.current[1] = el; }} className="start-parallax" data-depth="36"
-          style={{ position: "absolute", left: "-9%", bottom: "-8%", width: "380px", height: "380px" }}>
+        <div className="start-parallax" style={{ left: "-9%", bottom: "-8%", width: "380px", height: "380px" }}>
           <div className="start-drift" style={{ "--dur": "29s" } as React.CSSProperties}>
-            <div className="start-blob" style={{ background: "radial-gradient(60% 60% at 40% 35%, #e6efe0, #b6cbac)", filter: "blur(36px)", opacity: .38, "--mdur": "31s" } as React.CSSProperties} />
+            <div className="start-blob" style={{
+              background: "radial-gradient(closest-side at 44% 40%, #e6efe0, rgba(182,203,172,.55) 55%, rgba(182,203,172,0) 98%)",
+              opacity: .42,
+            }} />
           </div>
         </div>
       </div>
@@ -216,8 +218,7 @@ function RouteContent() {
 
       {/* タイムラインカード */}
       <div className="sel-rise overflow-hidden" style={{
-        background: "rgba(255,255,255,.78)",
-        backdropFilter: "blur(10px)",
+        background: "rgba(255,255,255,.92)",
         borderRadius: "22px",
         border: "1px solid rgba(143,168,136,.35)",
         boxShadow: "0 22px 50px -22px rgba(36,48,25,.3)",

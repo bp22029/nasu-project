@@ -12,7 +12,8 @@
 import { NextResponse } from "next/server";
 
 const PLACES_BASE = "https://places.googleapis.com/v1";
-const MAX_PHOTOS = 3;
+// グリッドは先頭1枚しか表示しないため1枚に絞る（media API の呼び出し数 = スポット数で済む）
+const MAX_PHOTOS = 1;
 
 interface AuthorAttribution {
   displayName: string;
