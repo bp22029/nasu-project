@@ -138,10 +138,17 @@ export default function Home() {
             </span>
           </button>
 
-          {/* 副次導線（機能3）: 旅の記録・写真投稿 */}
-          <div className="start-subtitle flex items-center gap-5" style={{
+          {/* 副次導線（機能3）: 投稿一覧・旅の記録・写真投稿 */}
+          <div className="start-subtitle flex items-center gap-5 flex-wrap" style={{
             marginTop: "26px", fontSize: "12.5px", letterSpacing: ".1em",
           }}>
+            <Link href="/trips" style={{
+              color: "#5a7d5a", textDecoration: "underline", textUnderlineOffset: "5px",
+              textDecorationColor: "rgba(90,125,90,.4)",
+            }}>
+              みんなの旅をみる
+            </Link>
+            <span style={{ width: "1px", height: "12px", background: "#8fa888", opacity: 0.5 }} />
             <Link href="/trips/new" style={{
               color: "#5a7d5a", textDecoration: "underline", textUnderlineOffset: "5px",
               textDecorationColor: "rgba(90,125,90,.4)",
