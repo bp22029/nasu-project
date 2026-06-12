@@ -10,20 +10,12 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import spotsData from "@/../data/spots.json";
 import PageShell from "@/components/PageShell";
 import UserPhoto from "@/components/UserPhoto";
 import { formatTripDate } from "@/components/TripCard";
 import { getSupabase } from "@/lib/supabase/client";
+import { spotNameOf } from "@/lib/spots";
 import type { Trip } from "@/types/post";
-import type { Spot } from "@/types/spot";
-
-const SPOTS = spotsData as Spot[];
-
-// spot_id は spots.json の文字列ID（非正規化）。マスタから消えたIDはフォールバック表示
-function spotNameOf(spotId: string): string {
-  return SPOTS.find((s) => s.id === spotId)?.name ?? "（削除されたスポット）";
-}
 
 export default function TripDetailPage() {
   const params = useParams<{ id: string }>();

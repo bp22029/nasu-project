@@ -79,9 +79,11 @@ create policy "insert own" on public.profiles for insert to authenticated with c
 create policy "update own" on public.profiles for update to authenticated using (auth.uid() = id);
 
 create policy "insert own" on public.posts for insert to authenticated with check (auth.uid() = user_id);
+create policy "update own" on public.posts for update to authenticated using (auth.uid() = user_id);
 create policy "delete own" on public.posts for delete to authenticated using (auth.uid() = user_id);
 
 create policy "insert own" on public.trips for insert to authenticated with check (auth.uid() = user_id);
+create policy "update own" on public.trips for update to authenticated using (auth.uid() = user_id);
 create policy "delete own" on public.trips for delete to authenticated using (auth.uid() = user_id);
 
 -- trip_entries は親 trip の所有者判定

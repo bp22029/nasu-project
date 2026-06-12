@@ -162,6 +162,13 @@ export default function Home() {
             }}>
               写真を投稿する
             </Link>
+            <span style={{ width: "1px", height: "12px", background: "#8fa888", opacity: 0.5 }} />
+            <Link href="/me" style={{
+              color: "#5a7d5a", textDecoration: "underline", textUnderlineOffset: "5px",
+              textDecorationColor: "rgba(90,125,90,.4)",
+            }}>
+              マイページ
+            </Link>
           </div>
         </div>
 
