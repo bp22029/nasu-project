@@ -38,8 +38,8 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 - ✅ **単体投稿**（`/post`）: 写真1枚 + スポット（部分一致検索で選択）+ 任意キャプション
 - ✅ **旅記録投稿**（`/trips/new`）: 訪問順エントリ（写真任意）。/route の「この旅を記録する」から訪問順プレフィル、ホームから空で新規作成（画面共通）
 - ✅ **投稿一覧/詳細**（`/trips`, `/trips/[id]`）: 旅記録のみ新着順で公開表示。詳細に route_query があれば「このルートを地図で見る」
-- ✅ **グリッド連携**: 掲載許可された投稿写真を /select のカードに Google 写真とあわせてカルーセル表示（セクション14参照）
-- ❌ **マイページ**（`/me`）は未実装
+- ✅ **グリッド連携**: 掲載許可された投稿写真を /select のカードに Google 写真とあわせて表示（初期表示ランダム + カルーセル。セクション14参照）
+- ✅ **マイページ**（`/me`）: 自分の投稿の確認・編集（文章と掲載許可のみ）・削除、ニックネーム変更
 
 ---
 
@@ -166,6 +166,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 | `/trips` | 旅記録一覧（機能3）。旅記録のみ新着順・公開（ログイン不要） |
 | `/trips/[id]` | 旅記録詳細（機能3）。訪問順エントリ + route_query があればルート画面へのリンク |
 | `/trips/new` | 旅記録作成（機能3）。/route からのプレフィル有/無で画面共通 |
+| `/me` | マイページ（機能3）。自分の投稿の確認・編集・削除、ニックネーム変更 |
 
 - `/select` の選択状態は sessionStorage（キー `nasu-select-state`）に保存され、「← 選び直す」で戻っても維持される。
 - `dep` はプリセットID（`nasushiobara-station` 等）。GPS現在地は `dep=gps&lat=..&lng=..`。
@@ -217,6 +218,7 @@ nasu-tabi/
 │   │   ├── trips/page.tsx       # 旅記録一覧（/trips、機能3）
 │   │   ├── trips/[id]/page.tsx  # 旅記録詳細（機能3）
 │   │   ├── trips/new/page.tsx   # 旅記録作成（機能3、プレフィル対応）
+│   │   ├── me/page.tsx          # マイページ（機能3、編集・削除・ニックネーム変更）
 │   │   ├── layout.tsx
 │   │   ├── globals.css
 │   │   └── api/
@@ -247,6 +249,7 @@ nasu-tabi/
 │   │   ├── auth.ts              # 匿名認証 + プロフィールのヘルパー
 │   │   ├── imageResize.ts       # 投稿写真のクライアント側縮小（長辺1600px JPEG）
 │   │   ├── spotSearch.ts        # スポット部分一致検索（正規化付き）
+│   │   ├── spots.ts             # スポットマスタ参照ヘルパー（spotNameOf）
 │   │   └── photoUrl.ts          # Storage 公開URLヘルパー
 │   └── types/
 │       ├── spot.ts              # Spot 型
@@ -376,3 +379,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前
 - **最初に表示する写真はランダム選出**（Google+投稿写真から。ユーザー確認済みの方針: 写真ごとにカードを増やすのではなく1スポット=1カードを維持し、訪れるたびに違う一枚が出ることで「写真が増えて画面が変わる」体験を作る）。**シャッフルボタンで表示写真も選び直す**（select ページ→SpotGrid→SpotCard へ `shuffleNonce` を渡す。カードは key=spot.id で再マウントされないため nonce 変化をトリガーにし、写真の再取得はしない）。
 - カード全体は `<div role="button">`（内側に写真送りの `<button>` を置くため。`<button>` のネストはHTML不正）。
 - 既存DBへの適用は `supabase/migration-002-grid-photos.sql`（新規プロジェクトは schema.sql に含まれる）。
+
+### マイページ（/me）
+
+- 自分の投稿の確認・**編集は文章と掲載許可のみ**（posts: caption/show_in_grid、trips: title/comment/show_in_grid。ユーザー確認済みの方針）。写真の差し替え・エントリ並べ替えは「削除して再投稿」で代替（`unique(trip_id, position)` の並べ替え衝突を避ける設計判断のまま）。
+- 削除は DB 行 + Storage の写真を両方消す（旅記録は entries が cascade、写真はまとめて remove）→ 写真APIは毎回DBを引くため /select グリッドからも自動で消える。
+- UPDATE の RLS は `supabase/migration-003-mypage-edit.sql`（新規プロジェクトは schema.sql に含まれる）。
+- このページでは匿名サインインを発火しない（セッションがなければ空状態表示。ニックネーム変更モーダルの保存時のみ発火）。
