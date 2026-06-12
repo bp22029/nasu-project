@@ -18,6 +18,11 @@ export function getSupabaseServer(): SupabaseClient | null {
     if (!url || !anonKey) return null;
     client = createClient(url, anonKey, {
       auth: { persistSession: false, autoRefreshToken: false },
+      global: {
+        // Next.js はサーバー側の fetch を Data Cache に載せるため、素通しにする。
+        // これがないと投稿の削除・掲載許可の変更が /api/photos に反映されない
+        fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+      },
     });
   }
   return client;

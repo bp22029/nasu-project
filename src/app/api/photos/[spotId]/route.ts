@@ -19,6 +19,11 @@ import spotsData from "@/../data/spots.json";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import type { Spot } from "@/types/spot";
 
+// Next.js は GET Route Handler とその中の fetch をデフォルトでキャッシュする。
+// このAPIはキャッシュ厳禁: Google 写真URLの保存は規約違反（CLAUDE.md セクション5）、
+// 投稿写真は削除・掲載許可の変更が即時反映されないと「消したのに残る」事故になる。
+export const dynamic = "force-dynamic";
+
 const SPOTS = spotsData as Spot[];
 
 const PLACES_BASE = "https://places.googleapis.com/v1";
@@ -75,10 +80,10 @@ async function fetchGooglePhotos(placeId: string): Promise<PhotoItem[]> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   if (!apiKey || !placeId) return [];
 
-  // 1. スポットの写真リストを取得
+  // 1. スポットの写真リストを取得（no-store: Next の Data Cache に残さない）
   const detailRes = await fetch(
     `${PLACES_BASE}/places/${placeId}?fields=photos&languageCode=ja`,
-    { headers: { "X-Goog-Api-Key": apiKey } }
+    { headers: { "X-Goog-Api-Key": apiKey }, cache: "no-store" }
   );
   if (!detailRes.ok) return [];
 
@@ -97,7 +102,7 @@ async function fetchGooglePhotos(placeId: string): Promise<PhotoItem[]> {
     photos.map(async (photo): Promise<PhotoItem | null> => {
       const mediaRes = await fetch(
         `${PLACES_BASE}/${photo.name}/media?maxHeightPx=400&maxWidthPx=600&skipHttpRedirect=true`,
-        { headers: { "X-Goog-Api-Key": apiKey } }
+        { headers: { "X-Goog-Api-Key": apiKey }, cache: "no-store" }
       );
       if (!mediaRes.ok) return null;
 
