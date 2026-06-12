@@ -131,7 +131,6 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
           background: "#5a7d5a",
           border: "1.5px solid #fff",
           color: "#fff", fontSize: "12px", fontWeight: 700,
-          backdropFilter: "blur(4px)",
         }}>
           {badgeNum}
         </span>

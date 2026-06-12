@@ -211,7 +211,6 @@ nasu-tabi/
 │   ├── lib/
 │   │   ├── calculateRoute.ts    # ルート計算の独立関数（拡張の差し込み口）
 │   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
-│   │   ├── useParallax.ts       # ポインタ追従パララックスのフック（/ と /select で共用）
 │   │   ├── ors.ts               # ORS API クライアント（Matrix / Directions）
 │   │   └── tsp.ts               # 自前TSP（全探索 / 最近傍法）
 │   └── types/
@@ -246,6 +245,15 @@ Places API は Next.js の API Route（サーバーサイド）から呼ぶた�
 ### ORS API キーの世代に注意
 
 openrouteservice.org は 2023 年以降にトークン体系を刷新した。旧フォーマット（`eyJ...` で始まる base64 エンコードされた JSON）は現在使えない。openrouteservice.org/dev/#/ から新規トークン（長い 16 進数の文字列）を発行して `.env.local` に設定すること。
+
+### 背景演出のパフォーマンス方針（重い手法を再導入しない）
+
+v2-souデザインの初期実装は動作が重く、以下を禁止手法として軽量化した経緯がある:
+
+- **大きな要素への `filter: blur()`**: ブロブの柔らかさは「端が透明にフェードする radial-gradient」で表現する（`globals.css` 冒頭のコメント参照）
+- **`backdrop-filter`（すりガラス）**: スクロールごとに背後の再ぼかしが走る。不透明度高め（.92〜.95）の単色背景で代替する
+- **`mix-blend-mode`**: 全画面の再合成を強いる。グレインは通常合成 + 低opacityで十分
+- **カーソル追従パララックス（rAFループ）**: 毎フレームJSが走る。背景の動きはCSSアニメーション（transform のみの drift と小さなリングの morph）に限定する
 
 ### .env.local を変更したら dev サーバーを再起動する
 

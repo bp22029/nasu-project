@@ -2,68 +2,57 @@
 
 import { useRouter } from "next/navigation";
 import GrainOverlay from "@/components/GrainOverlay";
-import { useParallax } from "@/lib/useParallax";
 
 export default function Home() {
   const router = useRouter();
-  const parallaxLayers = useParallax(6);
 
   return (
     <main className="min-h-screen bg-[#f7f5f0]">
       <div className="relative w-full h-screen overflow-hidden isolate" style={{ background: "#f7f5f0", color: "#243019" }}>
 
-        {/* 有機形状フィールド */}
+        {/* 有機形状フィールド（blurフィルタ不使用・透明フェードのグラデーションで軽量化） */}
         <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 0 }}>
           {/* s1: 大ブロブ */}
-          <div ref={el => { parallaxLayers.current[0] = el; }} className="start-parallax" data-depth="20"
-            style={{ right: "8%", top: "18%", width: "460px", height: "460px" }}>
+          <div className="start-parallax" style={{ right: "8%", top: "18%", width: "460px", height: "460px" }}>
             <div className="start-drift" style={{ "--dur": "30s" } as React.CSSProperties}>
               <div className="start-blob" style={{
-                background: "radial-gradient(60% 60% at 38% 32%, #b9cdb0, #6c9069)",
-                filter: "blur(26px)", opacity: 0.5,
-                "--mdur": "27s",
-              } as React.CSSProperties} />
+                background: "radial-gradient(closest-side at 42% 38%, #aec7a4, rgba(108,144,105,.55) 55%, rgba(108,144,105,0) 98%)",
+                opacity: 0.55,
+              }} />
             </div>
           </div>
           {/* r1: リング大 */}
-          <div ref={el => { parallaxLayers.current[1] = el; }} className="start-parallax" data-depth="40"
-            style={{ right: "14%", top: "30%", width: "320px", height: "320px" }}>
+          <div className="start-parallax" style={{ right: "14%", top: "30%", width: "320px", height: "320px" }}>
             <div className="start-drift" style={{ "--dur": "25s" } as React.CSSProperties}>
               <div className="start-ring" style={{ "--start-rc": "rgba(90,125,90,.45)", "--mdur": "26s" } as React.CSSProperties} />
             </div>
           </div>
           {/* s2: 中ブロブ */}
-          <div ref={el => { parallaxLayers.current[2] = el; }} className="start-parallax" data-depth="52"
-            style={{ right: "26%", top: "56%", width: "300px", height: "300px" }}>
+          <div className="start-parallax" style={{ right: "26%", top: "56%", width: "300px", height: "300px" }}>
             <div className="start-drift" style={{ "--dur": "22s" } as React.CSSProperties}>
               <div className="start-blob" style={{
-                background: "radial-gradient(60% 60% at 40% 35%, #e6efe0, #b6cbac)",
-                filter: "blur(22px)", opacity: 0.55,
-                "--mdur": "24s",
-              } as React.CSSProperties} />
+                background: "radial-gradient(closest-side at 44% 40%, #e6efe0, rgba(182,203,172,.6) 55%, rgba(182,203,172,0) 98%)",
+                opacity: 0.6,
+              }} />
             </div>
           </div>
           {/* r2: 小リング */}
-          <div ref={el => { parallaxLayers.current[3] = el; }} className="start-parallax" data-depth="70"
-            style={{ right: "30%", top: "22%", width: "150px", height: "150px" }}>
+          <div className="start-parallax" style={{ right: "30%", top: "22%", width: "150px", height: "150px" }}>
             <div className="start-drift" style={{ "--dur": "19s" } as React.CSSProperties}>
               <div className="start-ring" style={{ "--start-rc": "rgba(44,62,45,.35)", "--mdur": "22s" } as React.CSSProperties} />
             </div>
           </div>
           {/* s3: 暗い小ブロブ */}
-          <div ref={el => { parallaxLayers.current[4] = el; }} className="start-parallax" data-depth="14"
-            style={{ right: "2%", top: "62%", width: "240px", height: "240px" }}>
+          <div className="start-parallax" style={{ right: "2%", top: "62%", width: "240px", height: "240px" }}>
             <div className="start-drift" style={{ "--dur": "33s" } as React.CSSProperties}>
               <div className="start-blob" style={{
-                background: "radial-gradient(60% 60% at 40% 35%, #4a6b4b, #2c3e2d)",
-                filter: "blur(30px)", opacity: 0.22,
-                "--mdur": "30s",
-              } as React.CSSProperties} />
+                background: "radial-gradient(closest-side at 44% 40%, #4a6b4b, rgba(44,62,45,.5) 55%, rgba(44,62,45,0) 98%)",
+                opacity: 0.26,
+              }} />
             </div>
           </div>
           {/* r3: 中リング */}
-          <div ref={el => { parallaxLayers.current[5] = el; }} className="start-parallax" data-depth="60"
-            style={{ right: "6%", top: "50%", width: "210px", height: "210px" }}>
+          <div className="start-parallax" style={{ right: "6%", top: "50%", width: "210px", height: "210px" }}>
             <div className="start-drift" style={{ "--dur": "27s" } as React.CSSProperties}>
               <div className="start-ring" style={{ "--start-rc": "rgba(143,168,136,.5)", "--mdur": "28s" } as React.CSSProperties} />
             </div>
