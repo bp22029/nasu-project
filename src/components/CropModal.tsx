@@ -3,18 +3,26 @@
 /**
  * 写真の切り抜き調整モーダル（機能3）
  *
- * 投稿写真をドラッグで位置調整・ピンチ/スライダーで拡大縮小してから確定する
- * （自動の中央切り抜きだと意図しない構図になるため。ユーザー要望、2026-06-12）。
+ * 投稿写真をドラッグで位置調整・ピンチ/スライダーで拡大縮小してから確定する。
  * react-easy-crop を使用（タッチのピンチ操作・マウスホイールに対応）。
- * 確定時に lib/imageResize.ts の cropImageToJpeg で切り抜き + 長辺1600px JPEG 化する。
  *
- * アスペクト比は 4:3 固定（投稿プレビューと旅記録詳細の表示比率に合わせる）。
+ * 切り抜き枠は「縦 4:5」（/select グリッドのカードと同じ比率）と「横 4:3」
+ * （旅記録詳細などの横向き表示に合う）から選べ、**写真の向きから自動で初期選択**する。
+ * 縦長写真を横枠に強制すると、グリッド表示時に二重切り抜きになって
+ * 画質と構図が損なわれるため（ユーザー指摘、2026-06-12）。
+ * 「切り抜かずに使う」で元の縦横比のままアップロードもできる。
  */
 import { useEffect, useState } from "react";
 import Cropper from "react-easy-crop";
-import { cropImageToJpeg, type CropArea } from "@/lib/imageResize";
+import { cropImageToJpeg, resizeImageToJpeg, type CropArea } from "@/lib/imageResize";
 
-const ASPECT = 4 / 3;
+// 縦はグリッドカード（4:5）、横は詳細ページ等（4:3）に合わせる
+const ASPECTS = {
+  portrait: { ratio: 4 / 5, label: "縦 4:5" },
+  landscape: { ratio: 4 / 3, label: "横 4:3" },
+} as const;
+
+type AspectKey = keyof typeof ASPECTS;
 
 interface CropModalProps {
   /** 切り抜き対象の元ファイル。null のときは何も描画しない */
@@ -25,6 +33,7 @@ interface CropModalProps {
 
 export default function CropModal({ file, onCancel, onCropped }: CropModalProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [aspect, setAspect] = useState<AspectKey>("landscape");
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [cropPixels, setCropPixels] = useState<CropArea | null>(null);
@@ -47,6 +56,14 @@ export default function CropModal({ file, onCancel, onCropped }: CropModalProps)
 
   if (!file || !imageUrl) return null;
 
+  const changeAspect = (key: AspectKey) => {
+    if (key === aspect) return;
+    setAspect(key);
+    // 枠が変わるので位置・倍率は初期化する
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  };
+
   const handleConfirm = async () => {
     if (!cropPixels || busy) return;
     setBusy(true);
@@ -59,6 +76,34 @@ export default function CropModal({ file, onCancel, onCropped }: CropModalProps)
       setBusy(false);
     }
   };
+
+  // 切り抜かずに元の縦横比のまま使う（縮小のみ）
+  const handleSkipCrop = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      onCropped(await resizeImageToJpeg(file));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "画像の処理に失敗しました");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const aspectButtonStyle = (selected: boolean): React.CSSProperties => ({
+    cursor: "pointer",
+    background: selected ? "#2c3e2d" : "rgba(255,255,255,.8)",
+    border: `1px solid ${selected ? "#2c3e2d" : "#d8d2c0"}`,
+    borderRadius: "100px",
+    padding: "7px 16px",
+    fontSize: "12px",
+    fontWeight: 600,
+    color: selected ? "#f3f1ea" : "#5a7d5a",
+    letterSpacing: ".06em",
+    transition: "background .2s, border-color .2s",
+    fontFamily: "var(--font-sans)",
+  });
 
   return (
     <div
@@ -92,15 +137,30 @@ export default function CropModal({ file, onCancel, onCropped }: CropModalProps)
         }}>
           写真の範囲を調整
         </h2>
-        <p style={{ fontSize: "11.5px", color: "#8fa888", margin: "0 0 14px", letterSpacing: ".04em", lineHeight: 1.7 }}>
+        <p style={{ fontSize: "11.5px", color: "#8fa888", margin: "0 0 12px", letterSpacing: ".04em", lineHeight: 1.7 }}>
           ドラッグで位置を、ピンチやスライダーで大きさを調整できます。
         </p>
 
-        {/* 切り抜きエリア */}
+        {/* 枠の向き切替 */}
+        <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+          {(Object.keys(ASPECTS) as AspectKey[]).map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => changeAspect(key)}
+              aria-pressed={aspect === key}
+              style={aspectButtonStyle(aspect === key)}
+            >
+              {ASPECTS[key].label}
+            </button>
+          ))}
+        </div>
+
+        {/* 切り抜きエリア（コンテナは固定高、枠の比率は aspect に追従） */}
         <div style={{
           position: "relative",
           width: "100%",
-          aspectRatio: "4 / 3",
+          height: "min(340px, 48vh)",
           borderRadius: "14px",
           overflow: "hidden",
           background: "#1c241a",
@@ -111,11 +171,16 @@ export default function CropModal({ file, onCancel, onCropped }: CropModalProps)
             zoom={zoom}
             minZoom={1}
             maxZoom={4}
-            aspect={ASPECT}
+            aspect={ASPECTS[aspect].ratio}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={(_area, areaPixels) => setCropPixels(areaPixels)}
-            onMediaLoaded={() => setError(null)}
+            onMediaLoaded={(mediaSize) => {
+              // 写真の向きに合わせて枠の初期値を決める（縦長写真→縦枠）。
+              // 二重切り抜き（横枠→グリッドの縦カード）を避けるため
+              setAspect(mediaSize.naturalHeight > mediaSize.naturalWidth ? "portrait" : "landscape");
+              setError(null);
+            }}
           />
         </div>
 
@@ -169,6 +234,22 @@ export default function CropModal({ file, onCancel, onCropped }: CropModalProps)
             {busy ? "処理中…" : "この範囲で使う"}
           </button>
         </div>
+
+        {/* 切り抜かない選択肢（元の縦横比のまま） */}
+        <button
+          type="button"
+          onClick={handleSkipCrop}
+          disabled={busy}
+          style={{
+            display: "block", width: "100%", marginTop: "12px",
+            cursor: "pointer", background: "none", border: "none",
+            fontSize: "12px", color: "#5a7d5a", letterSpacing: ".06em",
+            textDecoration: "underline", textUnderlineOffset: "4px",
+            fontFamily: "var(--font-sans)",
+          }}
+        >
+          切り抜かずに元の比率のまま使う
+        </button>
       </div>
     </div>
   );

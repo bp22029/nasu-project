@@ -67,15 +67,15 @@ export default function PhotoUploadField({ photo, onChange }: PhotoUploadFieldPr
 
       {previewUrl ? (
         <div style={{ position: "relative" }}>
-          {/* 切り抜き済み Blob のローカルプレビュー（next/image 不要） */}
+          {/* 切り抜き済み Blob のローカルプレビュー（next/image 不要）。
+              枠で再度切らず、確定した縦横比のまま見せる */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={previewUrl}
             alt="投稿する写真のプレビュー"
             style={{
               width: "100%",
-              aspectRatio: "4 / 3",
-              objectFit: "cover",
+              height: "auto",
               borderRadius: "16px",
               border: "1px solid #e5e0d3",
               display: "block",
