@@ -168,7 +168,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 | `/trips/new` | 旅記録作成（機能3）。/route からのプレフィル有/無で画面共通 |
 | `/me` | マイページ（機能3）。自分の投稿の確認・編集・削除、ニックネーム変更 |
 
-- `/select` の選択状態は sessionStorage（キー `nasu-select-state`）に保存され、「← 選び直す」で戻っても維持される。
+- `/select` の選択状態は sessionStorage（キー `nasu-select-state`、`src/lib/selectState.ts`）に保存され、「← 選び直す」で戻る・リロードでは維持される。**ホームの「はじめる」はこのキーを破棄して常に新規スタート**（前回の選択が残ると違和感があるため。ユーザー要望、2026-06-12）。
 - `dep` はプリセットID（`nasushiobara-station` 等）。GPS現在地は `dep=gps&lat=..&lng=..`。
 - 機能2（診断）は診断結果から `/route?...` のURLを組み立てて遷移するだけで追加できる。
 

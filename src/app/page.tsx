@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GrainOverlay from "@/components/GrainOverlay";
+import { SELECT_STATE_KEY } from "@/lib/selectState";
 
 export default function Home() {
   const router = useRouter();
@@ -117,7 +118,12 @@ export default function Home() {
 
           {/* CTAボタン */}
           <button
-            onClick={() => router.push("/select")}
+            onClick={() => {
+              // 「はじめる」は常に新規スタート: 前回の選択状態を破棄する。
+              // /route の「← 選び直す」で戻る場合は破棄されないため、設計→戻るの往復では維持される
+              sessionStorage.removeItem(SELECT_STATE_KEY);
+              router.push("/select");
+            }}
             className="start-cta"
             style={{
               display: "inline-flex", alignItems: "center", gap: "16px", alignSelf: "flex-start",
