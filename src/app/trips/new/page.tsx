@@ -5,15 +5,18 @@
  *
  * タイトル + 任意コメント + 訪問順のエントリ（スポット, 写真は任意）を1つの旅記録として投稿する。
  * 起点は2つで画面は共通:
- * - /route の「この旅を記録する」→ sessionStorage `nasu-trip-draft`（TripDraft）から
- *   訪問順のスポットがプレフィルされる（route_query も引き継ぎ、trips.route_query に保存）
- * - ホームから直接 → 空の状態からスポットを手動追加
+ * - /route の「この旅を記録する」（?from=route 付き）→ sessionStorage `nasu-trip-draft`
+ *   （TripDraft）から訪問順のスポットがプレフィルされる（route_query も trips.route_query に保存）。
+ *   URL にフラグがあるためリロードしてもプレフィルは維持される。
+ * - ホームから直接（クエリなし）→ 常に白紙から。古い下書きが残っていても読まずに破棄する
+ *   （前回設計したルートが意図せず復活しないように）。
  *
  * 保存は「①写真を全てアップロード → ②trips insert → ③trip_entries insert、
  * ③失敗時は trips を delete」の順序でトランザクションを代替する（CLAUDE.md セクション14）。
  */
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import spotsData from "@/../data/spots.json";
 import PageShell from "@/components/PageShell";
 import NicknameModal from "@/components/NicknameModal";
@@ -47,7 +50,10 @@ const inputStyle: React.CSSProperties = {
   fontFamily: "var(--font-sans)",
 };
 
-export default function TripNewPage() {
+function TripNewContent() {
+  const searchParams = useSearchParams();
+  // ルート画面の「この旅を記録する」経由のときだけ下書きを読む
+  const fromRoute = searchParams.get("from") === "route";
   const [title, setTitle] = useState("");
   const [comment, setComment] = useState("");
   const [entries, setEntries] = useState<DraftEntry[]>([]);
@@ -61,6 +67,12 @@ export default function TripNewPage() {
 
   // /route からのプレフィル（TripDraft）を読む。古いドラフトは無視する
   useEffect(() => {
+    // ホーム等から開いたとき（?from=route なし）は常に白紙から始める。
+    // 残っている下書きも破棄する（後でルート経由で開き直しても古いルートが出ないように）
+    if (!fromRoute) {
+      sessionStorage.removeItem(TRIP_DRAFT_KEY);
+      return;
+    }
     try {
       const raw = sessionStorage.getItem(TRIP_DRAFT_KEY);
       if (!raw) return;
@@ -82,7 +94,7 @@ export default function TripNewPage() {
       // 壊れたドラフトは捨てて空から始める
       sessionStorage.removeItem(TRIP_DRAFT_KEY);
     }
-  }, []);
+  }, [fromRoute]);
 
   const canSubmit = title.trim().length >= 1 && entries.length >= 1 && !submitting;
 
@@ -304,5 +316,18 @@ export default function TripNewPage() {
         onCancel={() => setNicknameOpen(false)}
       />
     </PageShell>
+  );
+}
+
+export default function TripNewPage() {
+  // useSearchParams は Suspense 境界の内側でしか使えない（Next.js App Router の制約）
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "#f7f5f0" }}>
+        <p style={{ fontSize: "12px", letterSpacing: ".2em", color: "#8fa888" }}>読み込み中…</p>
+      </main>
+    }>
+      <TripNewContent />
+    </Suspense>
   );
 }

@@ -379,7 +379,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前
 
 ### /route → 旅記録のプレフィル受け渡し
 
-- URL の `spots=` は**選択順であって TSP 後の訪問順ではない**ため、`/route` の「この旅を記録する」押下時に sessionStorage キー `nasu-trip-draft`（`TripDraft` 型、`src/types/post.ts`）へ訪問順 spotIds + routeQuery を保存し、`/trips/new` が読んでプレフィルする。投稿完了時に削除、24時間で失効。
+- URL の `spots=` は**選択順であって TSP 後の訪問順ではない**ため、`/route` の「この旅を記録する」押下時に sessionStorage キー `nasu-trip-draft`（`TripDraft` 型、`src/types/post.ts`）へ訪問順 spotIds + routeQuery を保存し、**`/trips/new?from=route` へ遷移**する。
+- `/trips/new` は **`?from=route` があるときだけ**下書きを読んでプレフィルする（URLにフラグがあるためリロードしても維持される）。**クエリなし（ホーム経由）では常に白紙**で、残っている下書きも破棄する — 前に設計したルートが意図せず復活しないため（ユーザー要望、2026-06-12）。投稿完了時にも削除、24時間で失効。
 
 ### 投稿写真の /select グリッド掲載（許可制）
 

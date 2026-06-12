@@ -90,7 +90,9 @@ function RouteContent() {
   const [error, setError] = useState<string | null>(null);
 
   // 「この旅を記録する」: TSP最適化後の訪問順を sessionStorage 経由で
-  // /trips/new に引き継ぐ（URL の spots= は選択順なので使わない。CLAUDE.md セクション14）
+  // /trips/new に引き継ぐ（URL の spots= は選択順なので使わない。CLAUDE.md セクション14）。
+  // ?from=route を付けることで「ルート経由のときだけプレフィルする」ことを明示する
+  // （ホームから開いたときは常に白紙から始まる）
   const handleRecordTrip = () => {
     if (!routeResult) return;
     const draft: TripDraft = {
@@ -99,7 +101,7 @@ function RouteContent() {
       createdAt: Date.now(),
     };
     sessionStorage.setItem(TRIP_DRAFT_KEY, JSON.stringify(draft));
-    router.push("/trips/new");
+    router.push("/trips/new?from=route");
   };
 
   useEffect(() => {
