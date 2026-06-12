@@ -30,8 +30,8 @@ export default function SelectPage() {
   const [tripType, setTripType] = useState<TripType>("oneway");
   // 現在地（GPS）出発のときはデフォルト false（有料OK）、プリセットは true（一般道推奨）→ユーザーが切替可
   const [avoidTolls, setAvoidTolls] = useState(true);
-  // 施設名の表示。デフォルトは表示、「直感で選ぶ」ために非表示へ切替できる
-  const [showNames, setShowNames] = useState(true);
+  // 施設名の表示。デフォルトは非表示（「直感で選ぶ」コンセプト）、見たい人は表示に切替できる
+  const [showNames, setShowNames] = useState(false);
   const [restored, setRestored] = useState(false);
   // 設計ボタン押下時に出発地が未選択なら、出発地セクションへスクロールして点滅で誘導する
   const [departureFlash, setDepartureFlash] = useState(false);
