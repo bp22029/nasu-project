@@ -15,9 +15,12 @@ interface SpotCardProps {
   showName?: boolean;
 }
 
+// /api/photos/[spotId] のレスポンス。Google 写真と投稿写真（機能3）が混在する
 interface PhotoItem {
   uri: string;
-  authorAttributions: Array<{ displayName: string; uri?: string }>;
+  source: "google" | "user";
+  authorAttributions?: Array<{ displayName: string; uri?: string }>;
+  nickname?: string;
 }
 
 // プレースホルダー色は spot.id から決める（グリッド内の位置に依存させない）。
@@ -36,9 +39,32 @@ function cardGradient(seed: number): string {
   return `linear-gradient(${145 + (seed * 9) % 40}deg, ${c1}, ${c2})`;
 }
 
+// 写真クレジット: Google 写真は撮影者名 + Google（規約上必須）、投稿写真はニックネーム
+function photoCredit(photo: PhotoItem): string | null {
+  if (photo.source === "user") {
+    return `${photo.nickname ?? "名無しの旅人"} さんの投稿`;
+  }
+  const author = photo.authorAttributions?.[0]?.displayName;
+  return author ? `${author} · Google` : null;
+}
+
+const arrowStyle: React.CSSProperties = {
+  width: "26px",
+  height: "26px",
+  borderRadius: "50%",
+  border: "none",
+  cursor: "pointer",
+  display: "grid",
+  placeItems: "center",
+  background: "rgba(20,28,16,.45)",
+  color: "rgba(255,255,255,.9)",
+  padding: 0,
+};
+
 export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder, showName = true }: SpotCardProps) {
-  const [photo, setPhoto] = useState<PhotoItem | null>(null);
-  const [photoLoading, setPhotoLoading] = useState(!!spot.placeId);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [photoLoading, setPhotoLoading] = useState(true);
   const [hovered, setHovered] = useState(false);
   // 出現アニメーションの遅延は初回マウント時の位置で固定する。
   // シャッフルで index が変わったときに style が変化してアニメが再発火するのを防ぐ
@@ -48,24 +74,38 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
     const debugOff =
       process.env.NEXT_PUBLIC_DEBUG_NO_PHOTOS === "true" ||
       (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("noPhotos"));
-    if (!spot.placeId || debugOff) { setPhotoLoading(false); return; }
+    if (debugOff) { setPhotoLoading(false); return; }
     let cancelled = false;
-    fetch(`/api/photos/${spot.placeId}`)
+    // キーは spots.json の id（投稿写真は placeId のないスポットにも付き得る）
+    fetch(`/api/photos/${encodeURIComponent(spot.id)}`)
       .then((r) => r.json())
       .then((data: { photos?: PhotoItem[] }) => {
-        if (!cancelled && data.photos?.[0]) setPhoto(data.photos[0]);
+        if (!cancelled && data.photos) setPhotos(data.photos);
       })
       .catch(() => {})
       .finally(() => { if (!cancelled) setPhotoLoading(false); });
     return () => { cancelled = true; };
-  }, [spot.placeId]);
+  }, [spot.id]);
 
+  const photo = photos[photoIndex] ?? null;
   const badgeNum = routeNumber ?? selectionOrder;
 
+  const stepPhoto = (e: React.MouseEvent, dir: -1 | 1) => {
+    e.stopPropagation(); // カードの選択トグルを発火させない
+    setPhotoIndex((i) => (i + dir + photos.length) % photos.length);
+  };
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
       aria-pressed={selected}
       aria-label={spot.name}
       className="sel-card relative w-full p-0 border-none"
@@ -91,6 +131,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
       <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "16px" }}>
         {photo ? (
           <Image
+            key={photo.uri}
             src={photo.uri}
             alt={spot.name}
             fill
@@ -149,7 +190,33 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
         </span>
       )}
 
-      {/* Bottom caption: name (toggleable) + attribution (always visible per Google policy) */}
+      {/* 写真送り（複数枚あるときだけ）: Google 写真 + 許可済み投稿写真のカルーセル */}
+      {photos.length > 1 && (
+        <div
+          className="absolute flex items-center gap-[7px]"
+          style={{ top: "50%", right: "8px", transform: "translateY(-50%)", zIndex: 4, flexDirection: "column" }}
+        >
+          <button type="button" aria-label="前の写真" onClick={(e) => stepPhoto(e, -1)} style={arrowStyle}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <span style={{
+            fontSize: "9px", letterSpacing: ".08em", color: "rgba(255,255,255,.9)",
+            background: "rgba(20,28,16,.45)", borderRadius: "100px", padding: "2px 7px",
+            fontFamily: "var(--font-sans)",
+          }}>
+            {photoIndex + 1}/{photos.length}
+          </span>
+          <button type="button" aria-label="次の写真" onClick={(e) => stepPhoto(e, 1)} style={arrowStyle}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Bottom caption: name (toggleable) + credit (Google写真は規約上常に表示・投稿写真はニックネーム) */}
       <div className="absolute left-0 right-0 bottom-0" style={{
         padding: showName ? "38px 14px 14px" : "20px 14px 9px",
         zIndex: 3,
@@ -167,15 +234,15 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
             {spot.name}
           </div>
         )}
-        {photo?.authorAttributions?.[0] && (
+        {photo && photoCredit(photo) && (
           <p style={{
             fontSize: "8px", color: "rgba(255,255,255,.65)", marginTop: showName ? "3px" : 0,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
-            {photo.authorAttributions[0].displayName} · Google
+            {photoCredit(photo)}
           </p>
         )}
       </div>
-    </button>
+    </div>
   );
 }
