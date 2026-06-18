@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import SpotGrid from "@/components/SpotGrid";
+import SpotFilter from "@/components/SpotFilter";
 import DepartureSelector from "@/components/DepartureSelector";
 import GrainOverlay from "@/components/GrainOverlay";
 import { encodeRouteQuery } from "@/lib/routeQuery";
@@ -12,9 +13,14 @@ import { SELECT_STATE_KEY as STORAGE_KEY } from "@/lib/selectState";
 import type { DeparturePoint, TripType } from "@/types/departure";
 // デバッグ13件/本番200件は NEXT_PUBLIC_SPOTS_MODE で切替（src/lib/spots.ts）
 import { SPOTS } from "@/lib/spots";
+// タグフィルター（ジャンル大分類・同行者を tags から実行時に解釈）
+import { availableTagAxes, spotMatchesTags } from "@/lib/spotTags";
 
 const spots = SPOTS;
 const spotsById = new Map(spots.map((s) => [s.id, s]));
+// フィルターの選択肢（SPOTS 由来で固定。debug モードは tags 空 → 空配列 → フィルター非表示）
+const TAG_AXES = availableTagAxes(spots);
+const ALL_FILTER_TAGS = new Set<string>([...TAG_AXES.genres, ...TAG_AXES.parties]);
 
 interface StoredState {
   selectedIds: string[];
@@ -23,6 +29,7 @@ interface StoredState {
   avoidTolls: boolean;
   showNames?: boolean;
   orderedIds?: string[];
+  activeTags?: string[];
 }
 
 // Fisher-Yates。全員が同じ順で見ると下方のスポットに不利が出るため、表示順は毎セッションランダム
@@ -57,6 +64,8 @@ export default function SelectPage() {
   const [orderedIds, setOrderedIds] = useState<string[] | null>(null);
   // シャッフルのたびに増える値。SpotCard が表示写真をランダムに選び直すトリガー
   const [shuffleNonce, setShuffleNonce] = useState(0);
+  // タグフィルター（ジャンル・同行者を混ぜた選択集合。空＝絞り込みなし。OR 判定）
+  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [restored, setRestored] = useState(false);
   // 設計ボタン押下時に出発地が未選択なら、出発地セクションへスクロールして点滅で誘導する
   const [departureFlash, setDepartureFlash] = useState(false);
@@ -75,6 +84,7 @@ export default function SelectPage() {
         if (s.tripType === "roundtrip" || s.tripType === "oneway") setTripType(s.tripType);
         if (typeof s.avoidTolls === "boolean") setAvoidTolls(s.avoidTolls);
         if (typeof s.showNames === "boolean") setShowNames(s.showNames);
+        if (Array.isArray(s.activeTags)) setActiveTags(s.activeTags.filter((t) => ALL_FILTER_TAGS.has(t)));
         if (isValidOrder(s.orderedIds)) restoredOrder = s.orderedIds;
       }
     } catch { /* 壊れた保存データは無視して初期状態で開始 */ }
@@ -85,15 +95,29 @@ export default function SelectPage() {
 
   useEffect(() => {
     if (!restored) return;
-    const state: StoredState = { selectedIds, departure, tripType, avoidTolls, showNames, orderedIds: orderedIds ?? undefined };
+    const state: StoredState = { selectedIds, departure, tripType, avoidTolls, showNames, orderedIds: orderedIds ?? undefined, activeTags };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [restored, selectedIds, departure, tripType, avoidTolls, showNames, orderedIds]);
+  }, [restored, selectedIds, departure, tripType, avoidTolls, showNames, orderedIds, activeTags]);
 
   const toggleSpot = useCallback((id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   }, []);
+
+  const toggleTag = useCallback((tag: string) => {
+    setActiveTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  }, []);
+  const clearTags = useCallback(() => setActiveTags([]), []);
+
+  // フィルター一致スポットの id 集合。絞り込みなしのときは undefined（全件表示）。
+  // SpotGrid は配列から外さず、この集合に無いカードを CSS で隠す（写真の再取得を避ける）
+  const visibleIds = useMemo<Set<string> | undefined>(() => {
+    if (activeTags.length === 0) return undefined;
+    return new Set(spots.filter((s) => spotMatchesTags(s, activeTags)).map((s) => s.id));
+  }, [activeTags]);
 
   // 出発地変更時: GPS = 有料OK（遠方から来る想定）、プリセット = 一般道推奨
   const handleSelectDeparture = useCallback((dep: DeparturePoint) => {
@@ -261,16 +285,48 @@ export default function SelectPage() {
           </button>
         </div>
 
+        {/* タグフィルター（ジャンル・同行者。OR 判定。debug モードは選択肢が無く非表示） */}
+        <SpotFilter
+          genres={TAG_AXES.genres}
+          parties={TAG_AXES.parties}
+          active={activeTags}
+          onToggle={toggleTag}
+          onClear={clearTags}
+        />
+
         {/* orderedIds 確定後に描画（SSRとの順序不一致を避ける）。key=spot.id のため
-            シャッフルしても各カードは再マウントされず、取得済み写真はそのまま */}
+            シャッフル・フィルターしても各カードは再マウントされず、取得済み写真はそのまま
+            （フィルターは配列から外さず CSS で隠す＝写真の再取得を避ける） */}
         {orderedIds && (
-          <SpotGrid
-            spots={orderedIds.map((id) => spotsById.get(id)!)}
-            selectedIds={selectedIds}
-            onToggle={toggleSpot}
-            showNames={showNames}
-            shuffleNonce={shuffleNonce}
-          />
+          <>
+            <SpotGrid
+              spots={orderedIds.map((id) => spotsById.get(id)!)}
+              selectedIds={selectedIds}
+              onToggle={toggleSpot}
+              showNames={showNames}
+              shuffleNonce={shuffleNonce}
+              visibleIds={visibleIds}
+            />
+            {visibleIds && visibleIds.size === 0 && (
+              <div style={{ textAlign: "center", padding: "48px 16px", color: "#5a7d5a" }}>
+                <p style={{ fontSize: "14px", letterSpacing: ".06em", marginBottom: "12px" }}>
+                  条件に合うスポットがありません
+                </p>
+                <button
+                  type="button"
+                  onClick={clearTags}
+                  style={{
+                    cursor: "pointer", background: "none", border: "1px solid #e5e0d3",
+                    borderRadius: "100px", padding: "8px 18px",
+                    fontSize: "12.5px", fontWeight: 600, fontFamily: "var(--font-sans)",
+                    color: "#5a7d5a", letterSpacing: ".06em",
+                  }}
+                >
+                  条件をクリア
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
