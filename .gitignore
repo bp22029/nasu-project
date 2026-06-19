@@ -1,5 +1,7 @@
 # env
 .env*
+# 雛形だけはコミットする（実値は入れない）
+!.env.example
 
 # dependencies
 node_modules/

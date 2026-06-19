@@ -58,13 +58,20 @@ npm install
 
 ### 2. 環境変数の設定
 
-`.env.local` を作成し、以下を記入する。
+`.env.example` をコピーして `.env.local` を作り、値を記入する。
+
+```bash
+cp .env.example .env.local
+```
+
+必要な変数:
 
 ```
 GOOGLE_PLACES_API_KEY=...
 ORS_API_KEY=...
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_SPOTS_MODE=debug   # 開発は debug、本番(Vercel)は full
 ```
 
 - `GOOGLE_PLACES_API_KEY`: Google Cloud Console で **Places API (New)** を有効化したキー。APIキーの制限は「なし」または「IPアドレス」に設定すること（HTTPリファラー制限は不可）。
@@ -97,6 +104,37 @@ npx tsx scripts/build-spots-full.ts
 スポット選択画面の写真は、カードが画面に近づいてから取得する（遅延読み込み）。
 
 > **注意**: 座標はGoogle Places由来にせず、調査データ・国土地理院・OSMから取得すること。山頂など車道のない地点は最寄りの駐車場・ロープウェイ乗り場の座標を使うこと（ルート計算が失敗する）。
+
+## デプロイ（Vercel）
+
+GitHub リポジトリを Vercel に接続すると、**main への push で本番が自動更新**され、**機能ブランチ/PR ごとにプレビューURL**が自動で立つ。開発途中でもつないでよい（未完の機能は画面に出さなければ本番は安定したまま）。ローカルで `next build` ができない環境（WSL）でも、Vercel のクラウドビルドが実質の本番ビルド検証になる。
+
+### 初回セットアップ
+
+1. [vercel.com](https://vercel.com/) に GitHub アカウントでログイン → **Add New… → Project** → このリポジトリを Import。
+2. Framework は **Next.js** が自動検出される（Build/Output 設定は変更不要）。
+3. **Environment Variables** に以下を登録（`.env.example` と同じ。Production / Preview 両方に入れる）:
+
+   | 変数 | 値 |
+   |---|---|
+   | `GOOGLE_PLACES_API_KEY` | Places API (New) のキー |
+   | `ORS_API_KEY` | openrouteservice トークン |
+   | `NEXT_PUBLIC_SUPABASE_URL` | Supabase の Project URL |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase の anon キー |
+   | `NEXT_PUBLIC_SPOTS_MODE` | **`full`**（本番は約200件） |
+
+4. **Deploy** を押す。完了すると `https://<project>.vercel.app` が発行される。
+
+### デプロイ前のチェック
+
+- **Google Places キーの制限**: Vercel のサーバー関数は IP が動的なので「IPアドレス制限」は効かない。→「アプリケーションの制限=**なし**」にしつつ「**APIの制限で Places API (New) のみ**」に絞り、Google Cloud で**予算アラート**を設定する（濫用・課金対策）。
+- **Supabase**: 本番プロジェクトに `supabase/schema.sql` と各 migration を適用済みにする（手順は [supabase/SETUP.md](supabase/SETUP.md)）。`service_role` キーはどこにも置かない（公開の anon キー＋RLS で守る設計）。
+- **CI**: GitHub Actions でテストが走る。Vercel ビルドと併せて、push 前に `npm test` が通ることを確認する。
+
+### 運用フロー
+
+- 機能ブランチ → PR を作ると Vercel が**プレビューURL**を出す → そこで動作確認 → main にマージで**本番へ自動反映**。今の Git 運用（機能ブランチ→main）にそのまま乗る。
+- 公開URLは誰でも匿名投稿できる点に注意。限定公開したい場合は Vercel の Password Protection（Pro）等を検討する。
 
 ## ライセンス
 
