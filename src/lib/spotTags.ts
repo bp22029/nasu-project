@@ -1,32 +1,42 @@
 /**
  * スポットのタグ解釈（/select の画像フィルター用）
  *
- * data/spots-full.json の `tags` は CSV「カテゴリー」列（4軸を連結）と
- * ジャンル1/2 をフラットに1配列へ詰めたもの。位置情報は失われているため、
- * ここでは語彙ベースで「ジャンル大分類」と「同行者」の2軸を取り出す。
- * （詳細ジャンル・季節・内外は今回フィルターに使わない＝機能2のために残す）
+ * data/spots-full.json の `tags` は CSV「カテゴリー」列（季節/ジャンル大分類/内外/同行者を連結）と
+ * 「ジャンル1」「ジャンル2」（詳細ジャンル）をフラットに1配列へ詰めたもの。
+ * ここから「ジャンル」と「同行者」の2軸を取り出す。
  *
- * 整理ルール（CLAUDE.md / プラン参照）:
- * - ジャンル大分類: 「カフェ・レストラン」「温泉・宿」「歴史・文化」は中身を判別できない
- *   1単位として守り、それ以外の組み合わせ（自然・レジャー 等）は構成要素へ分解する。
- *   → GENRE_UNITS を最長一致で貪欲に切り出す。大分類に無い atom（カフェ単独・温泉単独
- *     などの詳細ジャンルや、内/外/季節）は無視する。
- * - 同行者: 各語が独立属性なので「・」で分解して個別トークンにする。
- *   「全構成」は全同行者にマッチ扱い → 全 PARTY_TOKENS へ展開する。
+ * - ジャンル: **詳細ジャンル（ジャンル1/2 由来の単独トークン）**を使う。大分類「カフェ・レストラン」だと
+ *   カフェか食事処か判別できないため、詳細トークン（カフェ/飲食店/ベーカリー…）を近いものでまとめた
+ *   キュレーション分類（GENRE_GROUPS）にマップする。大分類の複合文字列（"カフェ・レストラン" 等）は
+ *   DETAIL_TO_GENRE のキーではないので自然に無視される。
+ *   ※ "自然"/"レジャー"/"体験" は大分類にも詳細にも同じ文字列で現れるが、同じ意味なのでそのままマップする。
+ * - 同行者: 各語が独立属性なので「・」で分解して個別トークンにする。「全構成」は全同行者へ展開。
  */
 import type { Spot } from "@/types/spot";
 
-/** ジャンル大分類（この順で UI に並ぶ）。複合語ほど先に最長一致させたいので長い順に並べる */
-export const GENRE_UNITS = [
-  "カフェ・レストラン",
-  "温泉・宿",
-  "歴史・文化",
-  "自然",
-  "レジャー",
-  "アート",
-  "体験",
-  "アドベンチャー",
-] as const;
+/** ジャンル（詳細ジャンルを近いものでまとめたキュレーション分類。この順で UI に並ぶ） */
+export const GENRE_GROUPS: { label: string; members: string[] }[] = [
+  { label: "カフェ", members: ["カフェ", "喫茶"] },
+  { label: "食事処", members: ["飲食店", "バー"] },
+  { label: "ベーカリー・スイーツ", members: ["ベーカリー", "ケーキ屋"] },
+  { label: "温泉・サウナ", members: ["温泉", "サウナ"] },
+  { label: "宿泊・キャンプ", members: ["宿泊施設", "キャンプ場"] },
+  { label: "自然・公園", members: ["自然", "公園"] },
+  { label: "レジャー・体験", members: ["レジャー", "体験", "体験施設", "パーク"] },
+  { label: "美術館・博物館", members: ["美術館", "博物館"] },
+  { label: "ショップ・雑貨", members: ["ショップ", "雑貨屋", "お土産", "アウトレット", "商業施設"] },
+  { label: "道の駅・スーパー", members: ["道の駅", "スーパー"] },
+  { label: "名所・史跡", members: ["名所", "遺跡"] },
+];
+
+/** ジャンルのラベル一覧（定義順） */
+export const GENRE_LABELS = GENRE_GROUPS.map((g) => g.label);
+
+/** 詳細ジャンルのトークン → キュレーション分類ラベル */
+const DETAIL_TO_GENRE = new Map<string, string>();
+for (const g of GENRE_GROUPS) {
+  for (const m of g.members) DETAIL_TO_GENRE.set(m, g.label);
+}
 
 /** 同行者トークン（この順で UI に並ぶ） */
 export const PARTY_TOKENS = [
@@ -41,35 +51,13 @@ export const PARTY_TOKENS = [
 /** 全同行者を表す総称タグ（フィルター候補には出さず、全 PARTY_TOKENS へ展開する） */
 const PARTY_ALL = "全構成";
 
-// 最長一致のため、ユニットを atom（「・」分割）配列にして長い順に並べておく
-const GENRE_UNIT_ATOMS: { unit: string; atoms: string[] }[] = [...GENRE_UNITS]
-  .map((unit) => ({ unit, atoms: unit.split("・") }))
-  .sort((a, b) => b.atoms.length - a.atoms.length);
-
 const PARTY_SET = new Set<string>(PARTY_TOKENS);
 
 export interface SpotTagAxes {
-  /** ジャンル大分類（GENRE_UNITS の値） */
+  /** ジャンル（GENRE_LABELS の値） */
   genres: string[];
   /** 同行者（PARTY_TOKENS の値） */
   parties: string[];
-}
-
-/** 1つのタグ文字列（「・」連結されうる）から、含まれるジャンル大分類を最長一致で抽出 */
-function extractGenresFromTag(tag: string, out: Set<string>): void {
-  const atoms = tag.split("・");
-  for (let i = 0; i < atoms.length; ) {
-    const match = GENRE_UNIT_ATOMS.find(
-      ({ atoms: u }) =>
-        i + u.length <= atoms.length && u.every((a, k) => a === atoms[i + k])
-    );
-    if (match) {
-      out.add(match.unit);
-      i += match.atoms.length;
-    } else {
-      i += 1; // 大分類に無い atom（詳細ジャンル・内外・季節など）は読み飛ばす
-    }
-  }
 }
 
 /** スポットの tags をジャンル・同行者の2軸へ解釈する */
@@ -78,7 +66,11 @@ export function parseSpotTags(spot: Spot): SpotTagAxes {
   const parties = new Set<string>();
 
   for (const tag of spot.tags ?? []) {
-    extractGenresFromTag(tag, genres);
+    // ジャンル: 詳細トークンならキュレーション分類へマップ（複合の大分類文字列はキーに無く無視される）
+    const genre = DETAIL_TO_GENRE.get(tag);
+    if (genre) genres.add(genre);
+
+    // 同行者: 「・」で分解。「全構成」は全トークンへ展開
     const atoms = tag.split("・");
     if (atoms.includes(PARTY_ALL)) {
       for (const p of PARTY_TOKENS) parties.add(p);
@@ -90,7 +82,7 @@ export function parseSpotTags(spot: Spot): SpotTagAxes {
 
   // UI と同じ定義順に整える
   return {
-    genres: GENRE_UNITS.filter((g) => genres.has(g)),
+    genres: GENRE_LABELS.filter((g) => genres.has(g)),
     parties: PARTY_TOKENS.filter((p) => parties.has(p)),
   };
 }
@@ -113,7 +105,7 @@ export function availableTagAxes(spots: Spot[]): SpotTagAxes {
     axes.parties.forEach((p) => parties.add(p));
   }
   return {
-    genres: GENRE_UNITS.filter((g) => genres.has(g)),
+    genres: GENRE_LABELS.filter((g) => genres.has(g)),
     parties: PARTY_TOKENS.filter((p) => parties.has(p)),
   };
 }
