@@ -72,6 +72,21 @@ body {
 .start-ringbtn   { transition: transform .4s cubic-bezier(.2,.7,.2,1), background .35s; }
 .start-meta      { opacity: 0; animation: rise 1s 1.00s ease forwards; }
 .start-brandmark { opacity: 0; animation: rise 1s 1.05s ease forwards; }
+.start-nav       { opacity: 0; animation: rise .9s .9s cubic-bezier(.2,.7,.2,1) forwards; }
+
+/* ホームの機能3導線チップ（見る・記録・投稿） */
+.home-navchip {
+  transition: transform .25s cubic-bezier(.2,.7,.2,1), border-color .25s, box-shadow .25s, background .25s;
+}
+.home-navchip:hover {
+  transform: translateY(-3px);
+  border-color: #b6cbac;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 16px 32px -18px rgba(36,48,25,.5);
+}
+/* 右上のマイページ（ユーティリティ） */
+.home-mypage { transition: color .25s, border-color .25s, background .25s; }
+.home-mypage:hover { color: #2c3e2d; border-color: #b6cbac; background: rgba(255,255,255,.75); }
 
 .start-t-line  { display: block; }
 /* マスクをinline-blockにすることで横幅 = テキスト幅になり横クリップが発生しない */
@@ -82,7 +97,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .start-drift, .start-blob, .start-ring { animation: none !important; }
-  .start-index, .start-subtitle, .start-cta, .start-meta, .start-brandmark {
+  .start-index, .start-subtitle, .start-cta, .start-meta, .start-brandmark, .start-nav {
     animation: none !important; opacity: 1 !important; transform: none !important;
   }
   .start-t-inner { animation: none !important; transform: none !important; }
