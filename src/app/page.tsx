@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GrainOverlay from "@/components/GrainOverlay";
+import NavMenu from "@/components/NavMenu";
 import { SELECT_STATE_KEY } from "@/lib/selectState";
 // スポット件数はマスタから動的に表示する（debug=13 / full=198。ハードコードしない）
 import { SPOTS } from "@/lib/spots";
@@ -120,23 +121,11 @@ export default function Home() {
         background: "linear-gradient(100deg, #f7f5f0 30%, rgba(247,245,240,.4) 52%, transparent 70%)",
       }} />
 
-      {/* トップヘッダー: マイページ（アカウント系ユーティリティ）を右上に分離 */}
+      {/* トップヘッダー: どこへでも飛べるグローバルメニューを右上に置く */}
       <header className="start-meta relative flex items-center justify-end" style={{
-        zIndex: 3, padding: "20px clamp(20px, 7vw, 72px) 0",
+        zIndex: 3, padding: "20px clamp(20px, 7vw, 72px) 0", pointerEvents: "none",
       }}>
-        <Link href="/me" aria-label="マイページ" className="home-mypage" style={{
-          display: "inline-flex", alignItems: "center", gap: "8px",
-          padding: "9px 16px", borderRadius: "100px",
-          border: "1px solid #e5e0d3", background: "rgba(255,255,255,.5)",
-          color: "#5a7d5a", fontSize: "12.5px", fontWeight: 600, letterSpacing: ".08em",
-          fontFamily: "var(--font-sans)", textDecoration: "none",
-        }}>
-          <svg {...navIconProps}>
-            <circle cx="10" cy="7" r="3.2" />
-            <path d="M3.5 17c0-3.3 2.9-5 6.5-5s6.5 1.7 6.5 5" />
-          </svg>
-          マイページ
-        </Link>
+        <NavMenu />
       </header>
 
       {/* メインコンテンツ（縦中央。低い画面では flex-1 が縮みフッターと衝突しない） */}
