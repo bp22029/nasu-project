@@ -84,9 +84,20 @@ body {
   background: rgba(255,255,255,.92);
   box-shadow: 0 16px 32px -18px rgba(36,48,25,.5);
 }
-/* 右上のマイページ（ユーティリティ） */
-.home-mypage { transition: color .25s, border-color .25s, background .25s; }
-.home-mypage:hover { color: #2c3e2d; border-color: #b6cbac; background: rgba(255,255,255,.75); }
+/* グローバルナビ（共通ヘッダーのメニュー） */
+.nav-trigger { transition: background .2s, border-color .2s, color .2s; }
+.nav-trigger:hover { border-color: #b6cbac; color: #2c3e2d; background: rgba(255,255,255,.85); }
+.nav-item { transition: background .15s, color .15s; }
+.nav-item:hover { background: rgba(90,125,90,.12); }
+.nav-item[aria-current="page"]:hover { background: #2c3e2d; }
+.nav-panel { transform-origin: top right; animation: nav-open .18s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes nav-open {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-panel { animation: none !important; }
+}
 
 .start-t-line  { display: block; }
 /* マスクをinline-blockにすることで横幅 = テキスト幅になり横クリップが発生しない */

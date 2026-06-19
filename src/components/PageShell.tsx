@@ -10,8 +10,8 @@
  * パフォーマンス方針（CLAUDE.md セクション11）: blur フィルタは使わず、
  * 端が透明にフェードする radial-gradient でブロブを表現する。
  */
-import Link from "next/link";
 import GrainOverlay from "@/components/GrainOverlay";
+import SiteHeader from "@/components/SiteHeader";
 
 interface PageShellProps {
   /** 「← ラベル」で戻る先 */
@@ -54,21 +54,8 @@ export default function PageShell({
 
       <GrainOverlay fixed />
 
-      {/* トップバー */}
-      <header className="sticky top-0 flex items-center justify-between" style={{
-        zIndex: 20,
-        padding: "18px clamp(20px, 5vw, 64px)",
-        background: "linear-gradient(180deg, #f7f5f0 62%, rgba(247,245,240,0))",
-        pointerEvents: "none",
-      }}>
-        <Link href={backHref} className="sel-back" style={{ pointerEvents: "auto" }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          {backLabel}
-        </Link>
-        <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>N&nbsp;A&nbsp;S&nbsp;U</span>
-      </header>
+      {/* トップバー（共通ヘッダー: 文脈的な戻る + グローバルメニュー） */}
+      <SiteHeader backHref={backHref} backLabel={backLabel} />
 
       <div className="relative" style={{ zIndex: 2, maxWidth: "980px", margin: "0 auto", padding: "4px clamp(20px, 5vw, 64px) 90px" }}>
         {/* インデックスライン */}

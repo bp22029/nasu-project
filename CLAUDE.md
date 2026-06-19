@@ -182,6 +182,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 - `/select` の選択状態は sessionStorage（キー `nasu-select-state`、`src/lib/selectState.ts`）に保存され、「← 選び直す」で戻る・リロードでは維持される。**ホームの「はじめる」はこのキーを破棄して常に新規スタート**（前回の選択が残ると違和感があるため。ユーザー要望、2026-06-12）。
 - `dep` はプリセットID（`nasushiobara-station` 等）。GPS現在地は `dep=gps&lat=..&lng=..`。
 - 機能2（診断）は診断結果から `/route?...` のURLを組み立てて遷移するだけで追加できる。
+- **共通ヘッダー（`SiteHeader` + `NavMenu`）**: 全ページの右上に「N A S U（→ホーム、1タップ）」とグローバルメニュー（全ページへ）。左の文脈的な戻る（/route の「選び直す」等）は状態復元の意味があるため残す。メニューの「ルート設計」はホームCTAと同じく `SELECT_STATE_KEY` を破棄して白紙スタート（/route→/select の「選び直す」は復元、で挙動が分かれる）。`/select`・RouteShell・PageShell の重複ヘッダーは `SiteHeader` に集約済み。
 
 ### 選択画面（/select）
 
@@ -246,7 +247,9 @@ nasu-tabi/
 │   │   ├── SpotFilter.tsx      # タグフィルターのチップUI（ジャンル / 同行者）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
 │   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
-│   │   ├── PageShell.tsx        # 共通ページシェル（機能3の新ページ用。RouteShellの一般化）
+│   │   ├── SiteHeader.tsx       # 共通sticky ヘッダー（左=文脈的な戻る / 右=NASU→ホーム + NavMenu）
+│   │   ├── NavMenu.tsx          # グローバルナビ（全ページへ飛べるメニュー。最長一致で現在ページを点灯）
+│   │   ├── PageShell.tsx        # 共通ページシェル（機能3の新ページ用。RouteShellの一般化。ヘッダーは SiteHeader）
 │   │   ├── NicknameModal.tsx    # ニックネーム入力モーダル（匿名サインイン + profiles upsert）
 │   │   ├── SpotSearchPicker.tsx # スポット部分一致検索ピッカー
 │   │   ├── PhotoUploadField.tsx # 写真選択 → 切り抜き調整 → プレビュー

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import SpotGrid from "@/components/SpotGrid";
 import SpotFilter from "@/components/SpotFilter";
+import SiteHeader from "@/components/SiteHeader";
 import DepartureSelector from "@/components/DepartureSelector";
 import GrainOverlay from "@/components/GrainOverlay";
 import { encodeRouteQuery } from "@/lib/routeQuery";
@@ -168,21 +169,8 @@ export default function SelectPage() {
 
       <GrainOverlay fixed />
 
-      {/* トップバー */}
-      <header className="sticky top-0 flex items-center justify-between" style={{
-        zIndex: 20,
-        padding: "18px clamp(20px, 5vw, 64px)",
-        background: "linear-gradient(180deg, #f7f5f0 62%, rgba(247,245,240,0))",
-        pointerEvents: "none",
-      }}>
-        <button type="button" className="sel-back" style={{ pointerEvents: "auto" }} onClick={() => router.push("/")}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          もどる
-        </button>
-        <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>N&nbsp;A&nbsp;S&nbsp;U</span>
-      </header>
+      {/* トップバー（共通ヘッダー: 文脈的な戻る + グローバルメニュー） */}
+      <SiteHeader backHref="/" backLabel="もどる" />
 
       {/* コンテンツ */}
       <div className="relative" style={{ zIndex: 2, maxWidth: "1120px", margin: "0 auto", padding: "4px clamp(20px, 5vw, 64px) 180px" }}>
