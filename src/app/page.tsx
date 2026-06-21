@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GrainOverlay from "@/components/GrainOverlay";
 import NavMenu from "@/components/NavMenu";
+import BrandMark from "@/components/BrandMark";
 import { SELECT_STATE_KEY } from "@/lib/selectState";
 // スポット件数はマスタから動的に表示する（debug=13 / full=198。ハードコードしない）
 import { SPOTS } from "@/lib/spots";
@@ -121,10 +122,11 @@ export default function Home() {
         background: "linear-gradient(100deg, #f7f5f0 30%, rgba(247,245,240,.4) 52%, transparent 70%)",
       }} />
 
-      {/* トップヘッダー: どこへでも飛べるグローバルメニューを右上に置く */}
-      <header className="start-meta relative flex items-center justify-end" style={{
-        zIndex: 3, padding: "20px clamp(20px, 7vw, 72px) 0", pointerEvents: "none",
+      {/* トップヘッダー: 左にサービス名（#NASU）を大きく、右にグローバルメニュー */}
+      <header className="start-meta relative flex items-center justify-between" style={{
+        zIndex: 3, padding: "24px clamp(20px, 7vw, 72px) 0", pointerEvents: "none",
       }}>
+        <BrandMark serif fontSize="clamp(28px, 5.7vw, 50px)" />
         <NavMenu />
       </header>
 
@@ -252,8 +254,8 @@ export default function Home() {
           <span style={{ width: "1px", height: "12px", background: "#8fa888", opacity: 0.5, alignSelf: "center" }} />
           <span>直感でルート設計</span>
         </div>
-        <div className="start-brandmark" style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>
-          N&nbsp;A&nbsp;S&nbsp;U
+        <div className="start-brandmark">
+          <BrandMark fontSize="13px" />
         </div>
       </footer>
     </main>

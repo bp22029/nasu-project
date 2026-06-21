@@ -4,13 +4,14 @@
  * 共通の sticky ヘッダー（全ページで使う）
  *
  * 左: 文脈的な「← 戻る」（任意。状態復元の意味を持つので各ページが指定）
- * 右: 「N A S U」ブランド（→ホーム、1タップでホームに戻れる）＋ グローバルメニュー
+ * 右: 「#NASU」ブランド（→ホーム、1タップでホームに戻れる）＋ グローバルメニュー
  *
  * 以前は /select・/route(RouteShell)・PageShell が同一マークアップのヘッダーを
  * 各自に持っていた。それをこのコンポーネントへ集約する。
  */
 import Link from "next/link";
 import NavMenu from "@/components/NavMenu";
+import BrandMark from "@/components/BrandMark";
 
 interface SiteHeaderProps {
   /** 左の「← ラベル」で戻る先。省略時は戻るを表示しない（ホーム等） */
@@ -43,13 +44,10 @@ export default function SiteHeader({ backHref, backLabel }: SiteHeaderProps) {
       <div className="flex items-center" style={{ gap: "16px" }}>
         <Link
           href="/"
-          aria-label="ホームへ"
-          style={{
-            pointerEvents: "auto", textDecoration: "none",
-            fontSize: "11px", letterSpacing: ".4em", color: "#8fa888", fontWeight: 600,
-          }}
+          aria-label="#NASU ホームへ"
+          style={{ pointerEvents: "auto", textDecoration: "none" }}
         >
-          N&nbsp;A&nbsp;S&nbsp;U
+          <BrandMark fontSize="14px" />
         </Link>
         <NavMenu />
       </div>

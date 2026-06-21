@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "那須旅 — 観光ルート提案",
-  description: "那須町の観光スポットを選んで、道なりルートを提案するアプリ",
+  title: "#NASU — 那須観光ルート提案",
+  description: "気になる写真から、あなたの那須へ。#NASU は那須町の観光スポットを選んで道なりルートを提案するアプリ。",
 };
 
 export default function RootLayout({
