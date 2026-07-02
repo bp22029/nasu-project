@@ -43,6 +43,16 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    href: "/diagnosis",
+    label: "旅タイプ診断",
+    icon: (
+      <>
+        <path d="M10 2.5a4 4 0 0 1 4 4c0 2-1.6 2.8-2.6 3.8-.6.6-.9 1.2-.9 2.2" />
+        <circle cx="10" cy="16.5" r="1" />
+      </>
+    ),
+  },
+  {
     href: "/trips",
     label: "みんなの旅",
     icon: (

@@ -209,6 +209,29 @@ export default function Home() {
           </span>
         </button>
 
+        {/* 副CTA: 何を選べばいいか迷う人向けの「診断ではじめる」導線（主CTAより控えめに） */}
+        <div className="start-nav" style={{ marginTop: "18px" }}>
+          <Link
+            href="/diagnosis"
+            className="home-navchip"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "10px", alignSelf: "flex-start",
+              padding: "13px 20px", borderRadius: "100px",
+              border: "1px solid #e5e0d3", background: "rgba(255,255,255,.7)",
+              color: "#2c3e2d", fontSize: "13.5px", fontWeight: 600,
+              letterSpacing: ".08em", fontFamily: "var(--font-sans)", textDecoration: "none",
+            }}
+          >
+            <span style={{ color: "#5a7d5a", display: "inline-flex" }}>
+              <svg {...navIconProps}>
+                <path d="M10 2.5a4 4 0 0 1 4 4c0 2-1.6 2.8-2.6 3.8-.6.6-.9 1.2-.9 2.2" />
+                <circle cx="10" cy="16.5" r="1" />
+              </svg>
+            </span>
+            迷ったら、旅タイプ診断ではじめる
+          </Link>
+        </div>
+
         {/* 副次導線（機能3）: 見る・記録・投稿。テキストリンクではなくアイコン付きボタンで
             「機能」として認識でき、タップ領域も十分にする */}
         <div className="start-nav" style={{ marginTop: "40px" }}>
