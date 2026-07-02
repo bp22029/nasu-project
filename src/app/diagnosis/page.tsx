@@ -119,8 +119,9 @@ function Intro({ total, onStart }: { total: number; onStart: () => void }) {
       <p
         className="sel-rise text-balance"
         style={{
+          // maxWidth は全角基準の em で指定（ch は半角幅なので日本語だと狭すぎて余計に折り返す）
           fontSize: "clamp(13px, 1.3vw, 16px)", color: "#5a7d5a",
-          letterSpacing: ".06em", lineHeight: 1.9, maxWidth: "46ch", marginBottom: "28px",
+          letterSpacing: ".06em", lineHeight: 1.9, maxWidth: "40em", marginBottom: "28px",
           animationDelay: ".2s",
         }}
       >
