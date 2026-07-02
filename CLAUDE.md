@@ -29,9 +29,14 @@
   - **debug（既定）**: 13件（`data/spots.json`）— 開発中の写真API節約用
   - **full**: 約200件（`data/spots-full.json`、`data/nasu_spot_v1.csv` 由来）— 本番用。Vercel に `NEXT_PUBLIC_SPOTS_MODE=full` を設定する
 
-### ❌ 機能2（未着手）— 那須旅診断
+### 🔶 機能2（一部実装済み）— 那須旅診断
 
-診断結果からスポット配列を生成して `calculateRoute` に渡す設計。差し込み口は用意済み（セクション8参照）。
+- ✅ **診断フロント**（`/diagnosis`）: 16問の5件法（Likert）を4軸で採点し、旅タイプ（動物）を表示する。
+  - **4軸**（各4問・★は逆転項目）: ① 計画↔即興 / ② 刺激↔癒し / ③ 内向↔外向 / ④ 体験↔形。各軸の合計スコア（±8）で2極に振り分け、**4文字コード（例 `phnx`）で 2^4=16 タイプに確定**する（同点は正極に倒す＝決定的）。
+  - タイプは動物マスコット + 画像。画像は `public/diagnosis-types/*.png`（`data/image` 由来。**ファイル名がコードを表す**: 例 `05_phnx_sheep.png` = 計画×癒し×内向×体験）。
+  - 診断の中身（軸・質問・タイプ・採点）は `src/lib/diagnosis.ts` に集約。**タイプの name/tagline/description は仮テキストなので差し替え可**。画面（`src/app/diagnosis/page.tsx`）はこの配列を読むだけ。
+  - 結果画面は「タイプ表示まで」。ローカル state のみで完結し URL/sessionStorage は使わない。
+- ❌ **ルート連携（未実装）**: 診断結果 → スポット配列 → `calculateRoute` の接続はまだ。差し込み口として各タイプに `genres`（`GENRE_LABELS` の部分集合）を用意済み。将来ここを `spotMatchesTags` に渡して `/select`（事前フィルター）or `/route` へ繋ぐ（セクション8参照）。
 
 ### 🔶 機能3（一部実装済み）— 写真投稿
 
@@ -173,8 +178,9 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 
 | URL | 役割 |
 |---|---|
-| `/` | ホーム（スタート画面）。「はじめる」で `/select` へ |
+| `/` | ホーム（スタート画面）。「はじめる」で `/select` へ。副CTAから `/diagnosis` へ |
 | `/select` | 出発地 + 写真グリッドでスポット選択。「設計する」で `/route?...` へ |
+| `/diagnosis` | 旅タイプ診断（機能2）。16問5件法 → 4軸で16タイプ（動物）を表示。ルート連携は未実装 |
 | `/route?spots=..&dep=..&trip=..&tolls=..` | ルート結果（地図 + タイムライン）。URL単体で共有・リロード可能 |
 | `/post` | 単体投稿（機能3）。写真 + スポット検索選択 + 任意キャプション + グリッド掲載許可 |
 | `/trips` | 旅記録一覧（機能3）。旅記録のみ新着順・公開（ログイン不要） |
@@ -220,7 +226,10 @@ nasu-tabi/
 ├── data/
 │   ├── spots.json               # 観光地マスタ debug用（13件）
 │   ├── spots-full.json          # 観光地マスタ 本番用（約200件、build-spots-full.ts で生成）
-│   └── nasu_spot_v1.csv         # 本番スポットの調査データ（spots-full.json の元）
+│   ├── nasu_spot_v1.csv         # 本番スポットの調査データ（spots-full.json の元）
+│   └── image/                   # 診断タイプの動物画像 元データ（public/diagnosis-types へコピーして使用）
+├── public/
+│   └── diagnosis-types/         # 診断16タイプの画像（ファイル名がタイプコード。例 05_phnx_sheep.png）
 ├── scripts/
 │   ├── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
 │   └── build-spots-full.ts      # spots-full.json 生成（CSV + 既存13件をマージ、placeId取得）
@@ -231,6 +240,7 @@ nasu-tabi/
 │   ├── app/
 │   │   ├── page.tsx             # ホーム（/ スタート画面）
 │   │   ├── select/page.tsx      # スポット選択（/select、選択状態は sessionStorage に保存）
+│   │   ├── diagnosis/page.tsx   # 旅タイプ診断（/diagnosis、機能2。16問5件法 → 16タイプ表示）
 │   │   ├── route/page.tsx       # ルート結果（/route?spots=..&dep=..、計算 + 地図 + タイムライン）
 │   │   ├── post/page.tsx        # 単体投稿（/post、機能3）
 │   │   ├── trips/page.tsx       # 旅記録一覧（/trips、機能3）
@@ -263,6 +273,7 @@ nasu-tabi/
 │   │   └── GridConsentCheckbox.tsx # グリッド掲載許可チェック（/post と /trips/new で共用）
 │   ├── lib/
 │   │   ├── calculateRoute.ts    # ルート計算の独立関数（拡張の差し込み口）
+│   │   ├── diagnosis.ts         # 機能2診断の軸・質問・16タイプ・採点ロジック（中身はここを編集）
 │   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
 │   │   ├── ors.ts               # ORS API クライアント（Matrix / Directions）
 │   │   ├── tsp.ts               # 自前TSP（全探索 / 最近傍法）
