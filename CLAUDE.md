@@ -241,6 +241,7 @@ nasu-tabi/
 │   │   ├── page.tsx             # ホーム（/ スタート画面）
 │   │   ├── select/page.tsx      # スポット選択（/select、選択状態は sessionStorage に保存）
 │   │   ├── diagnosis/page.tsx   # 旅タイプ診断（/diagnosis、機能2。16問5件法 → 16タイプ表示）
+│   │   ├── admin/diagnosis-types/page.tsx # 【管理者用】診断16タイプのプレビュー（Basic認証。ナビ非掲載）
 │   │   ├── route/page.tsx       # ルート結果（/route?spots=..&dep=..、計算 + 地図 + タイムライン）
 │   │   ├── post/page.tsx        # 単体投稿（/post、機能3）
 │   │   ├── trips/page.tsx       # 旅記録一覧（/trips、機能3）
@@ -292,6 +293,7 @@ nasu-tabi/
 │       ├── departure.ts         # DeparturePoint 型 + PRESET_DEPARTURES
 │       └── post.ts              # Profile / Post / Trip / TripEntry / TripDraft 型
 ├── .env.local                   # APIキー（Git管理外）
+├── src/middleware.ts            # /admin/* を Basic 認証でガード（ADMIN_USER / ADMIN_PASSWORD）
 ├── next.config.mjs              # Google画像・Supabase Storage の remotePatterns 設定
 └── CLAUDE.md                    # このファイル
 ```
@@ -372,9 +374,12 @@ ORS_API_KEY=（openrouteservice.org で発行した新形式トークン。旧 e
 NEXT_PUBLIC_SUPABASE_URL=（Supabase の Project URL。機能3用）
 NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前提のキーで防壁はRLS）
 NEXT_PUBLIC_SPOTS_MODE=（debug=13件（開発用・既定） / full=約200件。Vercel は full を設定）
+ADMIN_USER=（管理者ページ /admin/* の Basic 認証ユーザー。省略時 "admin"）
+ADMIN_PASSWORD=（同パスワード。未設定だと開発は素通し・本番は 503。本番は必ず設定）
 ```
 
 - `NEXT_PUBLIC_` の2つはブラウザから supabase-js で直アクセスするため必須。**service_role key は使わない・どこにも置かない**。
+- `ADMIN_*` は `src/middleware.ts` が `/admin/*` の Basic 認証に使う（サーバー側ガード）。管理者ページはナビに載せない。
 - Vercel デプロイ時は同じ変数を Vercel の Environment Variables にも設定する。
 - `.gitignore` に `.env*` が含まれていることを必ず確認する。
 
