@@ -114,7 +114,7 @@ function Intro({ total, onStart }: { total: number; onStart: () => void }) {
         }}
       >
         {total}の質問で、<br />
-        あなたの<span style={{ color: "#5a7d5a" }}>那須の旅タイプ</span>を診断。
+        あなたの<span style={{ color: "#5a7d5a" }}>旅タイプ</span>を診断。
       </h1>
       <p
         className="sel-rise text-balance"
