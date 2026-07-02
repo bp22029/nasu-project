@@ -117,15 +117,14 @@ function Intro({ total, onStart }: { total: number; onStart: () => void }) {
         あなたの<span style={{ color: "#5a7d5a" }}>那須の旅タイプ</span>を診断。
       </h1>
       <p
-        className="sel-rise"
+        className="sel-rise text-balance"
         style={{
           fontSize: "clamp(13px, 1.3vw, 16px)", color: "#5a7d5a",
           letterSpacing: ".06em", lineHeight: 1.9, maxWidth: "46ch", marginBottom: "28px",
           animationDelay: ".2s",
         }}
       >
-        「計画 ↔ 即興」「刺激 ↔ 癒し」「内向 ↔ 外向」「体験 ↔ 形」の4つの視点から、<br />
-        あなたにぴったりの過ごし方（動物タイプ）が見つかります。
+        「計画 ↔ 即興」「刺激 ↔ 癒し」「内向 ↔ 外向」「体験 ↔ 形」の4つの視点から、あなたにぴったりの過ごし方（動物タイプ）が見つかります。
       </p>
 
       {/* 4軸の紹介 */}
