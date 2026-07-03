@@ -100,7 +100,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 
 写真表示時の義務:
 - `authorAttributions`（撮影者クレジット）が返ればそれを必ず表示する。
-- Googleコンテンツを地図なしで表示するため、**Googleロゴ**を併記する（SpotCard 右上の `Google` バッジ）。
+- Googleコンテンツを地図なしで表示するため、**帰属表示「Google Maps」を併記する**。ロゴ画像は不要で、テキスト表記でよい（Google Maps Platform ポリシー: スペースが限られる場合は「Google マップ」テキスト可。**新規実装は「Google」ではなく「Google Maps」**を使う＝旧「Google」は経過措置）。実装は SpotCard 下部クレジット行で、撮影者名があれば `{撮影者名} · Google Maps`、無くても `Google Maps` を必ず表示（`photoCredit`）。施設名OFF時も表示し続ける。
 - 写真本体・写真URLはキャッシュ／DB保存しない（place_idだけ保存）。
 
 ---
