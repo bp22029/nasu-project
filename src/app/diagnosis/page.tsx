@@ -13,6 +13,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import PageShell from "@/components/PageShell";
+import SurveyPrompt from "@/components/SurveyPrompt";
 import {
   AXES,
   QUESTIONS,
@@ -372,6 +373,11 @@ function ResultView({
         <button type="button" onClick={onBack} style={textLinkStyle}>
           ← 質問にもどる
         </button>
+      </div>
+
+      {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
+      <div className="sel-rise" style={{ marginTop: "30px", animationDelay: ".3s" }}>
+        <SurveyPrompt from="diagnosis" />
       </div>
     </div>
   );

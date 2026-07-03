@@ -49,6 +49,11 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 - ✅ **グリッド連携**: 掲載許可された投稿写真を /select のカードに Google 写真とあわせて表示（初期表示ランダム + カルーセル。セクション14参照）
 - ✅ **マイページ**（`/me`）: 自分の投稿の確認・編集（文章と掲載許可のみ）・削除、ニックネーム変更
 
+### ✅ 機能4（実装済み）— 使用感アンケート
+
+- アプリ内アンケート（`/survey`）。5段階3問 + 自由記述（任意）を**完全匿名**で回答。回答は **Google スプレッドシート**へ保存（`POST /api/survey` → Apps Script Web App）。
+- 各完了・閲覧地点（`/route`・`/diagnosis`・`/post`・`/trips`・`/trips/[id]`・NavMenu）に導線CTA `SurveyPrompt` を設置。回答済みは localStorage で全CTAを自動非表示。設計の全体像はセクション15参照。
+
 ---
 
 ## 3. 技術スタック
@@ -187,6 +192,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 | `/trips/[id]` | 旅記録詳細（機能3）。訪問順エントリ + route_query があればルート画面へのリンク |
 | `/trips/new` | 旅記録作成（機能3）。/route からのプレフィル有/無で画面共通 |
 | `/me` | マイページ（機能3）。自分の投稿の確認・編集・削除、ニックネーム変更 |
+| `/survey` | 使用感アンケート（機能4）。5段階3問 + 自由記述。回答は Google スプレッドシートへ保存（セクション15） |
 
 - `/select` の選択状態は sessionStorage（キー `nasu-select-state`、`src/lib/selectState.ts`）に保存され、「← 選び直す」で戻る・リロードでは維持される。**ホームの「はじめる」はこのキーを破棄して常に新規スタート**（前回の選択が残ると違和感があるため。ユーザー要望、2026-06-12）。
 - `dep` はプリセットID（`nasushiobara-station` 等）。GPS現在地は `dep=gps&lat=..&lng=..`。
@@ -216,6 +222,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 |---|---|
 | `POST /api/route` | ORS Matrix → TSP → ORS Directions を実行して RouteResult を返す |
 | `GET /api/photos/[placeId]` | Places API (New) からスポット写真を動的取得して返す |
+| `POST /api/survey` | アンケート回答を検証して Google スプレッドシート（Apps Script Web App）へ転送（セクション15） |
 
 ---
 
@@ -232,7 +239,8 @@ nasu-tabi/
 │   └── diagnosis-types/         # 診断16タイプの画像（ファイル名がタイプコード。例 05_phnx_sheep.png）
 ├── scripts/
 │   ├── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
-│   └── build-spots-full.ts      # spots-full.json 生成（CSV + 既存13件をマージ、placeId取得）
+│   ├── build-spots-full.ts      # spots-full.json 生成（CSV + 既存13件をマージ、placeId取得）
+│   └── survey-apps-script.gs    # 機能4: アンケート回答をGoogleスプレッドシートに追記するApps Script（貼付用+手順）
 ├── supabase/
 │   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行）
 │   └── SETUP.md                 # Supabaseプロジェクトのセットアップ手順
@@ -248,17 +256,20 @@ nasu-tabi/
 │   │   ├── trips/[id]/page.tsx  # 旅記録詳細（機能3）
 │   │   ├── trips/new/page.tsx   # 旅記録作成（機能3、プレフィル対応）
 │   │   ├── me/page.tsx          # マイページ（機能3、編集・削除・ニックネーム変更）
+│   │   ├── survey/page.tsx      # 使用感アンケート（機能4、/survey?from=..。5段階3問+自由記述）
 │   │   ├── layout.tsx
 │   │   ├── globals.css
 │   │   └── api/
 │   │       ├── route/route.ts           # POST /api/route
-│   │       └── photos/[spotId]/route.ts # GET /api/photos/[spotId]（Google + 投稿写真をマージ）
+│   │       ├── photos/[spotId]/route.ts # GET /api/photos/[spotId]（Google + 投稿写真をマージ）
+│   │       └── survey/route.ts          # POST /api/survey（回答を検証しApps Script Web Appへ転送）
 │   ├── components/
 │   │   ├── Map.tsx              # Leaflet地図（SSR無効、polyline・マーカー）
 │   │   ├── SpotCard.tsx         # スポットカード（写真取得・選択状態）
 │   │   ├── SpotGrid.tsx         # 2列グリッド
 │   │   ├── DepartureSelector.tsx # 出発地選択UI（プリセット + GPS）
 │   │   ├── SpotFilter.tsx      # タグフィルターのチップUI（ジャンル / 同行者）
+│   │   ├── SurveyPrompt.tsx    # 機能4: アンケートへの導線CTA（回答済みなら自動非表示。全完了地点で共用）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
 │   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
 │   │   ├── SiteHeader.tsx       # 共通sticky ヘッダー（左=文脈的な戻る / 右=NASU→ホーム + NavMenu）
@@ -285,6 +296,7 @@ nasu-tabi/
 │   │   ├── spotSearch.ts        # スポット部分一致検索（正規化付き）
 │   │   ├── spots.ts             # スポットマスタの単一参照点（debug/fullモード切替 + spotNameOf）
 │   │   ├── spotTags.ts          # tags をジャンル大分類・同行者の2軸へ実行時解釈（/select フィルター）
+│   │   ├── surveyClient.ts      # 機能4: アンケートの設問定義・回答済みキー・送信ペイロード型
 │   │   ├── selectState.ts       # /select 選択状態の sessionStorage キー
 │   │   └── photoUrl.ts          # Storage 公開URLヘルパー
 │   └── types/
@@ -376,10 +388,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前
 NEXT_PUBLIC_SPOTS_MODE=（debug=13件（開発用・既定） / full=約200件。Vercel は full を設定）
 ADMIN_USER=（管理者ページ /admin/* の Basic 認証ユーザー。省略時 "admin"）
 ADMIN_PASSWORD=（同パスワード。未設定だと開発は素通し・本番は 503。本番は必ず設定）
+SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NEXT_PUBLIC は付けない＝サーバー専用。未設定だと /api/survey は 500）
 ```
 
 - `NEXT_PUBLIC_` の2つはブラウザから supabase-js で直アクセスするため必須。**service_role key は使わない・どこにも置かない**。
 - `ADMIN_*` は `src/middleware.ts` が `/admin/*` の Basic 認証に使う（サーバー側ガード）。管理者ページはナビに載せない。
+- `SURVEY_WEBHOOK_URL` は Apps Script Web App の URL。**NEXT_PUBLIC を付けない**（サーバー専用で秘匿）。設定手順は `scripts/survey-apps-script.gs` 冒頭のコメント参照。
 - Vercel デプロイ時は同じ変数を Vercel の Environment Variables にも設定する。
 - `.gitignore` に `.env*` が含まれていることを必ず確認する。
 
@@ -440,3 +454,34 @@ ADMIN_PASSWORD=（同パスワード。未設定だと開発は素通し・本�
 - 削除は DB 行 + Storage の写真を両方消す（旅記録は entries が cascade、写真はまとめて remove）→ 写真APIは毎回DBを引くため /select グリッドからも自動で消える。
 - UPDATE の RLS は `supabase/migration-003-mypage-edit.sql`（新規プロジェクトは schema.sql に含まれる）。
 - このページでは匿名サインインを発火しない（セッションがなければ空状態表示。ニックネーム変更モーダルの保存時のみ発火）。
+
+---
+
+## 15. 機能4（使用感アンケート）の設計
+
+利用者アンケートを**アプリ内**で取る。Googleフォームへのリンクではなくアプリ内実装を選んだ理由: 別タブ/アプリ起動という画面遷移が最大の離脱要因（特にスマホ）で、「工程を増やさない・回答率を上げる」に反するため。フォーム体験は保存先に依存しないので、**保存先だけ Google スプレッドシート**にしている（集計・班での共有が楽・Supabase無料枠を消費しない、というユーザー判断）。
+
+### 保存フロー（ブラウザ → 自前API → Apps Script → シート）
+
+- `/survey` のフォーム送信 → 同一オリジンの `POST /api/survey`（`src/app/api/survey/route.ts`）→ サーバーが `SURVEY_WEBHOOK_URL`（Apps Script Web App）へサーバー間 POST → シートに1行追記。
+- **サーバー経由なので CORS 不要**で、Web App URL も環境変数で秘匿できる（ブラウザから直接 Apps Script は叩かない）。
+- **認証なし・完全匿名**（Supabase を一切使わない）。ニックネームも要らないので、答える以外の工程はゼロ。
+- Route Handler の fetch キャッシュ対策（セクション11）を踏襲: `dynamic = "force-dynamic"` + 外部 fetch に `cache: "no-store"`。
+- APIルートで 3問（satisfaction/ease_of_use/recommend）を 1–5 の整数として検証し、自由記述は1000字に切り詰めてから転送する。
+
+### 設問・UI
+
+- **5段階3問**（全体満足度 / 使いやすさ / おすすめ度）+ 自由記述（任意）。設問文は `src/lib/surveyClient.ts` に集約（**仮テキストなので差し替え可**。差し替え時は Apps Script のヘッダー行も合わせる）。
+- 5択UIは `/diagnosis` の5件法、フォームの器は `/post` のスタイルを流用。世界観は PageShell 共通（06 — SURVEY）。
+- 必須は3問のみ（自由記述は任意）。工程を軽くするため送信は1発（編集・削除UIは持たない）。
+
+### 導線（回答率の要）
+
+- 再利用CTA `SurveyPrompt`（`src/components/SurveyPrompt.tsx`）を**完了・閲覧地点**に置く: `/route`（タイムライン下）・`/diagnosis`（結果下）・`/post`（完了画面）・`/trips`・`/trips/[id]`。NavMenu にも常設。
+- CTA から `/survey?from=<route|diagnosis|post|trips>` へ遷移し、`from` を回答に添付（ユーザーに追加質問せず「どこから来たか」を取得）。NavMenu からは `from` 空。
+- 一度送信すると localStorage `nasu-survey-answered` が立ち、**全ページの CTA を自動で隠す**（しつこく出さない）。再回答は `/survey` 直アクセスで可能。
+
+### 集計・セットアップ
+
+- 回答は Google スプレッドシート（`responses` シート）に溜まる。閲覧・グラフ・共有はスプレッドシート上で行う（アプリ内の集計画面は作らない）。
+- Apps Script のコードと**デプロイ手順は `scripts/survey-apps-script.gs` 冒頭のコメント**が正本。発行された Web App URL を `.env.local` と Vercel の `SURVEY_WEBHOOK_URL` に設定する（`.env.local` 変更後は dev サーバー再起動）。

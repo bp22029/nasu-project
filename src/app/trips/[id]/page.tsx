@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import PageShell from "@/components/PageShell";
 import UserPhoto from "@/components/UserPhoto";
+import SurveyPrompt from "@/components/SurveyPrompt";
 import { formatTripDate } from "@/components/TripCard";
 import { getSupabase } from "@/lib/supabase/client";
 import { spotNameOf } from "@/lib/spots";
@@ -167,6 +168,11 @@ export default function TripDetailPage() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
+      <div className="sel-rise" style={{ maxWidth: "560px", marginTop: "40px" }}>
+        <SurveyPrompt from="trips" variant="card" />
       </div>
     </PageShell>
   );

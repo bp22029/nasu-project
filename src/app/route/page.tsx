@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 import RouteTimeline from "@/components/RouteTimeline";
 import GrainOverlay from "@/components/GrainOverlay";
 import SiteHeader from "@/components/SiteHeader";
+import SurveyPrompt from "@/components/SurveyPrompt";
 import { decodeRouteQuery } from "@/lib/routeQuery";
 import type { RouteResult } from "@/types/route";
 import { TRIP_DRAFT_KEY, type TripDraft } from "@/types/post";
@@ -253,6 +254,11 @@ function RouteContent() {
         <p style={{ fontSize: "11px", color: "#8fa888", letterSpacing: ".08em", marginTop: "10px" }}>
           訪問地が入った状態で旅の記録をはじめられます
         </p>
+      </div>
+
+      {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
+      <div className="sel-rise flex justify-center" style={{ marginTop: "34px", animationDelay: ".5s" }}>
+        <SurveyPrompt from="route" />
       </div>
     </RouteShell>
   );

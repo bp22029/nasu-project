@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageShell from "@/components/PageShell";
 import TripCard from "@/components/TripCard";
+import SurveyPrompt from "@/components/SurveyPrompt";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Trip } from "@/types/post";
 
@@ -101,6 +102,11 @@ export default function TripsPage() {
           </div>
         </>
       )}
+
+      {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
+      <div className="sel-rise" style={{ marginTop: "40px", animationDelay: ".34s" }}>
+        <SurveyPrompt from="trips" variant="card" />
+      </div>
     </PageShell>
   );
 }
