@@ -20,20 +20,30 @@
  */
 
 var SHEET_NAME = "responses";
-var HEADER = ["timestamp", "source", "satisfaction", "ease_of_use", "recommend", "free_comment"];
+// 列の並び。src/lib/survey.ts の設問キーと順序を合わせること（設問を増減したら両方直す）。
+var HEADER = [
+  "timestamp",
+  "source",
+  "age",       // Q1 年代
+  "visits",    // Q2 那須訪問回数
+  "want_use",  // Q3 今後使いたいか（5段階）
+  "design",    // Q4 デザインの魅力（5段階）
+  "route",     // Q5 ルートの適切さ（5段階）
+  "revisit",   // Q6 また訪れたいか（5段階）
+  "channel",   // Q7 どこで知ったか
+  "good",      // Q8 良かった点・気になった点（自由記述）
+  "improve",   // Q9 ほしい機能・改善点（自由記述）
+];
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var sheet = getSheet_();
-    sheet.appendRow([
-      new Date(),
-      data.source || "",
-      data.satisfaction || "",
-      data.ease_of_use || "",
-      data.recommend || "",
-      data.free_comment || "",
-    ]);
+    var row = HEADER.map(function (key) {
+      if (key === "timestamp") return new Date();
+      return data[key] || "";
+    });
+    sheet.appendRow(row);
     return json_({ ok: true });
   } catch (err) {
     return json_({ ok: false, error: String(err) });

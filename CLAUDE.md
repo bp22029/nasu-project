@@ -51,7 +51,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 
 ### ✅ 機能4（実装済み）— 使用感アンケート
 
-- アプリ内アンケート（`/survey`）。5段階3問 + 自由記述（任意）を**完全匿名**で回答。回答は **Google スプレッドシート**へ保存（`POST /api/survey` → Apps Script Web App）。
+- アプリ内アンケート（`/survey`）。実証実験用に**必須7問（属性2・5段階評価4・単一選択1）+ 任意2問（自由記述）**を**完全匿名**で回答。回答は **Google スプレッドシート**へ保存（`POST /api/survey` → Apps Script Web App）。
 - 各完了・閲覧地点（`/route`・`/diagnosis`・`/post`・`/trips`・`/trips/[id]`・NavMenu）に導線CTA `SurveyPrompt` を設置。回答済みは localStorage で全CTAを自動非表示。設計の全体像はセクション15参照。
 
 ---
@@ -296,7 +296,7 @@ nasu-tabi/
 │   │   ├── spotSearch.ts        # スポット部分一致検索（正規化付き）
 │   │   ├── spots.ts             # スポットマスタの単一参照点（debug/fullモード切替 + spotNameOf）
 │   │   ├── spotTags.ts          # tags をジャンル大分類・同行者の2軸へ実行時解釈（/select フィルター）
-│   │   ├── surveyClient.ts      # 機能4: アンケートの設問定義・回答済みキー・送信ペイロード型
+│   │   ├── survey.ts            # 機能4: アンケート設問の正本（クライアント/サーバー共有。9問+説明文+回答済みキー）
 │   │   ├── selectState.ts       # /select 選択状態の sessionStorage キー
 │   │   └── photoUrl.ts          # Storage 公開URLヘルパー
 │   └── types/
@@ -471,9 +471,11 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 
 ### 設問・UI
 
-- **5段階3問**（全体満足度 / 使いやすさ / おすすめ度）+ 自由記述（任意）。設問文は `src/lib/surveyClient.ts` に集約（**仮テキストなので差し替え可**。差し替え時は Apps Script のヘッダー行も合わせる）。
-- 5択UIは `/diagnosis` の5件法、フォームの器は `/post` のスタイルを流用。世界観は PageShell 共通（06 — SURVEY）。
-- 必須は3問のみ（自由記述は任意）。工程を軽くするため送信は1発（編集・削除UIは持たない）。
+- 実証実験用の**9問**: Q1 年代 / Q2 那須訪問回数（単一選択）、Q3 使いたいか / Q4 デザイン魅力 / Q5 ルート適切 / Q6 また訪れたいか（**5段階・共通ラベルで統一**＝シートで横並び比較しやすい）、Q7 認知経路（単一選択）＝ここまで必須7問。Q8 良かった/気になった点 / Q9 ほしい機能・改善点（自由記述・任意）。
+- 設問の正本は `src/lib/survey.ts`（**クライアントとAPIルートで共有**＝サーバーでも同じ定義で検証）。設問タイプは `single`（単一選択）/ `scale`（5段階）/ `text`（自由記述）。**差し替え時は `scripts/survey-apps-script.gs` の HEADER と順序も合わせる**。
+- 保存値は**選択肢のラベル文字列**（5段階も共通ラベル）と自由記述テキストをそのまま列に入れる。冒頭に説明文（`SURVEY_INTRO`）を表示。
+- 選択肢UIは `/diagnosis` の5件法、フォームの器は `/post` のスタイルを流用。世界観は PageShell 共通（06 — SURVEY）。
+- 必須は7問（★表示）。すべて回答すると送信可。工程を軽くするため送信は1発（編集・削除UIは持たない）。
 
 ### 導線（回答率の要）
 

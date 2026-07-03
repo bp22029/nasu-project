@@ -13,7 +13,7 @@
  */
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { SURVEY_ANSWERED_KEY } from "@/lib/surveyClient";
+import { SURVEY_ANSWERED_KEY } from "@/lib/survey";
 
 interface SurveyPromptProps {
   /** 導線識別子（'route' | 'diagnosis' | 'post' | 'trips' | 'nav' など） */
