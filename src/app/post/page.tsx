@@ -17,6 +17,7 @@ import SpotSearchPicker from "@/components/SpotSearchPicker";
 import PhotoUploadField from "@/components/PhotoUploadField";
 import NicknameModal from "@/components/NicknameModal";
 import GridConsentCheckbox from "@/components/GridConsentCheckbox";
+import SurveyPrompt from "@/components/SurveyPrompt";
 import { ensureSignedInWithProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 import { SPOTS } from "@/lib/spots";
@@ -144,6 +145,11 @@ export default function PostPage() {
           }}>
             ホームへ戻る
           </Link>
+        </div>
+
+        {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
+        <div className="sel-rise" style={{ marginTop: "34px", animationDelay: ".32s" }}>
+          <SurveyPrompt from="post" />
         </div>
       </PageShell>
     );
