@@ -74,11 +74,31 @@ export async function POST(req: Request) {
       cache: "no-store",
       redirect: "follow", // Apps Script Web App は googleusercontent へ 302 する
     });
-    if (!res.ok) {
-      return NextResponse.json({ error: "保存に失敗しました" }, { status: 502 });
+    const text = await res.text().catch(() => "");
+    // Apps Script は doPost が例外でも HTTP 200 で {ok:false,...} を返すので中身も見る
+    let upstreamOk = res.ok;
+    if (upstreamOk && text) {
+      try {
+        const parsed = JSON.parse(text) as { ok?: boolean };
+        if (parsed && parsed.ok === false) upstreamOk = false;
+      } catch {
+        // JSON でない（＝ログイン用HTML等）＝公開設定が「全員」でない可能性が高い
+        upstreamOk = false;
+      }
     }
-  } catch {
-    return NextResponse.json({ error: "保存に失敗しました" }, { status: 502 });
+    if (!upstreamOk) {
+      console.error("[survey] upstream failed", res.status, text.slice(0, 500));
+      return NextResponse.json(
+        { error: `保存に失敗しました（保存先が ${res.status} を返しました。Apps Scriptの公開設定/URLを確認してください）` },
+        { status: 502 }
+      );
+    }
+  } catch (e) {
+    console.error("[survey] fetch error", e);
+    return NextResponse.json(
+      { error: "保存に失敗しました（保存先に接続できませんでした）" },
+      { status: 502 }
+    );
   }
 
   return NextResponse.json({ ok: true });
