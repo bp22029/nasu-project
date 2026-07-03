@@ -16,10 +16,14 @@ import spotsDebug from "@/../data/spots.json";
 import spotsFull from "@/../data/spots-full.json";
 import type { Spot } from "@/types/spot";
 
-export const SPOTS: Spot[] =
+// 掲載中のスポットだけを公開する（hidden:true は除外）。/select のグリッド・検索・
+// 診断マッチ・ホームの件数はすべて SPOTS 経由なので、ここで一括で消える。
+// 名前解決（spotNameOf）は hidden も含む生データを参照するので影響しない。
+export const SPOTS: Spot[] = (
   process.env.NEXT_PUBLIC_SPOTS_MODE === "full"
     ? (spotsFull as Spot[])
-    : (spotsDebug as Spot[]);
+    : (spotsDebug as Spot[])
+).filter((s) => !s.hidden);
 
 /** DB の spot_id から表示名を引く。マスタから消えた id はフォールバック表示 */
 export function spotNameOf(spotId: string): string {

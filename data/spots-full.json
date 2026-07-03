@@ -528,6 +528,7 @@
   {
     "id": "s-ed56382b",
     "name": "My Style Garden Studio",
+    "hidden": true,
     "lat": 37.056684040203486,
     "lng": 140.0077504005621,
     "placeId": "ChIJO0QUviaIH2AR-ZlUpXcxyZw",
@@ -589,6 +590,7 @@
   {
     "id": "s-e0ca4e64",
     "name": "NOZARU（那須の森の空中アスレチック）",
+    "hidden": true,
     "lat": 37.06636809342332,
     "lng": 139.96808661696434,
     "placeId": "ChIJdf52bXKJH2ARBAWDPK47mVQ",
@@ -1894,6 +1896,7 @@
   {
     "id": "s-c91a4541",
     "name": "森と遊ぶ「香りの蒸留所」",
+    "hidden": true,
     "lat": 37.0438811428645,
     "lng": 140.00918086029068,
     "placeId": "ChIJkXY81C6JH2ARzzpUo-zy2Gg",
@@ -1909,6 +1912,7 @@
   {
     "id": "s-de122af3",
     "name": "森のVoiVoi",
+    "hidden": true,
     "lat": 37.05386778396865,
     "lng": 140.01428576580946,
     "placeId": "ChIJRSnyq7wpIGARr8DOqRAKzu8",
@@ -2073,6 +2077,7 @@
   {
     "id": "s-e480a21c",
     "name": "茶屋 卯三郎",
+    "hidden": true,
     "lat": 37.0463180092473,
     "lng": 140.0183888507226,
     "placeId": "ChIJ4UcGUieIH2AR0KWkM0cmbo8",
@@ -2149,6 +2154,7 @@
   {
     "id": "s-e92bac69",
     "name": "陶芸体験教室　亀工房",
+    "hidden": true,
     "lat": 37.08307322876505,
     "lng": 140.01377903703033,
     "placeId": "ChIJR35n1OCJH2ARvCIrqbEvbHk",
@@ -2537,6 +2543,7 @@
   {
     "id": "s-ded56a08",
     "name": "那須渓流パーク",
+    "hidden": true,
     "lat": 37.07777642805736,
     "lng": 139.9988269900718,
     "placeId": "ChIJ9TGkMJOJH2ARGTEHTKDL2HE",
@@ -2691,7 +2698,7 @@
     "placeId": "ChIJr6ODDcInIGAREtY-hNvlqm4",
     "tags": [
       "全季節",
-      "レジャー・カフェ・レストラン",
+      "レジャー",
       "内",
       "ファミリー・カップル・友達",
       "美術館",
