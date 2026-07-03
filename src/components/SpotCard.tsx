@@ -41,13 +41,15 @@ function cardGradient(seed: number): string {
   return `linear-gradient(${145 + (seed * 9) % 40}deg, ${c1}, ${c2})`;
 }
 
-// 写真クレジット: Google 写真は撮影者名 + Google（規約上必須）、投稿写真はニックネーム
+// 写真クレジット: Google 写真は撮影者名 + Google Maps（規約上必須）、投稿写真はニックネーム。
+// Google Maps Platform ポリシー: 新規実装は帰属表示に「Google Maps」を使う（旧「Google」は経過措置）。
+// テキストでの帰属表示が認められる。撮影者名が返らなくても Google 写真には帰属表示を出す。
 function photoCredit(photo: PhotoItem): string | null {
   if (photo.source === "user") {
     return `${photo.nickname ?? "名無しの旅人"} さんの投稿`;
   }
   const author = photo.authorAttributions?.[0]?.displayName;
-  return author ? `${author} · Google` : null;
+  return author ? `${author} · Google Maps` : "Google Maps";
 }
 
 const arrowStyle: React.CSSProperties = {
