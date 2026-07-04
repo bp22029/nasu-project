@@ -95,8 +95,10 @@ export default function ShareRouteButton({ url }: ShareRouteButtonProps) {
     }
   };
 
-  // LINE のテキスト共有スキーム（本文 + URL を渡す）
-  const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(`${SHARE_TEXT}\n${url}`)}`;
+  // LINE の Web 共有（LINEit）。PCブラウザでも共有先（トーク/Keepメモ）を選べる公式エンドポイント。
+  // line.me/R/msg/text/ はスマホアプリ向けスキームで、PCでは共有画面のボタンが押せないため使わない。
+  // lineit/share は url のみ受け取り、本文は共有先URLのOGPプレビューで表現される（SHARE_TEXT は付かない）。
+  const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`;
   // X（旧Twitter）のツイートIntent。DM 直リンクは不可のためツイート共有にする
   const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(url)}`;
 
