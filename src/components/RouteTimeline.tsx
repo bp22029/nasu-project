@@ -2,6 +2,11 @@ import type { RouteResult } from "@/types/route";
 
 interface RouteTimelineProps {
   result: RouteResult;
+  // 固定中のスポットID集合（親が URL から算出して渡す）
+  lockedSpotIds?: Set<string>;
+  // スポット行の「固定/解除」トグル。position は訪問順の位置（1始まり）。
+  // 省略時は固定UI自体を表示しない（読み取り専用表示に使える）。
+  onToggleLock?: (spotId: string, position: number) => void;
 }
 
 function formatDuration(seconds: number): string {
@@ -17,7 +22,7 @@ function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)}km`;
 }
 
-export default function RouteTimeline({ result }: RouteTimelineProps) {
+export default function RouteTimeline({ result, lockedSpotIds, onToggleLock }: RouteTimelineProps) {
   const { departure, orderedSpots, tripType, avoidTolls, segments, totalDuration, totalDistance } = result;
 
   // タイムラインに表示する全ウェイポイント名
@@ -26,6 +31,9 @@ export default function RouteTimeline({ result }: RouteTimelineProps) {
     ...orderedSpots.map((s) => s.name),
     ...(tripType === "roundtrip" ? [departure.name] : []),
   ];
+
+  // 固定UIは 2 スポット以上のときだけ意味がある（1 スポットは順番の概念がない）
+  const showLockUI = Boolean(onToggleLock) && orderedSpots.length >= 2;
 
   return (
     <div style={{ padding: "26px clamp(20px, 4vw, 34px) 28px" }}>
@@ -64,12 +72,25 @@ export default function RouteTimeline({ result }: RouteTimelineProps) {
         </div>
       </div>
 
+      {/* 巡回順の一部固定の使い方（固定UIが有効なときだけ） */}
+      {showLockUI && (
+        <p style={{
+          fontSize: "11px", letterSpacing: ".06em", color: "#8fa888",
+          lineHeight: 1.7, marginBottom: "14px",
+        }}>
+          スポットの「固定」を押すと、その順番を保ったまま残りを自動で並べ直します。
+        </p>
+      )}
+
       <ol>
         {labels.map((label, i) => {
           const isStart = i === 0;
           const isEnd = i === labels.length - 1;
           const isDeparture = isStart || (tripType === "roundtrip" && isEnd);
           const spotNumber = isDeparture ? null : i; // 1-based spot number
+          // スポット行のみ: 固定対象のスポットと固定状態
+          const spot = isDeparture ? null : orderedSpots[i - 1];
+          const isLocked = spot ? Boolean(lockedSpotIds?.has(spot.id)) : false;
 
           return (
             <li key={i}>
@@ -93,6 +114,40 @@ export default function RouteTimeline({ result }: RouteTimelineProps) {
                 }}>
                   {label}
                 </span>
+
+                {/* 巡回順の固定トグル（スポット行のみ・2件以上のとき） */}
+                {showLockUI && spot && spotNumber !== null && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleLock?.(spot.id, spotNumber)}
+                    aria-pressed={isLocked}
+                    aria-label={isLocked
+                      ? `${label}の順番固定を解除する`
+                      : `${label}を${spotNumber}番目に固定する`}
+                    title={isLocked ? "この順番の固定を解除" : "この順番で固定する"}
+                    style={{
+                      marginLeft: "auto", flexShrink: 0,
+                      display: "inline-flex", alignItems: "center", gap: "5px",
+                      cursor: "pointer",
+                      background: isLocked ? "#2c3e2d" : "transparent",
+                      color: isLocked ? "#f3f1ea" : "#8fa888",
+                      border: `1.5px solid ${isLocked ? "#2c3e2d" : "#cdd8c4"}`,
+                      borderRadius: "100px",
+                      padding: "5px 11px",
+                      fontSize: "10.5px", fontWeight: 600, letterSpacing: ".08em",
+                      fontFamily: "var(--font-sans)",
+                      transition: "background .15s, color .15s, border-color .15s",
+                    }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24"
+                      fill={isLocked ? "currentColor" : "none"}
+                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    {isLocked ? "固定中" : "固定"}
+                  </button>
+                )}
               </div>
 
               {/* 区間情報（最後のウェイポイント以外） */}

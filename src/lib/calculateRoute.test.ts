@@ -133,6 +133,26 @@ describe("calculateRoute", () => {
     });
   });
 
+  it("固定情報(spotIdベース)を matrix index に変換して TSP に渡す", async () => {
+    // 仕様: 巡回順の一部固定（spotId → 訪問順の位置）。
+    // 制約なしなら [b, c, a]。spot "a" を 1番目に固定すると a が先頭になり、
+    // 残りは最短最適化される（このマトリクスでは a→c→b が最短で [a, c, b]）。
+    const result = await calculateRoute(spots, departure, "oneway", true, [
+      { spotId: "a", position: 1 },
+    ]);
+
+    expect(result.orderedSpots.map((s) => s.id)).toEqual(["a", "c", "b"]);
+  });
+
+  it("選択に無い spotId の固定は無視する（後方互換の安全側）", async () => {
+    const result = await calculateRoute(spots, departure, "oneway", true, [
+      { spotId: "zzz", position: 1 },
+    ]);
+
+    // 制約なしと同じ最適化結果になる
+    expect(result.orderedSpots.map((s) => s.id)).toEqual(["b", "c", "a"]);
+  });
+
   it("スポットが空なら例外にする", async () => {
     await expect(calculateRoute([], departure, "oneway", true)).rejects.toThrow(
       "ルート計算には1件以上のスポットが必要です"

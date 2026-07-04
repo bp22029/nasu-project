@@ -3,13 +3,13 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import RouteTimeline from "@/components/RouteTimeline";
 import GrainOverlay from "@/components/GrainOverlay";
 import SiteHeader from "@/components/SiteHeader";
 import SurveyPrompt from "@/components/SurveyPrompt";
 import { decodeRouteQuery } from "@/lib/routeQuery";
-import type { RouteResult } from "@/types/route";
+import type { RouteResult, SpotLock } from "@/types/route";
 import { TRIP_DRAFT_KEY, type TripDraft } from "@/types/post";
 
 const Map = dynamic(() => import("@/components/Map"), {
@@ -91,13 +91,50 @@ function RouteContent() {
     router.push("/trips/new?from=route");
   };
 
+  // 現在 URL に載っている固定情報（タイムラインのピン状態表示に使う）。
+  // 状態の正本は URL なので、ここでは decode して読むだけにする。
+  const currentLocks: SpotLock[] = useMemo(() => {
+    const decoded = decodeRouteQuery(new URLSearchParams(queryString));
+    return decoded.ok ? decoded.value.locks ?? [] : [];
+  }, [queryString]);
+
+  const lockedSpotIds = useMemo(
+    () => new Set(currentLocks.map((l) => l.spotId)),
+    [currentLocks]
+  );
+
+  // タイムラインの「固定/解除」トグル。固定情報を URL に反映して router.push すると、
+  // queryString 依存の useEffect が再計算（POST /api/route）を発火する（新しい再計算経路は作らない）。
+  const handleToggleLock = (spotId: string, position: number) => {
+    const alreadyLocked = currentLocks.some((l) => l.spotId === spotId);
+    let next: SpotLock[];
+    if (alreadyLocked) {
+      // 解除
+      next = currentLocks.filter((l) => l.spotId !== spotId);
+    } else {
+      // 固定: そのスポットを現在の位置に固定。同じ位置の既存固定は追い出す（矛盾回避）。
+      next = [
+        ...currentLocks.filter((l) => l.spotId !== spotId && l.position !== position),
+        { spotId, position },
+      ].sort((a, b) => a.position - b.position);
+    }
+
+    const params = new URLSearchParams(queryString);
+    if (next.length > 0) {
+      params.set("lock", next.map((l) => `${l.spotId}:${l.position}`).join(","));
+    } else {
+      params.delete("lock");
+    }
+    router.push(`/route?${params.toString()}`);
+  };
+
   useEffect(() => {
     const decoded = decodeRouteQuery(new URLSearchParams(queryString));
     if (!decoded.ok) {
       setError(decoded.error);
       return;
     }
-    const { spotIds, departure, tripType, avoidTolls } = decoded.value;
+    const { spotIds, departure, tripType, avoidTolls, locks } = decoded.value;
     // Strict Mode の二重マウントや再遷移で重複した計算（= ORS API 呼び出し）を中断する
     const controller = new AbortController();
     setRouteResult(null);
@@ -111,6 +148,7 @@ function RouteContent() {
         departure: { lat: departure.lat, lng: departure.lng, name: departure.name },
         tripType,
         avoidTolls,
+        locks,
       }),
     })
       .then(async (res) => {
@@ -228,7 +266,11 @@ function RouteContent() {
         boxShadow: "0 22px 50px -22px rgba(36,48,25,.3)",
         animationDelay: ".34s",
       }}>
-        <RouteTimeline result={routeResult} />
+        <RouteTimeline
+          result={routeResult}
+          lockedSpotIds={lockedSpotIds}
+          onToggleLock={handleToggleLock}
+        />
       </div>
 
       {/* 旅記録への導線（機能3）: 訪問順をプレフィルして /trips/new へ */}
