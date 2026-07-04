@@ -104,7 +104,8 @@ function tspExact(
 
 // perm[i] は order[i+1] に対応する（order[0]=出発地）。position は order 添字なので perm[position-1] と突き合わせる。
 function satisfiesLocks(perm: number[], posToIndex: Map<number, number>): boolean {
-  for (const [position, index] of posToIndex) {
+  // Array.from 経由で反復（tsconfig の target 既定では Map の直接 for...of が型エラー TS2802 になるため）
+  for (const [position, index] of Array.from(posToIndex)) {
     if (perm[position - 1] !== index) return false;
   }
   return true;
@@ -129,7 +130,8 @@ function tspNearestNeighbor(matrix: number[][], posToIndex: Map<number, number>)
   const visited = new Set<number>([0]);
 
   // 固定スポットを先に指定位置へ埋める
-  for (const [position, index] of posToIndex) {
+  // Array.from 経由で反復（tsconfig の target 既定では Map の直接 for...of が型エラー TS2802 になるため）
+  for (const [position, index] of Array.from(posToIndex)) {
     order[position] = index;
     visited.add(index);
   }
