@@ -95,7 +95,9 @@ describe("POST /api/route", () => {
       ],
       validBody.departure,
       "oneway",
-      true
+      true,
+      // 巡回順の固定（locks）。validBody には無いので undefined が渡る（機能3で追加された第5引数）
+      undefined
     );
   });
 
