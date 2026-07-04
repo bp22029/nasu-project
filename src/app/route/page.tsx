@@ -8,6 +8,7 @@ import RouteTimeline from "@/components/RouteTimeline";
 import GrainOverlay from "@/components/GrainOverlay";
 import SiteHeader from "@/components/SiteHeader";
 import SurveyPrompt from "@/components/SurveyPrompt";
+import ShareRouteButton from "@/components/ShareRouteButton";
 import { decodeRouteQuery } from "@/lib/routeQuery";
 import type { RouteResult, SpotLock } from "@/types/route";
 import { TRIP_DRAFT_KEY, type TripDraft } from "@/types/post";
@@ -75,6 +76,12 @@ function RouteContent() {
   const queryString = searchParams.toString();
   const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // 共有URLの生成に使う origin。window は SSR で触れないためマウント後に取得する。
+  // queryString をそのまま繋ぐことで、将来クエリ（lock= 等）が増えても自動で共有に含まれる。
+  const [origin, setOrigin] = useState("");
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   // 「この旅を記録する」: TSP最適化後の訪問順を sessionStorage 経由で
   // /trips/new に引き継ぐ（URL の spots= は選択順なので使わない。CLAUDE.md セクション14）。
@@ -273,26 +280,32 @@ function RouteContent() {
         />
       </div>
 
-      {/* 旅記録への導線（機能3）: 訪問順をプレフィルして /trips/new へ */}
-      <div className="sel-rise flex flex-col items-center" style={{ marginTop: "30px", animationDelay: ".42s" }}>
-        <button
-          type="button"
-          onClick={handleRecordTrip}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: "12px",
-            cursor: "pointer",
-            background: "#2c3e2d", color: "#f3f1ea", border: "none",
-            fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
-            padding: "14px 28px", borderRadius: "100px",
-            boxShadow: "0 14px 30px -16px rgba(36,48,25,.7)",
-            fontFamily: "var(--font-sans)",
-          }}
-        >
-          この旅を記録する
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+      {/* 旅記録への導線（機能3）＋ ルート共有（機能1）: 深緑pillの主CTAと従属pillを並べる。
+          position/zIndex は共有メニューを下のアンケート導線より前面に出すため（重なり順の固定） */}
+      <div className="sel-rise flex flex-col items-center" style={{ marginTop: "30px", animationDelay: ".42s", position: "relative", zIndex: 30 }}>
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={handleRecordTrip}
+            className="route-cta"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "12px",
+              cursor: "pointer",
+              background: "#2c3e2d", color: "#f3f1ea", border: "none",
+              fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
+              padding: "14px 28px", borderRadius: "100px",
+              boxShadow: "0 14px 30px -16px rgba(36,48,25,.7)",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            この旅を記録する
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          {/* 共有するのはアプリ内のルートURLのみ（Google由来データは含めない。CLAUDE.md セクション5） */}
+          <ShareRouteButton url={`${origin}/route?${queryString}`} />
+        </div>
         <p style={{ fontSize: "11px", color: "#8fa888", letterSpacing: ".08em", marginTop: "10px" }}>
           訪問地が入った状態で旅の記録をはじめられます
         </p>

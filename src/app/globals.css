@@ -84,6 +84,10 @@ body {
   background: rgba(255,255,255,.92);
   box-shadow: 0 16px 32px -18px rgba(36,48,25,.5);
 }
+/* ルート結果の主CTA（記録）・従属CTA（共有）: hover で浮き、押下で沈む */
+.route-cta { transition: transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .25s, background .25s, border-color .25s; }
+.route-cta:hover { transform: translateY(-2px); }
+.route-cta:active { transform: translateY(0) scale(.96); }
 /* グローバルナビ（共通ヘッダーのメニュー） */
 .nav-trigger { transition: background .2s, border-color .2s, color .2s; }
 .nav-trigger:hover { border-color: #b6cbac; color: #2c3e2d; background: rgba(255,255,255,.85); }

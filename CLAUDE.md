@@ -20,6 +20,7 @@
 ### ✅ 機能1（実装済み）— ルート設計支援
 
 - 画像グリッドでスポットを選択 → 道なりルート提案
+- **ルートのSNS共有**: /route の結果画面「ルートを共有する」ボタンで、表示中のルートを**アプリ内URL（リンク）として共有**する（`src/components/ShareRouteButton.tsx`）。共有URL = `window.location.origin` + `/route?` + 現在のクエリ文字列（`useSearchParams().toString()` をそのまま使うので `lock=` 等が増えても自動追従）。スマホは Web Share API（`navigator.share`）でOSの共有シート（LINE / Instagram / X / メール等）、PC/未対応はフォールバック（①リンクをコピー ②LINEで送る ③Xで送る）。**Instagram DM は Web の URL スキームで直送できない**ためフォールバックには含めない（共有シート経由なら選べる）。共有ペイロードは URL のみで Google 由来データは一切含めない（セクション5）
 - **タグフィルター**: ジャンル（詳細ジャンルをまとめた11種）と同行者（6種）でグリッドを絞り込む。`tags` を実行時に2軸へ解釈（`src/lib/spotTags.ts`）。OR判定。debugモードは tags 空のため非表示（セクション6参照）
 - **出発地の選択**: 那須塩原駅 / 道の駅 那須高原友愛の森 / 那須IC / GPS現在地 の4択
 - **周遊 / 片道の切替**: 周遊は出発地へ戻る閉じた経路、片道は開いた経路
@@ -215,6 +216,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 - 計算中はスピナーを表示。`AbortController` で二重リクエスト（Strict Mode / 再遷移）を中断する。
 - 地図（角丸カード）: Leaflet + OSM。出発地=若緑マーカー、スポット=深緑の番号付きマーカー、経路=白縁取り+深緑ポリライン（セクション4参照）。
 - タイムライン（角丸カード）: 旅程ヘッダー + 合計時間/距離、出発地→スポット1→…（→出発地 if 周遊）の区間ごとに所要時間・距離を表示。
+- タイムライン下のCTA行: 「この旅を記録する」（深緑pill・機能3）と「ルートを共有する」（従属pill・`ShareRouteButton`）を並べる。共有は現在のURL検索文字列をそのまま繋いだ `origin + "/route?" + queryString` を渡す（機能1）。
 - ヘッダーの「← 選び直す」で `/select` に戻る。選択状態は維持される。
 
 ### API ルート
@@ -271,6 +273,7 @@ nasu-tabi/
 │   │   ├── DepartureSelector.tsx # 出発地選択UI（プリセット + GPS）
 │   │   ├── SpotFilter.tsx      # タグフィルターのチップUI（ジャンル / 同行者）
 │   │   ├── SurveyPrompt.tsx    # 機能4: アンケートへの導線CTA（回答済みなら自動非表示。全完了地点で共用）
+│   │   ├── ShareRouteButton.tsx # 機能1: ルートURLをSNS共有（Web Share API + フォールバック=コピー/LINE/X）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
 │   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
 │   │   ├── SiteHeader.tsx       # 共通sticky ヘッダー（左=文脈的な戻る / 右=NASU→ホーム + NavMenu）
