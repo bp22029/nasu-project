@@ -103,16 +103,16 @@ function RouteContent() {
     [currentLocks]
   );
 
-  // タイムラインの「固定/解除」トグル。固定情報を URL に反映して router.push すると、
+  // タイムラインで各スポットの訪問順を選ぶ。position を指定すると「その順番に固定」、
+  // null（「自動」選択）で解除。固定情報を URL に反映して router.push すると、
   // queryString 依存の useEffect が再計算（POST /api/route）を発火する（新しい再計算経路は作らない）。
-  const handleToggleLock = (spotId: string, position: number) => {
-    const alreadyLocked = currentLocks.some((l) => l.spotId === spotId);
+  const handleSetLock = (spotId: string, position: number | null) => {
     let next: SpotLock[];
-    if (alreadyLocked) {
-      // 解除
+    if (position === null) {
+      // 解除（「自動」）
       next = currentLocks.filter((l) => l.spotId !== spotId);
     } else {
-      // 固定: そのスポットを現在の位置に固定。同じ位置の既存固定は追い出す（矛盾回避）。
+      // 指定した順番に固定。同じ位置の既存固定・このスポットの旧固定は追い出す（矛盾回避）。
       next = [
         ...currentLocks.filter((l) => l.spotId !== spotId && l.position !== position),
         { spotId, position },
@@ -269,7 +269,7 @@ function RouteContent() {
         <RouteTimeline
           result={routeResult}
           lockedSpotIds={lockedSpotIds}
-          onToggleLock={handleToggleLock}
+          onSetLock={handleSetLock}
         />
       </div>
 

@@ -23,7 +23,7 @@
 - **タグフィルター**: ジャンル（詳細ジャンルをまとめた11種）と同行者（6種）でグリッドを絞り込む。`tags` を実行時に2軸へ解釈（`src/lib/spotTags.ts`）。OR判定。debugモードは tags 空のため非表示（セクション6参照）
 - **出発地の選択**: 那須塩原駅 / 道の駅 那須高原友愛の森 / 那須IC / GPS現在地 の4択
 - **周遊 / 片道の切替**: 周遊は出発地へ戻る閉じた経路、片道は開いた経路
-- **巡回順の一部固定**: /route のタイムラインで各スポットを「固定」すると、その訪問順の位置を保ったまま残りを TSP で最短最適化する（例: ご飯屋を3番目に固定）。固定は `spotId → 訪問順の位置(1始まり)` で表現し、URL の `lock=<spotId>:<pos>,...` に載る（共有・リロードで維持。`routeQuery.ts`）。状態の正本はURLで、トグルは `router.push` → 既存の queryString 依存 useEffect が再計算を発火する（`src/app/route/page.tsx`）。矛盾する制約（同一位置に複数固定・範囲外・未選択spot）は安全に無視して通常最適化に倒す（`tsp.ts` / `calculateRoute.ts` / `decodeRouteQuery`）
+- **巡回順の一部固定**: /route のタイムラインで各スポットの訪問順を「自動 / N番目」から選ぶと、そのスポットを指定の順番に固定して残りを TSP で最短最適化する（例: ご飯屋を1番目に指定。表示位置に関わらず任意の番号を選べる。「自動」で解除）。固定は `spotId → 訪問順の位置(1始まり)` で表現し、URL の `lock=<spotId>:<pos>,...` に載る（共有・リロードで維持。`routeQuery.ts`）。UIは各行の `<select>`（`RouteTimeline.tsx`。固定中スポットは表示位置＝固定位置なので select 値は現在の番号）。状態の正本はURLで、選択→`router.push` → 既存の queryString 依存 useEffect が再計算を発火する（`src/app/route/page.tsx`）。矛盾する制約（同一位置に複数固定・範囲外・未選択spot）は安全に無視して通常最適化に倒す（`tsp.ts` / `calculateRoute.ts` / `decodeRouteQuery`）
 - **有料道路の回避オプション**: トグルで切替。出発地がプリセットなら一般道デフォルト、GPS現在地なら有料道路OKデフォルト
 - **写真**: Google Places API (New) で動的取得。グリッドに表示（地図には載せない）。**カードが画面に近づいてから取得する遅延読み込み**（約200スポットを一斉取得するとAPI消費が激しいため）
 - **観光地データ**: 2モードを `NEXT_PUBLIC_SPOTS_MODE` で切替（`src/lib/spots.ts` が単一参照点）

@@ -4,9 +4,9 @@ interface RouteTimelineProps {
   result: RouteResult;
   // 固定中のスポットID集合（親が URL から算出して渡す）
   lockedSpotIds?: Set<string>;
-  // スポット行の「固定/解除」トグル。position は訪問順の位置（1始まり）。
+  // スポットの訪問順を指定位置に固定（position=1..N）／解除（position=null）。
   // 省略時は固定UI自体を表示しない（読み取り専用表示に使える）。
-  onToggleLock?: (spotId: string, position: number) => void;
+  onSetLock?: (spotId: string, position: number | null) => void;
 }
 
 function formatDuration(seconds: number): string {
@@ -22,7 +22,7 @@ function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)}km`;
 }
 
-export default function RouteTimeline({ result, lockedSpotIds, onToggleLock }: RouteTimelineProps) {
+export default function RouteTimeline({ result, lockedSpotIds, onSetLock }: RouteTimelineProps) {
   const { departure, orderedSpots, tripType, avoidTolls, segments, totalDuration, totalDistance } = result;
 
   // タイムラインに表示する全ウェイポイント名
@@ -33,7 +33,9 @@ export default function RouteTimeline({ result, lockedSpotIds, onToggleLock }: R
   ];
 
   // 固定UIは 2 スポット以上のときだけ意味がある（1 スポットは順番の概念がない）
-  const showLockUI = Boolean(onToggleLock) && orderedSpots.length >= 2;
+  const showLockUI = Boolean(onSetLock) && orderedSpots.length >= 2;
+  // 訪問順セレクトの選択肢（1..スポット数）
+  const positionOptions = Array.from({ length: orderedSpots.length }, (_, k) => k + 1);
 
   return (
     <div style={{ padding: "26px clamp(20px, 4vw, 34px) 28px" }}>
@@ -78,7 +80,7 @@ export default function RouteTimeline({ result, lockedSpotIds, onToggleLock }: R
           fontSize: "11px", letterSpacing: ".06em", color: "#8fa888",
           lineHeight: 1.7, marginBottom: "14px",
         }}>
-          スポットの「固定」を押すと、その順番を保ったまま残りを自動で並べ直します。
+          行きたい順番を選ぶと、その順番に固定して残りを自動で並べ直します（「自動」で解除）。
         </p>
       )}
 
@@ -115,38 +117,47 @@ export default function RouteTimeline({ result, lockedSpotIds, onToggleLock }: R
                   {label}
                 </span>
 
-                {/* 巡回順の固定トグル（スポット行のみ・2件以上のとき） */}
+                {/* 巡回順セレクト（スポット行のみ・2件以上のとき）。
+                    「自動」＝固定なし、数字＝その訪問順に固定。固定中スポットは表示位置＝固定位置。 */}
                 {showLockUI && spot && spotNumber !== null && (
-                  <button
-                    type="button"
-                    onClick={() => onToggleLock?.(spot.id, spotNumber)}
-                    aria-pressed={isLocked}
-                    aria-label={isLocked
-                      ? `${label}の順番固定を解除する`
-                      : `${label}を${spotNumber}番目に固定する`}
-                    title={isLocked ? "この順番の固定を解除" : "この順番で固定する"}
-                    style={{
-                      marginLeft: "auto", flexShrink: 0,
-                      display: "inline-flex", alignItems: "center", gap: "5px",
-                      cursor: "pointer",
-                      background: isLocked ? "#2c3e2d" : "transparent",
-                      color: isLocked ? "#f3f1ea" : "#8fa888",
-                      border: `1.5px solid ${isLocked ? "#2c3e2d" : "#cdd8c4"}`,
-                      borderRadius: "100px",
-                      padding: "5px 11px",
-                      fontSize: "10.5px", fontWeight: 600, letterSpacing: ".08em",
-                      fontFamily: "var(--font-sans)",
-                      transition: "background .15s, color .15s, border-color .15s",
-                    }}
+                  <div
+                    className="flex items-center"
+                    style={{ marginLeft: "auto", flexShrink: 0, gap: "6px" }}
                   >
+                    {/* 固定中を示す南京錠アイコン（未固定時はグレー） */}
                     <svg width="11" height="11" viewBox="0 0 24 24"
-                      fill={isLocked ? "currentColor" : "none"}
-                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      aria-hidden="true"
+                      fill={isLocked ? "#2c3e2d" : "none"}
+                      stroke={isLocked ? "#2c3e2d" : "#cdd8c4"}
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    {isLocked ? "固定中" : "固定"}
-                  </button>
+                    <select
+                      aria-label={`${label}の訪問順を選ぶ`}
+                      value={isLocked ? String(spotNumber) : ""}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        onSetLock?.(spot.id, v === "" ? null : Number(v));
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        background: isLocked ? "rgba(44,62,45,.08)" : "rgba(255,255,255,.7)",
+                        color: isLocked ? "#2c3e2d" : "#5a7d5a",
+                        border: `1.5px solid ${isLocked ? "#2c3e2d" : "#cdd8c4"}`,
+                        borderRadius: "100px",
+                        padding: "4px 10px",
+                        fontSize: "11px", fontWeight: 600, letterSpacing: ".04em",
+                        fontFamily: "var(--font-sans)",
+                        transition: "border-color .15s, background .15s, color .15s",
+                      }}
+                    >
+                      <option value="">自動</option>
+                      {positionOptions.map((n) => (
+                        <option key={n} value={n}>{n}番目に行く</option>
+                      ))}
+                    </select>
+                  </div>
                 )}
               </div>
 
