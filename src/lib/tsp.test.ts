@@ -49,4 +49,51 @@ describe("solveTSP", () => {
 
     expect(solveTSP(matrix, true)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
   });
+
+  it("全探索: 固定したスポットは指定位置に置き、残りを最短最適化する", () => {
+    // 仕様: 巡回順の一部固定。position は order 配列の添字と一致。
+    // 制約なしなら [0, 2, 1, 3]。index 3 を position 1 に固定すると
+    // order[1]=3 を満たす順列の中から最短のものを選ぶ。
+    const matrix = [
+      [0, 8, 1, 9],
+      [8, 0, 1, 1],
+      [1, 1, 0, 9],
+      [9, 1, 9, 0],
+    ];
+
+    expect(solveTSP(matrix, false, [{ index: 3, position: 1 }])).toEqual([0, 3, 1, 2]);
+    expect(solveTSP(matrix, false, [{ index: 3, position: 2 }])).toEqual([0, 2, 3, 1]);
+  });
+
+  it("全探索: 矛盾・範囲外の固定は無視して通常の最適化に倒す", () => {
+    const matrix = [
+      [0, 8, 1, 9],
+      [8, 0, 1, 1],
+      [1, 1, 0, 9],
+      [9, 1, 9, 0],
+    ];
+
+    // position が範囲外（スポットは3件なので 1..3）
+    expect(solveTSP(matrix, false, [{ index: 3, position: 9 }])).toEqual([0, 2, 1, 3]);
+    // 同一位置に2件固定（矛盾）
+    expect(
+      solveTSP(matrix, false, [
+        { index: 1, position: 1 },
+        { index: 2, position: 1 },
+      ])
+    ).toEqual([0, 2, 1, 3]);
+  });
+
+  it("最近傍法(8件以上)でも固定位置は必ず守られ、全ノードを1回ずつ通る", () => {
+    const n = 9;
+    const matrix = Array.from({ length: n }, (_, a) =>
+      Array.from({ length: n }, (_, b) => Math.abs(a - b))
+    );
+
+    const order = solveTSP(matrix, true, [{ index: 5, position: 1 }]);
+    expect(order[0]).toBe(0);
+    expect(order[1]).toBe(5); // 固定が守られている
+    expect(order.length).toBe(n);
+    expect(new Set(order).size).toBe(n); // 重複・欠落なし
+  });
 });
