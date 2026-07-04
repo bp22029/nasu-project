@@ -83,9 +83,6 @@ export default function AdminDiagnosisTypesPage() {
               </div>
             );
           })}
-          <p style={{ fontSize: "12px", color: "#8fa888", letterSpacing: ".08em" }}>
-            現在のコード: <b style={{ color: "#2c3e2d", fontFamily: "var(--font-serif)" }}>{code}</b>
-          </p>
         </div>
 
         {/* プレビューカード */}
@@ -122,7 +119,6 @@ export default function AdminDiagnosisTypesPage() {
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ fontSize: "12px", fontWeight: 700, color: "#2c3e2d" }}>{t.animal}</span>
-                <span style={{ fontSize: "10.5px", color: "#8fa888", fontFamily: "var(--font-serif)", letterSpacing: ".08em" }}>{t.code}</span>
               </div>
               <div style={{ fontSize: "12.5px", color: "#3a4a32", marginTop: "2px", lineHeight: 1.4 }}>{t.name}</div>
             </button>
@@ -145,7 +141,7 @@ function TypeCard({ type, pct }: { type: DiagnosisType; pct: Pct }) {
         <Image src={type.image} alt={`${type.name}（${type.animal}）`} fill sizes="(max-width: 680px) 100vw, 640px" style={{ objectFit: "cover" }} />
       </div>
       <p style={{ fontSize: "13px", color: "#5a7d5a", letterSpacing: ".08em", marginBottom: "6px" }}>
-        「{type.animal}」タイプ ・ <span style={{ fontFamily: "var(--font-serif)" }}>{type.code}</span>
+        「{type.animal}」タイプ
       </p>
       <h2 style={{ fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "clamp(22px, 3.4vw, 34px)", lineHeight: 1.25, color: "#243019", marginBottom: "10px" }}>
         {type.name}
