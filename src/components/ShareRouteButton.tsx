@@ -111,6 +111,7 @@ export default function ShareRouteButton({ url }: ShareRouteButtonProps) {
         aria-label="このルートを共有する"
         aria-haspopup={canNativeShare ? undefined : "menu"}
         aria-expanded={canNativeShare ? undefined : fallbackOpen}
+        className="route-cta"
         style={{
           display: "inline-flex", alignItems: "center", gap: "10px",
           cursor: "pointer",

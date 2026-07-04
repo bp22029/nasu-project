@@ -238,12 +238,14 @@ function RouteContent() {
         <RouteTimeline result={routeResult} />
       </div>
 
-      {/* 旅記録への導線（機能3）＋ ルート共有（機能1）: 深緑pillの主CTAと従属pillを並べる */}
-      <div className="sel-rise flex flex-col items-center" style={{ marginTop: "30px", animationDelay: ".42s" }}>
+      {/* 旅記録への導線（機能3）＋ ルート共有（機能1）: 深緑pillの主CTAと従属pillを並べる。
+          position/zIndex は共有メニューを下のアンケート導線より前面に出すため（重なり順の固定） */}
+      <div className="sel-rise flex flex-col items-center" style={{ marginTop: "30px", animationDelay: ".42s", position: "relative", zIndex: 30 }}>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <button
             type="button"
             onClick={handleRecordTrip}
+            className="route-cta"
             style={{
               display: "inline-flex", alignItems: "center", gap: "12px",
               cursor: "pointer",
