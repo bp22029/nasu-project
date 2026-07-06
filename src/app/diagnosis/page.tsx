@@ -85,7 +85,7 @@ export default function DiagnosisPage() {
   };
 
   return (
-    <PageShell backHref="/" backLabel="もどる" index="00" indexLabel="DIAGNOSIS">
+    <PageShell backHref="/" backLabel="もどる" indexLabel="DIAGNOSIS">
       {phase === "intro" && <Intro total={total} onStart={start} />}
       {phase === "question" && (
         <QuestionView

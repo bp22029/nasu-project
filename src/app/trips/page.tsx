@@ -38,7 +38,7 @@ export default function TripsPage() {
   }, []);
 
   return (
-    <PageShell backHref="/" backLabel="ホームへ" index="04" indexLabel="TRIPS">
+    <PageShell backHref="/" backLabel="ホームへ" indexLabel="TRIPS">
       <h1 className="sel-rise" style={{
         fontFamily: "var(--font-serif)", fontWeight: 600,
         fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, letterSpacing: ".03em",

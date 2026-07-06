@@ -45,7 +45,7 @@ export default function TripDetailPage() {
 
   if (error) {
     return (
-      <PageShell backHref="/trips" backLabel="一覧へ" index="04" indexLabel="TRIPS">
+      <PageShell backHref="/trips" backLabel="一覧へ" indexLabel="TRIPS">
         <p className="sel-rise" style={{ fontSize: "13px", color: "#9a4a3a", letterSpacing: ".05em", marginBottom: "26px", animationDelay: ".1s" }}>
           ⚠ {error}
         </p>
@@ -65,7 +65,7 @@ export default function TripDetailPage() {
 
   if (!trip) {
     return (
-      <PageShell backHref="/trips" backLabel="一覧へ" index="04" indexLabel="TRIPS">
+      <PageShell backHref="/trips" backLabel="一覧へ" indexLabel="TRIPS">
         <div className="sel-rise flex justify-center" style={{ paddingTop: "10vh", animationDelay: ".1s" }}>
           <span className="animate-spin" style={{
             width: "30px", height: "30px", borderRadius: "50%", display: "inline-block",
@@ -79,7 +79,7 @@ export default function TripDetailPage() {
   const entries = [...(trip.trip_entries ?? [])].sort((a, b) => a.position - b.position);
 
   return (
-    <PageShell backHref="/trips" backLabel="一覧へ" index="04" indexLabel="TRIPS">
+    <PageShell backHref="/trips" backLabel="一覧へ" indexLabel="TRIPS">
       {/* タイトル + メタ */}
       <h1 className="sel-rise" style={{
         fontFamily: "var(--font-serif)", fontWeight: 600,

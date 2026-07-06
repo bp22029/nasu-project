@@ -4,7 +4,7 @@
  * 共通ページシェル（機能3で追加したページ用）
  *
  * /route の RouteShell を一般化したもの: 生成り背景 + 有機ブロブ + グレイン +
- * トップバー（戻るリンク）+ インデックスライン「0X — NAME」。
+ * トップバー（戻るリンク）+ セクション見出し（英字ラベルの小見出し）。
  * ホーム・選択・ルート画面と同じ世界観を新ページ（/post, /trips, /me）でも保つ。
  *
  * パフォーマンス方針（CLAUDE.md セクション11）: blur フィルタは使わず、
@@ -17,8 +17,7 @@ interface PageShellProps {
   /** 「← ラベル」で戻る先 */
   backHref: string;
   backLabel: string;
-  /** インデックスライン（例: index="04", indexLabel="TRIPS"） */
-  index: string;
+  /** セクション見出しの英字ラベル（例: indexLabel="TRIPS"） */
   indexLabel: string;
   children: React.ReactNode;
 }
@@ -26,7 +25,6 @@ interface PageShellProps {
 export default function PageShell({
   backHref,
   backLabel,
-  index,
   indexLabel,
   children,
 }: PageShellProps) {
@@ -58,10 +56,8 @@ export default function PageShell({
       <SiteHeader backHref={backHref} backLabel={backLabel} />
 
       <div className="relative" style={{ zIndex: 2, maxWidth: "980px", margin: "0 auto", padding: "4px clamp(20px, 5vw, 64px) 90px" }}>
-        {/* インデックスライン */}
-        <div className="sel-rise flex items-baseline gap-[14px] mb-[22px]" style={{ animationDelay: ".05s" }}>
-          <span style={{ fontFamily: "var(--font-serif)", fontSize: "15px", color: "#5a7d5a", letterSpacing: ".1em" }}>{index}</span>
-          <span style={{ width: "56px", height: "1px", background: "#8fa888", opacity: .7, transform: "translateY(-4px)", flexShrink: 0 }} />
+        {/* セクション見出し（英字ラベルの小見出し） */}
+        <div className="sel-rise mb-[22px]" style={{ animationDelay: ".05s" }}>
           <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>{indexLabel}</span>
         </div>
 

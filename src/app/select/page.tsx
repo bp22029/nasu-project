@@ -217,10 +217,8 @@ function SelectPageContent() {
       {/* コンテンツ */}
       <div className="relative" style={{ zIndex: 2, maxWidth: "1120px", margin: "0 auto", padding: "4px clamp(20px, 5vw, 64px) 180px" }}>
 
-        {/* 02 — SELECT */}
-        <div className="sel-rise flex items-baseline gap-[14px] mb-[22px]" style={{ animationDelay: ".05s" }}>
-          <span style={{ fontFamily: "var(--font-serif)", fontSize: "15px", color: "#5a7d5a", letterSpacing: ".1em" }}>02</span>
-          <span style={{ width: "56px", height: "1px", background: "#8fa888", opacity: .7, transform: "translateY(-4px)", flexShrink: 0 }} />
+        {/* SELECT セクション見出し（英字ラベルの小見出し） */}
+        <div className="sel-rise mb-[22px]" style={{ animationDelay: ".05s" }}>
           <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>SELECT</span>
         </div>
 

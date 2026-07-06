@@ -105,7 +105,7 @@ export default function MyPage() {
   const isEmpty = !profile && (posts?.length ?? 0) === 0 && (trips?.length ?? 0) === 0;
 
   return (
-    <PageShell backHref="/" backLabel="ホームへ" index="06" indexLabel="MY PAGE">
+    <PageShell backHref="/" backLabel="ホームへ" indexLabel="MY PAGE">
       <h1 className="sel-rise" style={{
         fontFamily: "var(--font-serif)", fontWeight: 600,
         fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, letterSpacing: ".03em",
