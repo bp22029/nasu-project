@@ -145,12 +145,24 @@ export interface DiagnosisType {
   genres: string[];
 }
 
-// 各極 → おすすめジャンルの暫定マップ（genres の自動導出用。将来のルート連携の初期値）
-const POLE_GENRES: Record<string, string[]> = {
-  h: ["温泉・サウナ", "自然・公園"],        // 癒し
-  s: ["レジャー・体験"],                    // 刺激
-  f: ["ショップ・雑貨", "美術館・博物館"],  // 形（残せるもの）
-  x: ["カフェ", "食事処"],                  // 体験（その場を味わう）
+/**
+ * 各極（タイプコードの1文字）→ その極に寄るユーザーへおすすめするジャンル（GENRE_GROUPS のキー）。
+ *
+ * ■ 設計方針（重要）
+ *   - **極単位**で定義する。タイプ（16通り）ごとの手書きリストは作らない。タイプの推薦は
+ *     軸スコアからこの表を引いて機械的に導出する（genresForCode / scoreSpotByAxes）。
+ *   - **4軸すべてのキーを受け取れる形**。エントリを足すだけで寄与軸を増やせる。
+ *     現状スポット選定に寄与するのは ② desire（刺激↔癒し）と ④ value（体験↔形）の2軸のみ。
+ *     ① plan（計画↔即興）・③ social（内向↔外向）は寄与ゼロ（エントリを持たない）。
+ */
+export const POLE_GENRES: Record<string, string[]> = {
+  // ② 刺激 ↔ 癒し（desire 軸）
+  s: ["レジャー・体験"],                                  // 刺激
+  h: ["温泉・サウナ", "自然・公園", "カフェ"],            // 癒し
+  // ④ 体験 ↔ 形（value 軸）
+  x: ["レジャー・体験", "温泉・サウナ"],                  // 体験（その場で味わう）
+  f: ["ショップ・雑貨", "ベーカリー・スイーツ", "美術館・博物館"], // 形（残せるもの）
+  // ① plan（p/i）・③ social（n/e）は寄与ゼロ。ここに配列を足せば寄与軸を追加できる。
 };
 
 function genresForCode(code: string): string[] {
@@ -240,4 +252,32 @@ export function computeResult(values: number[]): DiagnosisResult {
   const code = axes.map((a) => a.pole.key).join("");
   const type = DIAGNOSIS_TYPES[code];
   return { type, axes };
+}
+
+/**
+ * 診断モードの「おすすめ順」並べ替え用スコアを計算する（機能2 → /select 連携）。
+ *
+ * スコア = Σ（各寄与軸について）｛ ユーザーの傾きの強さ(|score|/AXIS_MAX) × スポットが傾き側の極の
+ * ジャンルを1つ以上持つなら 1、持たないなら 0 ｝
+ *
+ * - 傾きが強い軸ほど並び順に強く効く（連続スコア ±8 をそのまま重みに使う）。
+ * - 傾き側の極は score の符号で決める（score>=0 → 正極、<0 → 負極。score 0 は重み0なので無関係）。
+ * - POLE_GENRES にエントリの無い軸（plan/social）は常に 0 寄与＝表にエントリを足すだけで軸を増やせる。
+ *
+ * @param spotGenres スポットのジャンル（parseSpotTags(spot).genres = GENRE_GROUPS のキー）
+ * @param axisScoreById 軸ID(AXES.id) → 合計スコア(-AXIS_MAX〜+AXIS_MAX)
+ */
+export function scoreSpotByAxes(spotGenres: string[], axisScoreById: Record<string, number>): number {
+  const owned = new Set(spotGenres);
+  let total = 0;
+  for (const axis of AXES) {
+    const score = axisScoreById[axis.id] ?? 0;
+    const weight = Math.abs(score) / AXIS_MAX;
+    if (weight === 0) continue;
+    const poleKey = score >= 0 ? axis.positive.key : axis.negative.key;
+    const genres = POLE_GENRES[poleKey];
+    if (!genres || genres.length === 0) continue; // 寄与しない軸（plan/social）
+    if (genres.some((g) => owned.has(g))) total += weight;
+  }
+  return total;
 }

@@ -12,6 +12,7 @@
  */
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import PageShell from "@/components/PageShell";
 import SurveyPrompt from "@/components/SurveyPrompt";
 import {
@@ -21,6 +22,7 @@ import {
   computeResult,
   type DiagnosisResult,
 } from "@/lib/diagnosis";
+import { encodeDiagnosisQuery } from "@/lib/diagnosisQuery";
 
 type Phase = "intro" | "question" | "result";
 
@@ -279,6 +281,13 @@ function ResultView({
 }) {
   const { type, axes } = result;
 
+  // 診断結果 → /select（診断モード）へ。状態はすべて URL に載せる（診断は URL/state を持たないため、
+  // 遷移時だけ type + 4軸スコアをクエリに固める）。おすすめ順の並べ替えは /select 側で行う。
+  const selectHref = `/select?${encodeDiagnosisQuery({
+    code: type.code,
+    scores: Object.fromEntries(axes.map((a) => [a.axisId, a.score])),
+  })}`;
+
   return (
     // 結果ブロック全体（見出し・カード・ボタン）を中央寄せ。カード幅に揃えて中央に配置する
     <div style={{ maxWidth: "640px", margin: "0 auto", width: "100%" }}>
@@ -359,16 +368,21 @@ function ResultView({
         </div>
       </div>
 
-      {/*
-        将来のルート連携（スコープ外）: ここに「この結果で旅をつくる」ボタンを足す。
-        type.genres を activeTags として /select へ渡す（SELECT_STATE_KEY に書き込む）か、
-        encodeRouteQuery で /route へ直行する想定。差し込み口は type.genres。
-      */}
+      {/* このタイプで旅を設計する（機能2 → /select の診断モード）。
+          スポットは診断結果の「おすすめ順」で並ぶが、選ぶのはユーザー（自動生成はしない）。 */}
+      <Link
+        href={selectHref}
+        className="start-cta"
+        style={{ ...ctaStyle, marginTop: "28px", textDecoration: "none", animationDelay: ".18s" }}
+      >
+        このタイプで旅を設計する
+        <span style={ringBtnStyle}><Arrow /></span>
+      </Link>
 
-      <div className="sel-rise" style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginTop: "28px", alignItems: "center", animationDelay: ".22s" }}>
-        <button type="button" onClick={onRestart} className="start-cta" style={ctaStyle}>
+      <div className="sel-rise" style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginTop: "18px", alignItems: "center", animationDelay: ".24s" }}>
+        <button type="button" onClick={onRestart} className="start-cta" style={{ ...ctaStyle, background: "rgba(255,255,255,.7)", color: "#5a7d5a", border: "1px solid #e5e0d3", boxShadow: "none" }}>
           もう一度診断する
-          <span style={ringBtnStyle}><Arrow /></span>
+          <span style={{ ...ringBtnStyle, background: "rgba(90,125,90,.12)" }}><Arrow /></span>
         </button>
         <button type="button" onClick={onBack} style={textLinkStyle}>
           ← 質問にもどる
