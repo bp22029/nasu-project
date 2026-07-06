@@ -38,7 +38,8 @@
   - タイプは動物マスコット + 画像。画像は `public/diagnosis-types/*.png`（`data/image` 由来。**ファイル名がコードを表す**: 例 `05_phnx_sheep.png` = 計画×癒し×内向×体験）。
   - 診断の中身（軸・質問・タイプ・採点）は `src/lib/diagnosis.ts` に集約。**タイプの name/tagline/description は仮テキストなので差し替え可**。画面（`src/app/diagnosis/page.tsx`）はこの配列を読むだけ。
   - 結果画面は「タイプ表示まで」。ローカル state のみで完結し URL/sessionStorage は使わない。
-- ❌ **ルート連携（未実装）**: 診断結果 → スポット配列 → `calculateRoute` の接続はまだ。差し込み口として各タイプに `genres`（`GENRE_LABELS` の部分集合）を用意済み。将来ここを `spotMatchesTags` に渡して `/select`（事前フィルター）or `/route` へ繋ぐ（セクション8参照）。
+- ✅ **/select 連携（おすすめ順の並べ替え）**: 診断結果画面の「このタイプで旅を設計する」で `/select?type=<4文字コード>&plan=..&desire=..&social=..&value=..` へ遷移する（`encodeDiagnosisQuery`／`src/lib/diagnosisQuery.ts`。状態はすべて URL に載る＝共有・リロード復元可）。/select はこのクエリがあると**診断モード**になり、スポットを**タイプの傾きに合ったジャンルほど上位**の「おすすめ順」で並べる。**ルートは自動生成せず、スポットを選ぶのはユーザー**（以降の選択→設計→/route の流れは通常モードと同一）。詳細はセクション16。
+- ❌ **ルート自動生成（実装しない）**: 診断結果 → スポット配列 → `calculateRoute` の自動接続は意図的に作らない（スポット選択は必ずユーザーが行う方針）。
 
 ### 🔶 機能3（一部実装済み）— 写真投稿
 
@@ -243,7 +244,8 @@ nasu-tabi/
 ├── scripts/
 │   ├── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
 │   ├── build-spots-full.ts      # spots-full.json 生成（CSV + 既存13件をマージ、placeId取得）
-│   └── survey-apps-script.gs    # 機能4: アンケート回答をGoogleスプレッドシートに追記するApps Script（貼付用+手順）
+│   ├── survey-apps-script.gs    # 機能4: アンケート回答をGoogleスプレッドシートに追記するApps Script（貼付用+手順）
+│   └── verify-diagnosis-scoring.ts # 機能2おすすめ順スコアの検証（16タイプ×傾きパターンで上位/階層を出力。npx tsx で実行）
 ├── supabase/
 │   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行）
 │   └── SETUP.md                 # Supabaseプロジェクトのセットアップ手順
@@ -289,7 +291,8 @@ nasu-tabi/
 │   │   └── GridConsentCheckbox.tsx # グリッド掲載許可チェック（/post と /trips/new で共用）
 │   ├── lib/
 │   │   ├── calculateRoute.ts    # ルート計算の独立関数（拡張の差し込み口）
-│   │   ├── diagnosis.ts         # 機能2診断の軸・質問・16タイプ・採点ロジック（中身はここを編集）
+│   │   ├── diagnosis.ts         # 機能2診断の軸・質問・16タイプ・採点 + 極→ジャンル表(POLE_GENRES)・おすすめ順スコア(scoreSpotByAxes)
+│   │   ├── diagnosisQuery.ts    # 機能2→/select 連携の URL エンコード/デコード（type + 4軸スコア。セクション16）
 │   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
 │   │   ├── ors.ts               # ORS API クライアント（Matrix / Directions）
 │   │   ├── tsp.ts               # 自前TSP（全探索 / 最近傍法）
@@ -491,3 +494,31 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 
 - 回答は Google スプレッドシート（`responses` シート）に溜まる。閲覧・グラフ・共有はスプレッドシート上で行う（アプリ内の集計画面は作らない）。
 - Apps Script のコードと**デプロイ手順は `scripts/survey-apps-script.gs` 冒頭のコメント**が正本。発行された Web App URL を `.env.local` と Vercel の `SURVEY_WEBHOOK_URL` に設定する（`.env.local` 変更後は dev サーバー再起動）。
+
+---
+
+## 16. 機能2 → /select 連携（診断結果でスポットを「おすすめ順」に並べる）
+
+診断結果画面の「このタイプで旅を設計する」で /select へ遷移し、タイプの傾きに合ったスポットが上位に並ぶ「おすすめ順」で写真グリッドを表示する。**ルートは自動生成しない**（スポット選択は必ずユーザー）。選択→設計→/route の流れは通常モードと完全に同一。
+
+### スコアリング（正本は `src/lib/diagnosis.ts`）
+
+- **極 → ジャンルの対応表 `POLE_GENRES`**（`Record<極キー, GENRE_GROUPS のキー[]>`）で定義する。**タイプ単位の手書きリストは作らない**。タイプの推薦は軸スコアからこの表を引いて機械的に導出する（`genresForCode` / `scoreSpotByAxes`）。
+  - 寄与するのは **2軸のみ**: ② 刺激↔癒し（刺激→[レジャー・体験] / 癒し→[温泉・サウナ, 自然・公園, カフェ]）、④ 体験↔形（体験→[レジャー・体験, 温泉・サウナ] / 形→[ショップ・雑貨, ベーカリー・スイーツ, 美術館・博物館]）。
+  - ① 計画↔即興・③ 内向↔外向は寄与ゼロ（`POLE_GENRES` にエントリを持たない）。**表にエントリを足すだけで寄与軸を増やせる**構造。
+- **スコア = Σ（各寄与軸）｛ |ユーザーの傾き|/8 × スポットが傾き側の極のジャンルを1つ以上持つなら1、無ければ0 ｝**（`scoreSpotByAxes`）。連続スコア（各軸±8）をそのまま重みに使う＝傾きが強い軸ほど並びに強く効く。傾き側の極は score の符号で決める。
+- 検証は `scripts/verify-diagnosis-scoring.ts`（`npx tsx` 実行）。16タイプ×傾きパターンで上位20件と階層別件数、寄与ジャンルのカバレッジ（形側が薄すぎないか）を出力する。
+
+### URL 設計（`src/lib/diagnosisQuery.ts`）
+
+- `/select?type=<4文字コード>&plan=<n>&desire=<n>&social=<n>&value=<n>`（`encodeDiagnosisQuery`）。routeQuery.ts と同じ思想で**状態はすべて URL**（共有・リロードでおすすめ順が復元）。**4軸とも載せる**（使うのは2軸でも将来拡張のため）。
+- `decodeDiagnosisQuery` は未知コード/type欠損なら null（＝通常モード）。スコアは整数化・±8 にクランプ・欠損は0。
+
+### /select の診断モード（`src/app/select/page.tsx`）
+
+- クエリに type があるとき（`diagnosis` が非 null）:
+  - 画面上部に「◯◯タイプのおすすめ順」バッジ + 「おすすめ順を解除」（`router.push("/select")` でクエリを外し通常モードへ）。
+  - **ジャンルフィルターのチップは非表示**（`<SpotFilter genres={[]} …>`）。絞り込みと並び替えが同時に効くのを避けるため。**「だれと」フィルターは残す**。有効タグは同行者トークンだけに限定（`effectiveActiveTags`。`activeTags` 自体は変更せず、解除でジャンル絞り込みが復活）。
+  - 処理順は **「だれとで絞る（`visibleIds` で CSS 非表示）→ スコア順に並べる」**。並びはスコア降順で、**同スコア帯の中は `orderedIds`（全体ランダム）の順がそのまま**（`Array.sort` の安定性を利用した `displayIds`）。**シャッフルボタンは `orderedIds` を混ぜ直す→再ソート＝同スコア帯内だけ入れ替え**（帯を越えない）。スコア0のスポットも隠さず最下層に並ぶ。
+- クエリが無いときは既存挙動を完全維持（全体ランダム・シャッフル・ジャンル+だれとフィルター）。`SELECT_STATE_KEY`（選択状態の sessionStorage）は診断モードと独立で、従来どおり保存・復元する。
+- useSearchParams のため **`<Suspense>` 境界の内側**（`SelectPageContent` を `SelectPage` が包む。/route と同じ構成）。

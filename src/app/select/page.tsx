@@ -1,13 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, useCallback, useEffect, useRef, useMemo } from "react";
 import SpotGrid from "@/components/SpotGrid";
 import SpotFilter from "@/components/SpotFilter";
 import SiteHeader from "@/components/SiteHeader";
 import DepartureSelector from "@/components/DepartureSelector";
 import GrainOverlay from "@/components/GrainOverlay";
 import { encodeRouteQuery } from "@/lib/routeQuery";
+// 機能2（診断）→ /select 連携: URL の type + 4軸スコアを復元し、おすすめ順に並べる
+import { decodeDiagnosisQuery } from "@/lib/diagnosisQuery";
+import { scoreSpotByAxes } from "@/lib/diagnosis";
 // /route から「選び直す」で戻ったときに選択状態を復元するためのキー
 // （ホームの「はじめる」はこのキーを破棄して新規スタートする）
 import { SELECT_STATE_KEY as STORAGE_KEY } from "@/lib/selectState";
@@ -15,13 +18,17 @@ import type { DeparturePoint, TripType } from "@/types/departure";
 // デバッグ13件/本番200件は NEXT_PUBLIC_SPOTS_MODE で切替（src/lib/spots.ts）
 import { SPOTS } from "@/lib/spots";
 // タグフィルター（ジャンル大分類・同行者を tags から実行時に解釈）
-import { availableTagAxes, spotMatchesTags } from "@/lib/spotTags";
+import { availableTagAxes, parseSpotTags, spotMatchesTags } from "@/lib/spotTags";
 
 const spots = SPOTS;
 const spotsById = new Map(spots.map((s) => [s.id, s]));
 // フィルターの選択肢（SPOTS 由来で固定。debug モードは tags 空 → 空配列 → フィルター非表示）
 const TAG_AXES = availableTagAxes(spots);
 const ALL_FILTER_TAGS = new Set<string>([...TAG_AXES.genres, ...TAG_AXES.parties]);
+// 同行者トークンだけの集合（診断モードでジャンルタグを無効化して「だれと」だけ残すのに使う）
+const PARTY_TAG_SET = new Set<string>(TAG_AXES.parties);
+// スポットのジャンル（GENRE_GROUPS のキー）を前計算（診断モードのスコア用）。id → genres
+const GENRES_BY_ID = new Map<string, string[]>(spots.map((s) => [s.id, parseSpotTags(s).genres]));
 
 interface StoredState {
   selectedIds: string[];
@@ -51,8 +58,13 @@ function isValidOrder(ids: unknown): ids is string[] {
     && new Set(ids).size === ids.length;
 }
 
-export default function SelectPage() {
+function SelectPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // 診断モード: URL に type + 4軸スコアがあると有効。無効/不正なら null（＝通常モード）。
+  // 状態の正本は URL なので、共有・リロードでおすすめ順が復元され、解除は router.push("/select") で行う。
+  const diagnosis = useMemo(() => decodeDiagnosisQuery(searchParams), [searchParams]);
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [departure, setDeparture] = useState<DeparturePoint | null>(null);
   const [tripType, setTripType] = useState<TripType>("oneway");
@@ -113,12 +125,42 @@ export default function SelectPage() {
   }, []);
   const clearTags = useCallback(() => setActiveTags([]), []);
 
+  // 診断モードではジャンルフィルターを併存させない（絞り込みと並び替えが同時に効くと挙動を
+  // 説明できなくなるため）。「だれと」だけ残すので、有効タグは同行者トークンに限定する。
+  // activeTags 自体（永続化される）は変更しない＝診断を解除するとジャンル絞り込みが復活する。
+  const effectiveActiveTags = useMemo<string[]>(() => {
+    if (!diagnosis) return activeTags;
+    return activeTags.filter((t) => PARTY_TAG_SET.has(t));
+  }, [diagnosis, activeTags]);
+
   // フィルター一致スポットの id 集合。絞り込みなしのときは undefined（全件表示）。
   // SpotGrid は配列から外さず、この集合に無いカードを CSS で隠す（写真の再取得を避ける）
   const visibleIds = useMemo<Set<string> | undefined>(() => {
-    if (activeTags.length === 0) return undefined;
-    return new Set(spots.filter((s) => spotMatchesTags(s, activeTags)).map((s) => s.id));
-  }, [activeTags]);
+    if (effectiveActiveTags.length === 0) return undefined;
+    return new Set(spots.filter((s) => spotMatchesTags(s, effectiveActiveTags)).map((s) => s.id));
+  }, [effectiveActiveTags]);
+
+  // 診断モードのスコア（id → スコア）。診断が無ければ null。
+  const scoreById = useMemo<Map<string, number> | null>(() => {
+    if (!diagnosis) return null;
+    const m = new Map<string, number>();
+    for (const s of spots) {
+      m.set(s.id, scoreSpotByAxes(GENRES_BY_ID.get(s.id) ?? [], diagnosis.scores));
+    }
+    return m;
+  }, [diagnosis]);
+
+  // 実際にグリッドへ渡す表示順。
+  // - 通常モード: orderedIds（全体ランダム）そのまま
+  // - 診断モード: orderedIds を「スコア降順」で安定ソート。Array.sort は安定なので、同スコア帯の
+  //   中は orderedIds のランダム順がそのまま保たれる（＝同スコア帯内はランダム）。シャッフルは
+  //   orderedIds を混ぜ直す → 再ソートで帯内だけが入れ替わる（帯を越えた移動はしない）。
+  //   スコア0のスポットも除外せず最下層に並ぶ。
+  const displayIds = useMemo<string[] | null>(() => {
+    if (!orderedIds) return null;
+    if (!scoreById) return orderedIds;
+    return [...orderedIds].sort((a, b) => (scoreById.get(b) ?? 0) - (scoreById.get(a) ?? 0));
+  }, [orderedIds, scoreById]);
 
   // 出発地変更時: GPS = 有料OK（遠方から来る想定）、プリセット = 一般道推奨
   const handleSelectDeparture = useCallback((dep: DeparturePoint) => {
@@ -273,22 +315,58 @@ export default function SelectPage() {
           </button>
         </div>
 
-        {/* タグフィルター（ジャンル・同行者。OR 判定。debug モードは選択肢が無く非表示） */}
+        {/* 診断モードのバッジ（おすすめ順で表示中）＋ 解除ボタン。
+            解除は URL からクエリを外す＝通常モード（全体ランダム＋全フィルター）に戻す。 */}
+        {diagnosis && (
+          <div
+            className="sel-rise"
+            style={{
+              display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap",
+              marginBottom: "20px", padding: "13px 16px",
+              background: "rgba(90,125,90,.1)", border: "1px solid #cddac6", borderRadius: "16px",
+            }}
+          >
+            <span style={{ fontSize: "20px", lineHeight: 1 }} aria-hidden>🧭</span>
+            <div style={{ flex: 1, minWidth: "160px" }}>
+              <p style={{ fontSize: "11px", letterSpacing: ".18em", color: "#8fa888", textTransform: "uppercase", marginBottom: "3px" }}>
+                Recommended
+              </p>
+              <p style={{ fontSize: "13.5px", fontWeight: 700, color: "#2c3e2d", letterSpacing: ".04em" }}>
+                「{diagnosis.type.name}」タイプのおすすめ順
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/select")}
+              style={{
+                flexShrink: 0, cursor: "pointer",
+                background: "rgba(255,255,255,.75)", border: "1px solid #cddac6", borderRadius: "100px",
+                padding: "8px 15px", fontSize: "12px", fontWeight: 600, fontFamily: "var(--font-sans)",
+                color: "#5a7d5a", letterSpacing: ".05em",
+              }}
+            >
+              おすすめ順を解除
+            </button>
+          </div>
+        )}
+
+        {/* タグフィルター（ジャンル・同行者。OR 判定。debug モードは選択肢が無く非表示）。
+            診断モードではジャンルチップを隠す（スコアがジャンルで動くため。「だれと」は残す）。 */}
         <SpotFilter
-          genres={TAG_AXES.genres}
+          genres={diagnosis ? [] : TAG_AXES.genres}
           parties={TAG_AXES.parties}
-          active={activeTags}
+          active={effectiveActiveTags}
           onToggle={toggleTag}
           onClear={clearTags}
         />
 
-        {/* orderedIds 確定後に描画（SSRとの順序不一致を避ける）。key=spot.id のため
-            シャッフル・フィルターしても各カードは再マウントされず、取得済み写真はそのまま
+        {/* displayIds 確定後に描画（SSRとの順序不一致を避ける）。key=spot.id のため
+            シャッフル・フィルター・診断並べ替えでも各カードは再マウントされず、取得済み写真はそのまま
             （フィルターは配列から外さず CSS で隠す＝写真の再取得を避ける） */}
-        {orderedIds && (
+        {displayIds && (
           <>
             <SpotGrid
-              spots={orderedIds.map((id) => spotsById.get(id)!)}
+              spots={displayIds.map((id) => spotsById.get(id)!)}
               selectedIds={selectedIds}
               onToggle={toggleSpot}
               showNames={showNames}
@@ -409,5 +487,18 @@ export default function SelectPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function SelectPage() {
+  // useSearchParams（診断モードの読み取り）は Suspense 境界の内側でしか使えない（App Router の制約）
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "#f7f5f0" }}>
+        <p style={{ fontSize: "12px", letterSpacing: ".2em", color: "#8fa888" }}>読み込み中…</p>
+      </main>
+    }>
+      <SelectPageContent />
+    </Suspense>
   );
 }
