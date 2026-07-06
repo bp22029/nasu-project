@@ -21,7 +21,8 @@ import { formatTripDate } from "@/components/TripCard";
 import { useProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 import { spotNameOf } from "@/lib/spots";
-import type { Post, Trip } from "@/types/post";
+import { deriveRouteTitle, routeSpotIds } from "@/lib/savedRoutes";
+import type { Post, Trip, SavedRoute } from "@/types/post";
 
 const sectionLabel: React.CSSProperties = {
   display: "flex",
@@ -72,37 +73,40 @@ export default function MyPage() {
   const { profile, loading: profileLoading, refresh } = useProfile();
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [trips, setTrips] = useState<Trip[] | null>(null);
+  const [savedRoutes, setSavedRoutes] = useState<SavedRoute[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [nicknameOpen, setNicknameOpen] = useState(false);
 
-  // 自分の投稿を読む（セッションがなければ空のまま）
+  // 自分の投稿・保存ルートを読む（セッションがなければ空のまま）
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const supabase = getSupabase();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        if (!cancelled) { setPosts([]); setTrips([]); }
+        if (!cancelled) { setPosts([]); setTrips([]); setSavedRoutes([]); }
         return;
       }
       const uid = session.user.id;
-      const [postsRes, tripsRes] = await Promise.all([
+      const [postsRes, tripsRes, savedRes] = await Promise.all([
         supabase.from("posts").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
         supabase.from("trips").select("*, trip_entries(*)").eq("user_id", uid).order("created_at", { ascending: false }),
+        supabase.from("saved_routes").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
       ]);
       if (cancelled) return;
-      if (postsRes.error || tripsRes.error) {
-        setError(postsRes.error?.message ?? tripsRes.error?.message ?? "読み込みに失敗しました");
+      if (postsRes.error || tripsRes.error || savedRes.error) {
+        setError(postsRes.error?.message ?? tripsRes.error?.message ?? savedRes.error?.message ?? "読み込みに失敗しました");
         return;
       }
       setPosts((postsRes.data as Post[]) ?? []);
       setTrips((tripsRes.data as unknown as Trip[]) ?? []);
+      setSavedRoutes((savedRes.data as SavedRoute[]) ?? []);
     })();
     return () => { cancelled = true; };
   }, []);
 
-  const loading = profileLoading || posts === null || trips === null;
-  const isEmpty = !profile && (posts?.length ?? 0) === 0 && (trips?.length ?? 0) === 0;
+  const loading = profileLoading || posts === null || trips === null || savedRoutes === null;
+  const isEmpty = !profile && (posts?.length ?? 0) === 0 && (trips?.length ?? 0) === 0 && (savedRoutes?.length ?? 0) === 0;
 
   return (
     <PageShell backHref="/" backLabel="ホームへ" indexLabel="MY PAGE">
@@ -128,14 +132,20 @@ export default function MyPage() {
       ) : isEmpty ? (
         <div className="sel-rise" style={{ animationDelay: ".16s" }}>
           <p style={{ fontSize: "13.5px", color: "#5a7d5a", letterSpacing: ".05em", lineHeight: 2, marginBottom: "24px", maxWidth: "46ch" }}>
-            まだ投稿がありません。写真や旅を投稿すると、ここに記録が集まっていきます。
+            まだ記録がありません。設計したルートを保存したり、写真や旅を投稿すると、ここに集まっていきます。
           </p>
           <div className="flex items-center gap-4 flex-wrap">
-            <Link href="/trips/new" style={{
+            <Link href="/select" style={{
               display: "inline-flex", background: "#2c3e2d", color: "#f3f1ea",
               fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
               padding: "13px 24px", borderRadius: "100px",
               boxShadow: "0 14px 30px -16px rgba(36,48,25,.7)",
+            }}>
+              ルートを設計する
+            </Link>
+            <Link href="/trips/new" style={{
+              fontSize: "13px", color: "#5a7d5a", letterSpacing: ".08em",
+              textDecoration: "underline", textUnderlineOffset: "4px",
             }}>
               旅を記録する
             </Link>
@@ -164,6 +174,23 @@ export default function MyPage() {
           <p style={{ fontSize: "10.5px", color: "#9a947f", letterSpacing: ".04em", lineHeight: 1.8, margin: "8px 2px 0" }}>
             アカウントはこのブラウザに紐づいています。ブラウザのデータを消すと別のアカウントになります。
           </p>
+
+          {/* 保存したルート（軽量ブックマーク） */}
+          <div style={sectionLabel}>
+            <span>SAVED ROUTES — 保存したルート</span>
+            <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
+            <span style={{ letterSpacing: ".1em" }}>{savedRoutes!.length}件</span>
+          </div>
+          {savedRoutes!.length === 0 ? (
+            <p style={{ fontSize: "12.5px", color: "#9a947f", letterSpacing: ".04em" }}>
+              まだ保存したルートがありません。ルート画面の「ルートを保存」で残せます。
+            </p>
+          ) : (
+            savedRoutes!.map((route) => (
+              <MySavedRouteItem key={route.id} route={route}
+                onDeleted={() => setSavedRoutes((prev) => prev!.filter((r) => r.id !== route.id))} />
+            ))
+          )}
 
           {/* 旅記録 */}
           <div style={sectionLabel}>
@@ -204,6 +231,97 @@ export default function MyPage() {
         onCancel={() => setNicknameOpen(false)}
       />
     </PageShell>
+  );
+}
+
+/** 保存したルートの行: 表示（地図で見る）+ 改名 + 削除 */
+function MySavedRouteItem({ route, onDeleted }: { route: SavedRoute; onDeleted: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [savedTitle, setSavedTitle] = useState<string | null>(route.title);
+  const [title, setTitle] = useState(route.title ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const displayTitle = deriveRouteTitle(route.route_query, savedTitle);
+  const autoTitle = deriveRouteTitle(route.route_query, null);
+  const spotCount = routeSpotIds(route.route_query).length;
+
+  // 改名: 空にすると null（自動生成名に戻る）。DB の CHECK は 1〜60 文字なので空文字は入れない
+  const rename = async () => {
+    const next = title.trim() || null;
+    setBusy(true);
+    setError(null);
+    const { error } = await getSupabase().from("saved_routes").update({ title: next }).eq("id", route.id);
+    setBusy(false);
+    if (error) { setError(`保存に失敗しました: ${error.message}`); return; }
+    setSavedTitle(next);
+    setEditing(false);
+  };
+
+  const remove = async () => {
+    if (!window.confirm(`保存したルート「${displayTitle}」を削除しますか?`)) return;
+    setBusy(true);
+    const { error } = await getSupabase().from("saved_routes").delete().eq("id", route.id);
+    if (error) { setBusy(false); setError(`削除に失敗しました: ${error.message}`); return; }
+    onDeleted();
+  };
+
+  return (
+    <div style={itemCard}>
+      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div className="relative overflow-hidden" style={{
+          width: "56px", height: "56px", borderRadius: "10px", flexShrink: 0,
+          display: "grid", placeItems: "center",
+          background: "linear-gradient(145deg, #cfe0c6, #8fa888)",
+        }}>
+          {/* ルート（経路）アイコン */}
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 19V8a3 3 0 013-3h6a3 3 0 013 3" stroke="#2c3e2d" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="6" cy="19" r="2.2" fill="#2c3e2d" />
+            <circle cx="18" cy="8" r="2.2" fill="#2c3e2d" />
+          </svg>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Link href={`/route?${route.route_query}`} style={{
+            display: "block", fontFamily: "var(--font-serif)", fontWeight: 600,
+            fontSize: "15px", color: "#243019", letterSpacing: ".03em",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {displayTitle}
+          </Link>
+          <span style={{ fontSize: "10.5px", letterSpacing: ".1em", color: "#8fa888" }}>
+            {formatTripDate(route.created_at)} ・ {spotCount}スポット ・ 地図で見る →
+          </span>
+        </div>
+        {!editing && (
+          <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
+            <button type="button" onClick={() => setEditing(true)} disabled={busy} style={smallButton("ghost")}>名前</button>
+            <button type="button" onClick={remove} disabled={busy} style={smallButton("danger")}>削除</button>
+          </div>
+        )}
+      </div>
+
+      {editing && (
+        <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <input type="text" value={title} maxLength={60} placeholder={autoTitle}
+            onChange={(e) => setTitle(e.target.value)} style={inputStyle} />
+          <p style={{ fontSize: "10.5px", color: "#9a947f", letterSpacing: ".04em", margin: 0 }}>
+            空のままにすると、スポット名から自動でつけた名前（{autoTitle}）に戻ります。
+          </p>
+          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <button type="button" disabled={busy} style={smallButton("ghost")}
+              onClick={() => { setEditing(false); setTitle(savedTitle ?? ""); setError(null); }}>
+              キャンセル
+            </button>
+            <button type="button" onClick={rename} disabled={busy} style={smallButton("primary")}>
+              {busy ? "保存中…" : "保存"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {error && <p style={{ fontSize: "11.5px", color: "#e05252", margin: "8px 0 0" }}>⚠ {error}</p>}
+    </div>
   );
 }
 

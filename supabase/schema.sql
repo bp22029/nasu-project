@@ -93,6 +93,29 @@ create policy "delete own" on public.trip_entries for delete to authenticated
   using (exists (select 1 from public.trips t where t.id = trip_id and t.user_id = auth.uid()));
 
 -- ============================================================
+-- 5) saved_routes: 設計したルートの軽量ブックマーク（機能: ルート保存）
+--    写真なし・非公開・自分用。ルートは route_query 一本で完全復元できる
+--    （/route?{route_query}）。ニックネーム不要にするため FK は profiles ではなく
+--    auth.users を直参照する（保存に profiles 行＝ニックネームを要求しない）。
+--    title は null 可（null のときはスポット名から自動生成 = deriveRouteTitle）。
+-- ============================================================
+create table public.saved_routes (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  route_query text not null,
+  title       text check (char_length(title) between 1 and 60),
+  created_at  timestamptz not null default now()
+);
+create index saved_routes_user_idx on public.saved_routes (user_id, created_at desc);
+
+-- RLS: 非公開の自分用ブックマークなので、読み取りも本人のみ（他テーブルの public read と異なる）
+alter table public.saved_routes enable row level security;
+create policy "read own"   on public.saved_routes for select to authenticated using (auth.uid() = user_id);
+create policy "insert own" on public.saved_routes for insert to authenticated with check (auth.uid() = user_id);
+create policy "update own" on public.saved_routes for update to authenticated using (auth.uid() = user_id);
+create policy "delete own" on public.saved_routes for delete to authenticated using (auth.uid() = user_id);
+
+-- ============================================================
 -- Storage RLS: 自分の user_id フォルダ配下にのみアップロード/削除可
 -- （閲覧は Public バケットなのでポリシー不要）
 -- ============================================================

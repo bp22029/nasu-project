@@ -9,6 +9,7 @@ import GrainOverlay from "@/components/GrainOverlay";
 import SiteHeader from "@/components/SiteHeader";
 import SurveyPrompt from "@/components/SurveyPrompt";
 import ShareRouteButton from "@/components/ShareRouteButton";
+import SaveRouteButton from "@/components/SaveRouteButton";
 import { decodeRouteQuery } from "@/lib/routeQuery";
 import type { RouteResult, SpotLock } from "@/types/route";
 import { TRIP_DRAFT_KEY, type TripDraft } from "@/types/post";
@@ -301,6 +302,8 @@ function RouteContent() {
               <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          {/* このルートを軽量保存（写真なし・非公開・自分用。マイページで見返す） */}
+          <SaveRouteButton routeQuery={queryString} />
           {/* 共有するのはアプリ内のルートURLのみ（Google由来データは含めない。CLAUDE.md セクション5） */}
           <ShareRouteButton url={`${origin}/route?${queryString}`} />
         </div>
