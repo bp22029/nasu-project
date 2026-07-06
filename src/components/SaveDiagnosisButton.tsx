@@ -1,40 +1,46 @@
 "use client";
 
 /**
- * 「ルートを保存」ボタン（機能: ルート保存）
+ * 「結果を保存」ボタン（機能2: 診断結果の保存）
  *
- * 設計したルートを軽量ブックマークとして保存する（写真なし・非公開・自分用）。
- * - ルートは /route のクエリ文字列（route_query）一本で完全再現できるので、保存は
- *   saved_routes に route_query を1カラム insert するだけ。タイトルは付けない（一覧では
- *   スポット名から自動生成 = deriveRouteTitle）。あとで /me で改名できる。
- * - ニックネーム不要: 非公開の自分用なので ensureAnonSession() だけ発火する
- *   （投稿・旅記録の ensureSignedInWithProfile とは違い、NicknameModal は挟まない）。
- * - 見返しはマイページ（/me）の SAVED ROUTES 節から。
+ * 旅タイプ診断の結果を保存する（非公開・自分用・**最新1件のみ**）。
+ * - 結果は encodeDiagnosisQuery の文字列（type + 4軸スコア）一本で完全復元できるので、
+ *   diagnoses テーブルに result_query を upsert するだけ。user_id が主キーなので
+ *   何度保存しても行は常に1つ＝最新に置き換わる（マイページはそれを1件表示する）。
+ * - ニックネーム不要: 非公開なので ensureAnonSession() だけ発火する
+ *   （投稿・旅記録の ensureSignedInWithProfile とは違い NicknameModal は挟まない）。
+ * - 見返しはマイページ（/me）の DIAGNOSIS 節から。
  *
- * スタイルは ShareButton と対になる「生成り地×深緑縁の従属 pill」に揃える。
+ * スタイル・注記の絶対配置は SaveRouteButton に倣う（従属 pill。注記でボタンがずれないよう絶対配置）。
  */
 import { useState } from "react";
 import { ensureAnonSession } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 
-interface SaveRouteButtonProps {
-  /** 保存する /route のクエリ文字列（searchParams.toString()。"?" は含まない） */
-  routeQuery: string;
+interface SaveDiagnosisButtonProps {
+  /** 保存する結果の encodeDiagnosisQuery 文字列（"?" は含まない） */
+  resultQuery: string;
 }
 
 type Status = "idle" | "saving" | "saved";
 
-export default function SaveRouteButton({ routeQuery }: SaveRouteButtonProps) {
+export default function SaveDiagnosisButton({ resultQuery }: SaveDiagnosisButtonProps) {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
   const save = async () => {
-    if (status !== "idle" || !routeQuery) return; // 二重保存を防ぐ（同一表示中は1回だけ）
+    if (status !== "idle" || !resultQuery) return; // 二重保存を防ぐ（同一表示中は1回だけ）
     setStatus("saving");
     setError(null);
     try {
-      await ensureAnonSession();
-      const { error } = await getSupabase().from("saved_routes").insert({ route_query: routeQuery });
+      const userId = await ensureAnonSession();
+      // user_id 主キーで upsert ＝ 常に最新1件だけを保持する（created_at も now に更新）
+      const { error } = await getSupabase()
+        .from("diagnoses")
+        .upsert(
+          { user_id: userId, result_query: resultQuery, created_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
       if (error) throw new Error(error.message);
       setStatus("saved");
     } catch (e) {
@@ -51,12 +57,11 @@ export default function SaveRouteButton({ routeQuery }: SaveRouteButtonProps) {
         type="button"
         onClick={save}
         disabled={status !== "idle"}
-        aria-label="このルートを保存する"
+        aria-label="この診断結果を保存する"
         className="route-cta"
         style={{
           display: "inline-flex", alignItems: "center", gap: "10px",
           cursor: status === "idle" ? "pointer" : "default",
-          // 共有CTAと対になる従属 pill。保存済みは淡い緑地に切り替えて完了を示す
           background: saved ? "rgba(90,125,90,.14)" : "rgba(255,255,255,.92)",
           color: "#2c3e2d",
           border: `1px solid ${saved ? "rgba(90,125,90,.5)" : "rgba(44,62,45,.4)"}`,
@@ -77,11 +82,10 @@ export default function SaveRouteButton({ routeQuery }: SaveRouteButtonProps) {
             <path d="M6 4h12v16l-6-4-6 4V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
-        {status === "saving" ? "保存中…" : saved ? "保存しました" : "ルートを保存"}
+        {status === "saving" ? "保存中…" : saved ? "保存しました" : "結果を保存"}
       </button>
 
-      {/* 注記はボタンの下に絶対配置する。通常フローに入れるとボタンの高さが増え、
-          親行（items-center）で再センタリングされてボタンが持ち上がってしまうため。 */}
+      {/* 注記はボタン下に絶対配置（通常フローに入れるとボタンが上へずれるため。SaveRouteButton と同様） */}
       {error && (
         <p style={{
           position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",

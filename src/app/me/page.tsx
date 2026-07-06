@@ -12,17 +12,20 @@
  *   セッションがなければ空状態を表示する）。
  */
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import PageShell from "@/components/PageShell";
 import NicknameModal from "@/components/NicknameModal";
 import GridConsentCheckbox from "@/components/GridConsentCheckbox";
 import UserPhoto from "@/components/UserPhoto";
+import ShareButton from "@/components/ShareButton";
 import { formatTripDate } from "@/components/TripCard";
 import { useProfile } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 import { spotNameOf } from "@/lib/spots";
 import { deriveRouteTitle, routeSpotIds } from "@/lib/savedRoutes";
-import type { Post, Trip, SavedRoute } from "@/types/post";
+import { decodeDiagnosisQuery } from "@/lib/diagnosisQuery";
+import type { Post, Trip, SavedRoute, SavedDiagnosis } from "@/types/post";
 
 const sectionLabel: React.CSSProperties = {
   display: "flex",
@@ -74,39 +77,43 @@ export default function MyPage() {
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [trips, setTrips] = useState<Trip[] | null>(null);
   const [savedRoutes, setSavedRoutes] = useState<SavedRoute[] | null>(null);
+  // 診断結果は 1ユーザー1行（最新のみ）。null=未保存、undefined=未取得
+  const [diagnosis, setDiagnosis] = useState<SavedDiagnosis | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [nicknameOpen, setNicknameOpen] = useState(false);
 
-  // 自分の投稿・保存ルートを読む（セッションがなければ空のまま）
+  // 自分の投稿・保存ルート・診断結果を読む（セッションがなければ空のまま）
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const supabase = getSupabase();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        if (!cancelled) { setPosts([]); setTrips([]); setSavedRoutes([]); }
+        if (!cancelled) { setPosts([]); setTrips([]); setSavedRoutes([]); setDiagnosis(null); }
         return;
       }
       const uid = session.user.id;
-      const [postsRes, tripsRes, savedRes] = await Promise.all([
+      const [postsRes, tripsRes, savedRes, diagRes] = await Promise.all([
         supabase.from("posts").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
         supabase.from("trips").select("*, trip_entries(*)").eq("user_id", uid).order("created_at", { ascending: false }),
         supabase.from("saved_routes").select("*").eq("user_id", uid).order("created_at", { ascending: false }),
+        supabase.from("diagnoses").select("*").eq("user_id", uid).maybeSingle(), // 最新1件
       ]);
       if (cancelled) return;
-      if (postsRes.error || tripsRes.error || savedRes.error) {
-        setError(postsRes.error?.message ?? tripsRes.error?.message ?? savedRes.error?.message ?? "読み込みに失敗しました");
+      if (postsRes.error || tripsRes.error || savedRes.error || diagRes.error) {
+        setError(postsRes.error?.message ?? tripsRes.error?.message ?? savedRes.error?.message ?? diagRes.error?.message ?? "読み込みに失敗しました");
         return;
       }
       setPosts((postsRes.data as Post[]) ?? []);
       setTrips((tripsRes.data as unknown as Trip[]) ?? []);
       setSavedRoutes((savedRes.data as SavedRoute[]) ?? []);
+      setDiagnosis((diagRes.data as SavedDiagnosis | null) ?? null);
     })();
     return () => { cancelled = true; };
   }, []);
 
-  const loading = profileLoading || posts === null || trips === null || savedRoutes === null;
-  const isEmpty = !profile && (posts?.length ?? 0) === 0 && (trips?.length ?? 0) === 0 && (savedRoutes?.length ?? 0) === 0;
+  const loading = profileLoading || posts === null || trips === null || savedRoutes === null || diagnosis === undefined;
+  const isEmpty = !profile && (posts?.length ?? 0) === 0 && (trips?.length ?? 0) === 0 && (savedRoutes?.length ?? 0) === 0 && !diagnosis;
 
   return (
     <PageShell backHref="/" backLabel="ホームへ" indexLabel="MY PAGE">
@@ -175,6 +182,19 @@ export default function MyPage() {
             アカウントはこのブラウザに紐づいています。ブラウザのデータを消すと別のアカウントになります。
           </p>
 
+          {/* 旅タイプ診断（最新1件のみ） */}
+          <div style={sectionLabel}>
+            <span>DIAGNOSIS — 旅タイプ</span>
+            <span style={{ flex: 1, height: "1px", background: "#e5e0d3" }} />
+          </div>
+          {!diagnosis ? (
+            <p style={{ fontSize: "12.5px", color: "#9a947f", letterSpacing: ".04em" }}>
+              まだ診断結果がありません。<Link href="/diagnosis" style={{ color: "#5a7d5a", textDecoration: "underline", textUnderlineOffset: "3px" }}>旅タイプ診断</Link>で調べてみましょう。
+            </p>
+          ) : (
+            <MyDiagnosisItem diagnosis={diagnosis} onDeleted={() => setDiagnosis(null)} />
+          )}
+
           {/* 保存したルート（軽量ブックマーク） */}
           <div style={sectionLabel}>
             <span>SAVED ROUTES — 保存したルート</span>
@@ -231,6 +251,68 @@ export default function MyPage() {
         onCancel={() => setNicknameOpen(false)}
       />
     </PageShell>
+  );
+}
+
+/** 保存した診断結果の行（最新1件）: 見直す + もう一度共有 + 旅を設計 + 削除 */
+function MyDiagnosisItem({ diagnosis, onDeleted }: { diagnosis: SavedDiagnosis; onDeleted: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  const decoded = decodeDiagnosisQuery(new URLSearchParams(diagnosis.result_query));
+  const type = decoded?.type ?? null;
+  const reviewHref = `/diagnosis?${diagnosis.result_query}`;   // 見直す（結果を再表示）
+  const designHref = `/select?${diagnosis.result_query}`;      // この結果で旅を設計（/select 診断モード）
+  const shareUrl = `${origin}${reviewHref}`;
+
+  const remove = async () => {
+    if (!window.confirm("保存した診断結果を削除しますか?")) return;
+    setBusy(true);
+    const { error } = await getSupabase().from("diagnoses").delete().eq("user_id", diagnosis.user_id);
+    if (error) { setBusy(false); setError(`削除に失敗しました: ${error.message}`); return; }
+    onDeleted();
+  };
+
+  return (
+    <div style={itemCard}>
+      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div className="relative overflow-hidden" style={{
+          width: "56px", height: "56px", borderRadius: "10px", flexShrink: 0, background: "#eef1ea",
+        }}>
+          {type && <Image src={type.image} alt={type.name} fill sizes="56px" style={{ objectFit: "cover" }} />}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Link href={reviewHref} style={{
+            display: "block", fontFamily: "var(--font-serif)", fontWeight: 600,
+            fontSize: "15px", color: "#243019", letterSpacing: ".03em",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {type ? type.name : "診断結果"}
+          </Link>
+          <span style={{ fontSize: "10.5px", letterSpacing: ".1em", color: "#8fa888" }}>
+            {formatTripDate(diagnosis.created_at)}{type ? ` ・ 「${type.animal}」タイプ ・ 見直す →` : ""}
+          </span>
+        </div>
+        <button type="button" onClick={remove} disabled={busy} style={{ ...smallButton("danger"), flexShrink: 0 }}>削除</button>
+      </div>
+
+      <div style={{ marginTop: "12px", display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+        <Link href={designHref} style={{ ...smallButton("ghost"), display: "inline-flex", textDecoration: "none" }}>
+          この結果で旅を設計
+        </Link>
+        <ShareButton
+          url={shareUrl}
+          title="#NASU 旅タイプ診断"
+          text={type ? `私の那須旅タイプは「${type.name}」でした` : "私の那須旅タイプ"}
+          label="共有する"
+          ariaLabel="この診断結果を共有する"
+        />
+      </div>
+
+      {error && <p style={{ fontSize: "11.5px", color: "#e05252", margin: "8px 0 0" }}>⚠ {error}</p>}
+    </div>
   );
 }
 

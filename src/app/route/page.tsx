@@ -8,7 +8,7 @@ import RouteTimeline from "@/components/RouteTimeline";
 import GrainOverlay from "@/components/GrainOverlay";
 import SiteHeader from "@/components/SiteHeader";
 import SurveyPrompt from "@/components/SurveyPrompt";
-import ShareRouteButton from "@/components/ShareRouteButton";
+import ShareButton from "@/components/ShareButton";
 import SaveRouteButton from "@/components/SaveRouteButton";
 import { decodeRouteQuery } from "@/lib/routeQuery";
 import type { RouteResult, SpotLock } from "@/types/route";
@@ -305,7 +305,7 @@ function RouteContent() {
           {/* このルートを軽量保存（写真なし・非公開・自分用。マイページで見返す） */}
           <SaveRouteButton routeQuery={queryString} />
           {/* 共有するのはアプリ内のルートURLのみ（Google由来データは含めない。CLAUDE.md セクション5） */}
-          <ShareRouteButton url={`${origin}/route?${queryString}`} />
+          <ShareButton url={`${origin}/route?${queryString}`} />
         </div>
       </div>
 

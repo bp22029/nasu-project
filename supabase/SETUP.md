@@ -23,8 +23,8 @@
 ## 4. スキーマ適用
 
 - ダッシュボード → **SQL Editor** → `supabase/schema.sql` の内容を貼り付けて Run
-- Table Editor に profiles / posts / trips / trip_entries / saved_routes の5テーブルができていればOK
-- **既に稼働中のプロジェクト**（schema.sql 適用済み）にあとから機能を足す場合は、差分の `migration-00X-*.sql` を SQL Editor で Run する（各ファイル冒頭のコメント参照）。例: `migration-004-saved-routes.sql` = 保存したルート（機能: ルート保存）のテーブル追加。
+- Table Editor に profiles / posts / trips / trip_entries / saved_routes / diagnoses の6テーブルができていればOK
+- **既に稼働中のプロジェクト**（schema.sql 適用済み）にあとから機能を足す場合は、差分の `migration-00X-*.sql` を SQL Editor で Run する（各ファイル冒頭のコメント参照）。例: `migration-004-saved-routes.sql` = 保存したルート、`migration-005-diagnoses.sql` = 保存した診断結果（機能2の保存・共有）のテーブル追加。
 
 ## 5. 環境変数
 

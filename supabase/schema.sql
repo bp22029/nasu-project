@@ -116,6 +116,26 @@ create policy "update own" on public.saved_routes for update to authenticated us
 create policy "delete own" on public.saved_routes for delete to authenticated using (auth.uid() = user_id);
 
 -- ============================================================
+-- 6) diagnoses: 保存した旅タイプ診断の結果（機能2の保存・共有）
+--    **1ユーザー1行**（user_id が主キー）＝ upsert で常に最新の1件だけを保持する。
+--    result_query は /diagnosis の encodeDiagnosisQuery 文字列（type + 4軸スコア）で、
+--    これ一本で結果カードを完全復元でき、共有URL（/diagnosis?{result_query}）にもなる。
+--    saved_routes と同じく非公開・ニックネーム不要（FK は auth.users 直参照）。
+-- ============================================================
+create table public.diagnoses (
+  user_id      uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  result_query text not null,
+  created_at   timestamptz not null default now()
+);
+
+-- RLS: 非公開（自分の最新診断のみ）。読み書きすべて本人のみ
+alter table public.diagnoses enable row level security;
+create policy "read own"   on public.diagnoses for select to authenticated using (auth.uid() = user_id);
+create policy "insert own" on public.diagnoses for insert to authenticated with check (auth.uid() = user_id);
+create policy "update own" on public.diagnoses for update to authenticated using (auth.uid() = user_id);
+create policy "delete own" on public.diagnoses for delete to authenticated using (auth.uid() = user_id);
+
+-- ============================================================
 -- Storage RLS: 自分の user_id フォルダ配下にのみアップロード/削除可
 -- （閲覧は Public バケットなのでポリシー不要）
 -- ============================================================

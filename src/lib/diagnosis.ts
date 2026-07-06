@@ -222,6 +222,29 @@ export interface DiagnosisResult {
   axes: AxisResult[];
 }
 
+/** 1軸の合計スコア（-8〜+8）から AxisResult を組み立てる（比率バー・優勢極を決定） */
+function axisResultFromScore(axis: Axis, score: number): AxisResult {
+  // score -8〜+8 を「正極側の比率 0〜100%」に線形変換（score 0 = 50/50 の互角）
+  const positivePercent = Math.round(((score + AXIS_MAX) / (2 * AXIS_MAX)) * 100);
+  const pole = score >= 0 ? axis.positive : axis.negative;
+  return {
+    axisId: axis.id,
+    title: axis.title,
+    pole,
+    positive: axis.positive,
+    negative: axis.negative,
+    positivePercent,
+    negativePercent: 100 - positivePercent,
+    score,
+  };
+}
+
+/** AxisResult[] からタイプを確定して DiagnosisResult にする（4文字コード = 各軸の優勢極） */
+function resultFromAxes(axes: AxisResult[]): DiagnosisResult {
+  const code = axes.map((a) => a.pole.key).join("");
+  return { type: DIAGNOSIS_TYPES[code], axes };
+}
+
 /**
  * 全16問の回答値（各 -2〜+2、QUESTIONS と同じ並び）から結果を算出する。
  * 逆転項目はスコアを反転して軸ごとに合計 → 正極/負極を決定 → 4文字コードでタイプ確定。
@@ -234,24 +257,19 @@ export function computeResult(values: number[]): DiagnosisResult {
       const v = values[i] ?? 0;
       score += q.reverse ? -v : v;
     });
-    // score -8〜+8 を「正極側の比率 0〜100%」に線形変換（score 0 = 50/50 の互角）
-    const positivePercent = Math.round(((score + AXIS_MAX) / (2 * AXIS_MAX)) * 100);
-    const pole = score >= 0 ? axis.positive : axis.negative;
-    return {
-      axisId: axis.id,
-      title: axis.title,
-      pole,
-      positive: axis.positive,
-      negative: axis.negative,
-      positivePercent,
-      negativePercent: 100 - positivePercent,
-      score,
-    };
+    return axisResultFromScore(axis, score);
   });
+  return resultFromAxes(axes);
+}
 
-  const code = axes.map((a) => a.pole.key).join("");
-  const type = DIAGNOSIS_TYPES[code];
-  return { type, axes };
+/**
+ * 軸スコア（axisId → 合計スコア -8〜+8）から結果を再構築する。
+ * 保存/共有URL（type + 4軸スコア = diagnosisQuery）からの復元に使う。生の16回答は不要
+ * （比率バー・優勢極・タイプは軸スコアだけで決定的に再現できる）。欠損軸は 0 に倒す。
+ */
+export function resultFromScores(scoreById: Record<string, number>): DiagnosisResult {
+  const axes = AXES.map((axis) => axisResultFromScore(axis, scoreById[axis.id] ?? 0));
+  return resultFromAxes(axes);
 }
 
 /**

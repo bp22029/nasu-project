@@ -3,44 +3,68 @@
 /**
  * 那須旅診断（機能2）— 16問の5件法 → 4軸で旅タイプ（動物）を表示
  *
- * 状態機械: intro → question（1問ずつ・5件法）→ result。ローカル state のみで完結する
- * （URL / sessionStorage は使わない = 今回はルート連携しないため）。
+ * 状態機械: intro → question（1問ずつ・5件法）→ result。基本はローカル state で完結する。
+ * ただし URL に診断結果（?type=..&plan=..&… = diagnosisQuery）が載っていれば、初期表示で
+ * その結果を復元する（＝共有リンクを開いた人／マイページの「見直す」の受け口。セクション18）。
  * 診断の中身（軸・質問・タイプ・採点）は src/lib/diagnosis.ts に集約。ここは表示だけ。
  *
  * 世界観は他ページと共通（PageShell + 明朝見出し + 深緑アクセント）。新規CSSは足さず、
  * 既存の .sel-rise アニメと /select 由来のボタンスタイルを流用する。
  */
-import { useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import PageShell from "@/components/PageShell";
 import SurveyPrompt from "@/components/SurveyPrompt";
+import SaveDiagnosisButton from "@/components/SaveDiagnosisButton";
+import ShareButton from "@/components/ShareButton";
 import {
   AXES,
   QUESTIONS,
   LIKERT_OPTIONS,
   computeResult,
+  resultFromScores,
   type DiagnosisResult,
 } from "@/lib/diagnosis";
-import { encodeDiagnosisQuery } from "@/lib/diagnosisQuery";
+import { encodeDiagnosisQuery, decodeDiagnosisQuery } from "@/lib/diagnosisQuery";
 
 type Phase = "intro" | "question" | "result";
+/** 結果の出どころ: quiz=自分で診断した / url=共有リンクや保存結果の表示 */
+type ResultSource = "quiz" | "url";
 
-export default function DiagnosisPage() {
+function DiagnosisContent() {
   const total = QUESTIONS.length;
-  const [phase, setPhase] = useState<Phase>("intro");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // URL に診断結果クエリがあれば復元（共有リンク・マイページの見直しの受け口）。無効なら null。
+  const urlResult = useMemo(() => {
+    const decoded = decodeDiagnosisQuery(searchParams);
+    return decoded ? resultFromScores(decoded.scores) : null;
+  }, [searchParams]);
+
+  // 初期状態は URL 由来の結果があればそれを表示（useState 初期化子は初回のみ評価される）
+  const [phase, setPhase] = useState<Phase>(urlResult ? "result" : "intro");
   // 各設問の回答値（-2〜+2、未回答は null）。QUESTIONS と同じ並びの固定長配列で保持する
   // ＝前の質問に戻っても選んだ値が残り、チェック状態として可視化できる
   const [values, setValues] = useState<(number | null)[]>(() => Array(total).fill(null));
   // 今表示している設問の index（append 方式をやめ、明示的なポインタで前後に移動する）
   const [current, setCurrent] = useState(0);
-  const [result, setResult] = useState<DiagnosisResult | null>(null);
+  const [result, setResult] = useState<DiagnosisResult | null>(urlResult);
+  const [source, setSource] = useState<ResultSource>(urlResult ? "url" : "quiz");
 
   const start = () => {
     setValues(Array(total).fill(null));
     setCurrent(0);
     setResult(null);
+    setSource("quiz");
     setPhase("question");
+  };
+
+  // 共有リンク/保存結果の表示から「自分も診断する」: URL のクエリを外し、最初から診断する
+  const takeOwn = () => {
+    if (urlResult) router.replace("/diagnosis"); // 共有パラメータを落とす（リロードで再表示されないよう）
+    start();
   };
 
   // 現在の設問の値をセット（自動で次へは進まない。送りは「次へ」で明示する）
@@ -98,9 +122,27 @@ export default function DiagnosisPage() {
         />
       )}
       {phase === "result" && result && (
-        <ResultView result={result} onRestart={restart} onBack={back} />
+        <ResultView
+          result={result}
+          source={source}
+          onRestart={source === "url" ? takeOwn : restart}
+          onBack={source === "quiz" ? back : undefined}
+        />
       )}
     </PageShell>
+  );
+}
+
+export default function DiagnosisPage() {
+  // useSearchParams（結果の URL 復元）は Suspense 境界の内側でしか使えない（App Router の制約）
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center" style={{ background: "#f7f5f0" }}>
+        <p style={{ fontSize: "12px", letterSpacing: ".2em", color: "#8fa888" }}>読み込み中…</p>
+      </main>
+    }>
+      <DiagnosisContent />
+    </Suspense>
   );
 }
 
@@ -273,20 +315,27 @@ function QuestionView({
 
 /* ── result ──────────────────────────────────────────── */
 function ResultView({
-  result, onRestart, onBack,
+  result, source, onRestart, onBack,
 }: {
   result: DiagnosisResult;
+  /** quiz=自分で診断した直後（保存/共有/もう一度） / url=共有リンク・保存結果の表示（共有/自分も診断する） */
+  source: ResultSource;
   onRestart: () => void;
-  onBack: () => void;
+  onBack?: () => void;
 }) {
   const { type, axes } = result;
 
-  // 診断結果 → /select（診断モード）へ。状態はすべて URL に載せる（診断は URL/state を持たないため、
-  // 遷移時だけ type + 4軸スコアをクエリに固める）。おすすめ順の並べ替えは /select 側で行う。
-  const selectHref = `/select?${encodeDiagnosisQuery({
+  // 結果を表す URL クエリ（type + 4軸スコア）。保存・共有・/select 連携で共用する。
+  const resultQuery = encodeDiagnosisQuery({
     code: type.code,
     scores: Object.fromEntries(axes.map((a) => [a.axisId, a.score])),
-  })}`;
+  });
+  const selectHref = `/select?${resultQuery}`;
+
+  // 共有URLの生成に使う origin。window は SSR で触れないためマウント後に取得する
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+  const shareUrl = `${origin}/diagnosis?${resultQuery}`;
 
   return (
     // 結果ブロック全体（見出し・カード・ボタン）を中央寄せ。カード幅に揃えて中央に配置する
@@ -379,14 +428,29 @@ function ResultView({
         <span style={ringBtnStyle}><Arrow /></span>
       </Link>
 
+      {/* 保存・共有（保存は自分で診断した直後のみ。共有は常に）。
+          注記でずれないよう SaveDiagnosisButton の注記は絶対配置（コンポーネント側で処理） */}
+      <div className="sel-rise" style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginTop: "20px", alignItems: "center", animationDelay: ".2s" }}>
+        {source === "quiz" && <SaveDiagnosisButton resultQuery={resultQuery} />}
+        <ShareButton
+          url={shareUrl}
+          title="#NASU 旅タイプ診断"
+          text={`私の那須旅タイプは「${type.name}」でした`}
+          label="結果を共有する"
+          ariaLabel="この診断結果を共有する"
+        />
+      </div>
+
       <div className="sel-rise" style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginTop: "18px", alignItems: "center", animationDelay: ".24s" }}>
         <button type="button" onClick={onRestart} className="start-cta" style={{ ...ctaStyle, background: "rgba(255,255,255,.7)", color: "#5a7d5a", border: "1px solid #e5e0d3", boxShadow: "none" }}>
-          もう一度診断する
+          {source === "url" ? "自分も診断する" : "もう一度診断する"}
           <span style={{ ...ringBtnStyle, background: "rgba(90,125,90,.12)" }}><Arrow /></span>
         </button>
-        <button type="button" onClick={onBack} style={textLinkStyle}>
-          ← 質問にもどる
-        </button>
+        {onBack && (
+          <button type="button" onClick={onBack} style={textLinkStyle}>
+            ← 質問にもどる
+          </button>
+        )}
       </div>
 
       {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
