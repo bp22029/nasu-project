@@ -80,13 +80,23 @@ export default function SaveRouteButton({ routeQuery }: SaveRouteButtonProps) {
         {status === "saving" ? "保存中…" : saved ? "保存しました" : "ルートを保存"}
       </button>
 
+      {/* 注記はボタンの下に絶対配置する。通常フローに入れるとボタンの高さが増え、
+          親行（items-center）で再センタリングされてボタンが持ち上がってしまうため。 */}
       {error && (
-        <p style={{ fontSize: "11px", color: "#e05252", letterSpacing: ".04em", marginTop: "8px", maxWidth: "240px", textAlign: "center" }}>
+        <p style={{
+          position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+          width: "240px", textAlign: "center", margin: 0,
+          fontSize: "11px", color: "#e05252", letterSpacing: ".04em",
+        }}>
           ⚠ {error}
         </p>
       )}
       {saved && (
-        <p style={{ fontSize: "11px", color: "#5a7d5a", letterSpacing: ".06em", marginTop: "8px" }}>
+        <p style={{
+          position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+          whiteSpace: "nowrap", margin: 0,
+          fontSize: "11px", color: "#5a7d5a", letterSpacing: ".06em",
+        }}>
           マイページからいつでも見返せます
         </p>
       )}

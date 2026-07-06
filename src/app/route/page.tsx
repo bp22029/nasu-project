@@ -307,9 +307,6 @@ function RouteContent() {
           {/* 共有するのはアプリ内のルートURLのみ（Google由来データは含めない。CLAUDE.md セクション5） */}
           <ShareRouteButton url={`${origin}/route?${queryString}`} />
         </div>
-        <p style={{ fontSize: "11px", color: "#8fa888", letterSpacing: ".08em", marginTop: "10px" }}>
-          訪問地が入った状態で旅の記録をはじめられます
-        </p>
       </div>
 
       {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
