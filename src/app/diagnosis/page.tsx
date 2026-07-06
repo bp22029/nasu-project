@@ -417,46 +417,59 @@ function ResultView({
         </div>
       </div>
 
-      {/* このタイプで旅を設計する（機能2 → /select の診断モード）。
-          スポットは診断結果の「おすすめ順」で並ぶが、選ぶのはユーザー（自動生成はしない）。 */}
-      <Link
-        href={selectHref}
-        className="start-cta"
-        style={{ ...ctaStyle, marginTop: "28px", textDecoration: "none", animationDelay: ".18s" }}
-      >
-        このタイプで旅を設計する
-        <span style={ringBtnStyle}><Arrow /></span>
-      </Link>
+      {source === "quiz" ? (
+        <>
+          {/* 主CTA: このタイプで旅を設計する（/select 診断モード。**自分の結果のときだけ**）。
+              スポットは診断結果の「おすすめ順」で並ぶが、選ぶのはユーザー（自動生成はしない）。 */}
+          <Link
+            href={selectHref}
+            className="start-cta"
+            style={{ ...ctaStyle, marginTop: "28px", textDecoration: "none", animationDelay: ".18s" }}
+          >
+            このタイプで旅を設計する
+            <span style={ringBtnStyle}><Arrow /></span>
+          </Link>
 
-      {/* 保存・共有（保存は自分で診断した直後のみ。共有は常に）。
-          注記でずれないよう SaveDiagnosisButton の注記は絶対配置（コンポーネント側で処理） */}
-      <div className="sel-rise" style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginTop: "20px", alignItems: "center", animationDelay: ".2s" }}>
-        {source === "quiz" && <SaveDiagnosisButton resultQuery={resultQuery} />}
-        <ShareButton
-          url={shareUrl}
-          title="#NASU 旅タイプ診断"
-          text={`私の那須旅タイプは「${type.name}」でした`}
-          label="結果を共有する"
-          ariaLabel="この診断結果を共有する"
-        />
-      </div>
+          {/* 副次アクション（保存・共有・もう一度診断）は同じ従属 pill に統一する。
+              SaveDiagnosisButton の「保存しました」注記は絶対配置なので下の行に重ならない。 */}
+          <div className="sel-rise" style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "22px", alignItems: "center", animationDelay: ".2s" }}>
+            <SaveDiagnosisButton resultQuery={resultQuery} />
+            <ShareButton
+              url={shareUrl}
+              title="#NASU 旅タイプ診断"
+              text={`私の那須旅タイプは「${type.name}」でした`}
+              label="結果を共有する"
+              ariaLabel="この診断結果を共有する"
+            />
+            <button type="button" onClick={onRestart} className="route-cta" style={secondaryPillStyle}>
+              もう一度診断する
+            </button>
+          </div>
 
-      <div className="sel-rise" style={{ display: "flex", flexWrap: "wrap", gap: "14px", marginTop: "18px", alignItems: "center", animationDelay: ".24s" }}>
-        <button type="button" onClick={onRestart} className="start-cta" style={{ ...ctaStyle, background: "rgba(255,255,255,.7)", color: "#5a7d5a", border: "1px solid #e5e0d3", boxShadow: "none" }}>
-          {source === "url" ? "自分も診断する" : "もう一度診断する"}
-          <span style={{ ...ringBtnStyle, background: "rgba(90,125,90,.12)" }}><Arrow /></span>
-        </button>
-        {onBack && (
-          <button type="button" onClick={onBack} style={textLinkStyle}>
-            ← 質問にもどる
+          {onBack && (
+            <div className="sel-rise" style={{ marginTop: "34px", animationDelay: ".26s" }}>
+              <button type="button" onClick={onBack} style={textLinkStyle}>← 質問にもどる</button>
+            </div>
+          )}
+
+          {/* 使用感アンケートへの導線（自分で診断したときだけ。回答済みなら自動で非表示） */}
+          <div className="sel-rise" style={{ marginTop: "30px", animationDelay: ".3s" }}>
+            <SurveyPrompt from="diagnosis" />
+          </div>
+        </>
+      ) : (
+        // 共有リンク/見直し（source=url）: 他人の診断結果から共有・ルート設計はさせない
+        // （コンセプト維持）。誘導は「自分も診断する」だけにする。
+        <div className="sel-rise" style={{ marginTop: "28px", display: "flex", flexDirection: "column", gap: "14px", alignItems: "flex-start", animationDelay: ".18s" }}>
+          <p style={{ fontSize: "13.5px", color: "#5a7d5a", letterSpacing: ".06em", lineHeight: 1.8 }}>
+            気になったら、あなたの旅タイプも調べてみませんか？
+          </p>
+          <button type="button" onClick={onRestart} className="start-cta" style={{ ...ctaStyle }}>
+            自分も診断する
+            <span style={ringBtnStyle}><Arrow /></span>
           </button>
-        )}
-      </div>
-
-      {/* 使用感アンケートへの導線（回答済みなら自動で非表示） */}
-      <div className="sel-rise" style={{ marginTop: "30px", animationDelay: ".3s" }}>
-        <SurveyPrompt from="diagnosis" />
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -468,6 +481,16 @@ const ctaStyle: React.CSSProperties = {
   fontFamily: "var(--font-sans)", fontSize: "15px", fontWeight: 500,
   letterSpacing: ".14em", padding: "17px 20px 17px 32px", borderRadius: "100px",
   boxShadow: "0 18px 40px -18px rgba(36,48,25,.7)",
+};
+
+// 副次アクションの従属 pill（保存・共有ボタン = route-cta と同一仕様に揃える。
+// className="route-cta" を併用してホバー挙動も統一する）
+const secondaryPillStyle: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: "10px", cursor: "pointer",
+  background: "rgba(255,255,255,.92)", color: "#2c3e2d",
+  border: "1px solid rgba(44,62,45,.4)",
+  fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
+  padding: "13px 26px", borderRadius: "100px", fontFamily: "var(--font-sans)",
 };
 
 const ringBtnStyle: React.CSSProperties = {
