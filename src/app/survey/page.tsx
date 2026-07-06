@@ -261,7 +261,7 @@ function QuestionBlock({
 export default function SurveyPage() {
   // useSearchParams は Suspense 境界の内側でしか使えない（Next.js App Router の制約）
   return (
-    <PageShell backHref="/" backLabel="ホームへ" index="06" indexLabel="SURVEY">
+    <PageShell backHref="/" backLabel="ホームへ" indexLabel="SURVEY">
       <Suspense fallback={
         <p style={{ fontSize: "12px", letterSpacing: ".2em", color: "#8fa888" }}>読み込み中…</p>
       }>

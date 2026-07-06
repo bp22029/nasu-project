@@ -194,7 +194,7 @@ function TripNewContent() {
 
   if (done) {
     return (
-      <PageShell backHref="/" backLabel="ホームへ" index="05" indexLabel="RECORD">
+      <PageShell backHref="/" backLabel="ホームへ" indexLabel="RECORD">
         <h1 className="sel-rise" style={{
           fontFamily: "var(--font-serif)", fontWeight: 600,
           fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, letterSpacing: ".03em",
@@ -223,7 +223,7 @@ function TripNewContent() {
   }
 
   return (
-    <PageShell backHref="/" backLabel="ホームへ" index="05" indexLabel="RECORD">
+    <PageShell backHref="/" backLabel="ホームへ" indexLabel="RECORD">
       <h1 className="sel-rise" style={{
         fontFamily: "var(--font-serif)", fontWeight: 600,
         fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, letterSpacing: ".03em",

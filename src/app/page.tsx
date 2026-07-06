@@ -137,10 +137,8 @@ export default function Home() {
         maxWidth: "840px", width: "100%",
       }}>
 
-        {/* インデックスライン */}
-        <div className="start-index flex items-baseline gap-[14px] mb-[34px]">
-          <span style={{ fontFamily: "var(--font-serif)", fontSize: "15px", color: "#5a7d5a", letterSpacing: ".1em" }}>01</span>
-          <span style={{ width: "64px", height: "1px", background: "#8fa888", opacity: 0.7, transform: "translateY(-4px)", flexShrink: 0 }} />
+        {/* セクション見出し（英字ラベルの小見出し） */}
+        <div className="start-index mb-[34px]">
           <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>NASU TRIP</span>
         </div>
 

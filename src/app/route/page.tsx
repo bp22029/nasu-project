@@ -59,12 +59,10 @@ function RouteShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-// 03 — ROUTE のインデックスライン（結果/計算中/エラーで共用）
+// ROUTE のセクション見出し（結果/計算中/エラーで共用）
 function RouteIndexLine() {
   return (
-    <div className="sel-rise flex items-baseline gap-[14px] mb-[22px]" style={{ animationDelay: ".05s" }}>
-      <span style={{ fontFamily: "var(--font-serif)", fontSize: "15px", color: "#5a7d5a", letterSpacing: ".1em" }}>03</span>
-      <span style={{ width: "56px", height: "1px", background: "#8fa888", opacity: .7, transform: "translateY(-4px)", flexShrink: 0 }} />
+    <div className="sel-rise mb-[22px]" style={{ animationDelay: ".05s" }}>
       <span style={{ fontSize: "11px", letterSpacing: ".4em", color: "#8fa888" }}>ROUTE</span>
     </div>
   );

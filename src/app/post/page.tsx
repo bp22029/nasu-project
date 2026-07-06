@@ -105,7 +105,7 @@ export default function PostPage() {
 
   if (done) {
     return (
-      <PageShell backHref="/" backLabel="ホームへ" index="05" indexLabel="POST">
+      <PageShell backHref="/" backLabel="ホームへ" indexLabel="POST">
         <h1 className="sel-rise" style={{
           fontFamily: "var(--font-serif)", fontWeight: 600,
           fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, letterSpacing: ".03em",
@@ -156,7 +156,7 @@ export default function PostPage() {
   }
 
   return (
-    <PageShell backHref="/" backLabel="ホームへ" index="05" indexLabel="POST">
+    <PageShell backHref="/" backLabel="ホームへ" indexLabel="POST">
       <h1 className="sel-rise" style={{
         fontFamily: "var(--font-serif)", fontWeight: 600,
         fontSize: "clamp(26px, 4vw, 44px)", lineHeight: 1.2, letterSpacing: ".03em",

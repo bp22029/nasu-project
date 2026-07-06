@@ -41,7 +41,7 @@ export default function AdminDiagnosisTypesPage() {
   const type = DIAGNOSIS_TYPES[code];
 
   return (
-    <PageShell backHref="/" backLabel="もどる" index="＊" indexLabel="ADMIN / TYPES">
+    <PageShell backHref="/" backLabel="もどる" indexLabel="ADMIN / TYPES">
       <h1 style={{
         fontFamily: "var(--font-serif)", fontWeight: 600,
         fontSize: "clamp(24px, 3.6vw, 40px)", lineHeight: 1.2, letterSpacing: ".03em",
