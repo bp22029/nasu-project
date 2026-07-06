@@ -302,12 +302,16 @@ function MyDiagnosisItem({ diagnosis, onDeleted }: { diagnosis: SavedDiagnosis; 
         <Link href={designHref} style={{ ...smallButton("ghost"), display: "inline-flex", textDecoration: "none" }}>
           この結果で旅を設計
         </Link>
+        {/* 周囲の小ボタン（旅を設計・削除）と仕様を揃える（大きい従属pillにしない・アイコン無し） */}
         <ShareButton
           url={shareUrl}
           title="#NASU 旅タイプ診断"
           text={type ? `私の那須旅タイプは「${type.name}」でした` : "私の那須旅タイプ"}
           label="共有する"
           ariaLabel="この診断結果を共有する"
+          buttonStyle={{ ...smallButton("ghost"), display: "inline-flex", alignItems: "center" }}
+          buttonClassName=""
+          hideIcon
         />
       </div>
 

@@ -29,11 +29,27 @@ interface ShareButtonProps {
   label?: string;
   /** ボタンの aria-label（既定: 「このルートを共有する」） */
   ariaLabel?: string;
+  /** トリガーボタンの見た目を上書き（既定は従属pill）。/me など周囲のボタンに揃えたいとき */
+  buttonStyle?: React.CSSProperties;
+  /** トリガーボタンの className を上書き（既定 "route-cta"。ホバー挙動を変えたいとき） */
+  buttonClassName?: string;
+  /** アイコンを隠してテキストのみにする（周囲のアイコン無しボタンと揃えるとき） */
+  hideIcon?: boolean;
 }
 
 // 那須旅アプリらしい短文（ブランド「#NASU」に合わせる）。既定はルート共有用
 const DEFAULT_TITLE = "#NASU の那須ルート";
 const DEFAULT_TEXT = "那須の周遊ルートを作りました。地図で見てね";
+
+// 既定のトリガー見た目（記録CTAと対になる、生成り地×深緑縁の従属pill）
+const DEFAULT_TRIGGER_STYLE: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: "10px", cursor: "pointer",
+  background: "rgba(255,255,255,.92)", color: "#2c3e2d",
+  border: "1px solid rgba(44,62,45,.4)",
+  fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
+  padding: "13px 26px", borderRadius: "100px",
+  fontFamily: "var(--font-sans)",
+};
 
 export default function ShareButton({
   url,
@@ -41,6 +57,9 @@ export default function ShareButton({
   text = DEFAULT_TEXT,
   label = "ルートを共有する",
   ariaLabel = "このルートを共有する",
+  buttonStyle,
+  buttonClassName,
+  hideIcon = false,
 }: ShareButtonProps) {
   // navigator の機能検出はクライアントでのみ有効。SSR との不整合を避けるため
   // マウント後に判定する（初期レンダーはフォールバック非表示の状態から始まる）。
@@ -127,25 +146,18 @@ export default function ShareButton({
         aria-label={ariaLabel}
         aria-haspopup={canNativeShare ? undefined : "menu"}
         aria-expanded={canNativeShare ? undefined : fallbackOpen}
-        className="route-cta"
-        style={{
-          display: "inline-flex", alignItems: "center", gap: "10px",
-          cursor: "pointer",
-          // 記録CTA（深緑pill）と対になる、生成り地×深緑縁の従属pill
-          background: "rgba(255,255,255,.92)", color: "#2c3e2d",
-          border: "1px solid rgba(44,62,45,.4)",
-          fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
-          padding: "13px 26px", borderRadius: "100px",
-          fontFamily: "var(--font-sans)",
-        }}
+        className={buttonClassName ?? "route-cta"}
+        style={buttonStyle ?? DEFAULT_TRIGGER_STYLE}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          {/* 共有アイコン（3点をつなぐシェア記号） */}
-          <circle cx="18" cy="5" r="2.4" stroke="currentColor" strokeWidth="2" />
-          <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="2" />
-          <circle cx="18" cy="19" r="2.4" stroke="currentColor" strokeWidth="2" />
-          <path d="M8.1 10.9l7.8-4.6M8.1 13.1l7.8 4.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
+        {!hideIcon && (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            {/* 共有アイコン（3点をつなぐシェア記号） */}
+            <circle cx="18" cy="5" r="2.4" stroke="currentColor" strokeWidth="2" />
+            <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="2" />
+            <circle cx="18" cy="19" r="2.4" stroke="currentColor" strokeWidth="2" />
+            <path d="M8.1 10.9l7.8-4.6M8.1 13.1l7.8 4.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        )}
         {label}
       </button>
 

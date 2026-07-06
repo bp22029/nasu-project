@@ -341,7 +341,8 @@ function ResultView({
     // 結果ブロック全体（見出し・カード・ボタン）を中央寄せ。カード幅に揃えて中央に配置する
     <div style={{ maxWidth: "640px", margin: "0 auto", width: "100%" }}>
       <p className="sel-rise" style={{ fontSize: "12px", letterSpacing: ".26em", color: "#8fa888", textTransform: "uppercase", marginBottom: "14px", animationDelay: ".05s" }}>
-        Your Type
+        {/* 共有リンク/見直しは他人の結果のこともあるので所有を示す "Your Type" を避け中立表現に */}
+        {source === "url" ? "Travel Type" : "Your Type"}
       </p>
 
       {/* 結果カード */}
