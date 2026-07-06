@@ -59,6 +59,17 @@ export interface SavedRoute {
 }
 
 /**
+ * 保存した旅タイプ診断の結果（機能2）。**1ユーザー1行**（最新のみ）。
+ * result_query は /diagnosis の encodeDiagnosisQuery 文字列（type + 4軸スコア）。
+ */
+export interface SavedDiagnosis {
+  user_id: string;
+  /** encodeDiagnosisQuery 文字列。結果カードの復元・共有URL・/select 連携に共用 */
+  result_query: string;
+  created_at: string;
+}
+
+/**
  * /route → /trips/new へのプレフィル受け渡し（sessionStorage 経由）。
  * URL の spots= は選択順であって TSP 最適化後の訪問順ではないため、
  * ルート画面が訪問順をここに保存する。

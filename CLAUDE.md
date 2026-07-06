@@ -40,6 +40,7 @@
   - 診断の中身（軸・質問・タイプ・採点）は `src/lib/diagnosis.ts` に集約。**タイプの name/tagline/description は仮テキストなので差し替え可**。画面（`src/app/diagnosis/page.tsx`）はこの配列を読むだけ。
   - 結果画面は「タイプ表示まで」。ローカル state のみで完結し URL/sessionStorage は使わない。
 - ✅ **/select 連携（おすすめ順の並べ替え）**: 診断結果画面の「このタイプで旅を設計する」で `/select?type=<4文字コード>&plan=..&desire=..&social=..&value=..` へ遷移する（`encodeDiagnosisQuery`／`src/lib/diagnosisQuery.ts`。状態はすべて URL に載る＝共有・リロード復元可）。/select はこのクエリがあると**診断モード**になり、スポットを**タイプの傾きに合ったジャンルほど上位**の「おすすめ順」で並べる。**ルートは自動生成せず、スポットを選ぶのはユーザー**（以降の選択→設計→/route の流れは通常モードと同一）。詳細はセクション16。
+- ✅ **診断結果の保存・共有**（機能2の拡張）: 結果画面の「結果を保存」で診断結果を保存し（非公開・自分用・**最新1件のみ**）、マイページ（/me）の「DIAGNOSIS」から見直す・もう一度共有・この結果で旅を設計・削除ができる。「結果を共有する」で `/diagnosis?{result_query}` を URL 共有（開くと結果カード＋「自分も診断する」）。保存内容は `result_query`（`encodeDiagnosisQuery` 文字列）1本。詳細はセクション18。
 - ❌ **ルート自動生成（実装しない）**: 診断結果 → スポット配列 → `calculateRoute` の自動接続は意図的に作らない（スポット選択は必ずユーザーが行う方針）。
 
 ### 🔶 機能3（一部実装済み）— 写真投稿
@@ -248,8 +249,9 @@ nasu-tabi/
 │   ├── survey-apps-script.gs    # 機能4: アンケート回答をGoogleスプレッドシートに追記するApps Script（貼付用+手順）
 │   └── verify-diagnosis-scoring.ts # 機能2おすすめ順スコアの検証（16タイプ×傾きパターンで上位/階層を出力。npx tsx で実行）
 ├── supabase/
-│   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行。saved_routes 含む）
+│   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行。saved_routes / diagnoses 含む）
 │   ├── migration-004-saved-routes.sql # 保存したルート（saved_routes）の追加（既存DB向け差分）
+│   ├── migration-005-diagnoses.sql    # 保存した診断結果（diagnoses、1ユーザー1行）の追加（既存DB向け差分）
 │   └── SETUP.md                 # Supabaseプロジェクトのセットアップ手順
 ├── src/
 │   ├── app/
@@ -277,8 +279,9 @@ nasu-tabi/
 │   │   ├── DepartureSelector.tsx # 出発地選択UI（プリセット + GPS）
 │   │   ├── SpotFilter.tsx      # タグフィルターのチップUI（ジャンル / 同行者）
 │   │   ├── SurveyPrompt.tsx    # 機能4: アンケートへの導線CTA（回答済みなら自動非表示。全完了地点で共用）
-│   │   ├── ShareRouteButton.tsx # 機能1: ルートURLをSNS共有（Web Share API + フォールバック=コピー/LINE/X）
+│   │   ├── ShareButton.tsx      # URLをSNS共有する汎用ボタン（Web Share API + フォールバック=コピー/LINE/X。文言差し替え可。ルート/診断で共用）
 │   │   ├── SaveRouteButton.tsx  # ルート保存: 表示中ルートを saved_routes に軽量保存（匿名セッションのみ・写真なし）
+│   │   ├── SaveDiagnosisButton.tsx # 診断保存: 結果を diagnoses に upsert（最新1件・匿名セッションのみ・ニックネーム不要）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
 │   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
 │   │   ├── SiteHeader.tsx       # 共通sticky ヘッダー（左=文脈的な戻る / 右=NASU→ホーム + NavMenu）
@@ -294,7 +297,7 @@ nasu-tabi/
 │   │   └── GridConsentCheckbox.tsx # グリッド掲載許可チェック（/post と /trips/new で共用）
 │   ├── lib/
 │   │   ├── calculateRoute.ts    # ルート計算の独立関数（拡張の差し込み口）
-│   │   ├── diagnosis.ts         # 機能2診断の軸・質問・16タイプ・採点 + 極→ジャンル表(POLE_GENRES)・おすすめ順スコア(scoreSpotByAxes)
+│   │   ├── diagnosis.ts         # 機能2診断の軸・質問・16タイプ・採点(computeResult) + スコア→結果再構築(resultFromScores) + 極→ジャンル表(POLE_GENRES)・おすすめ順スコア(scoreSpotByAxes)
 │   │   ├── diagnosisQuery.ts    # 機能2→/select 連携の URL エンコード/デコード（type + 4軸スコア。セクション16）
 │   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
 │   │   ├── savedRoutes.ts       # ルート保存: route_query からスポットid抽出・表示名の自動生成（deriveRouteTitle）
@@ -421,11 +424,11 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 - セッションは localStorage 永続化（同一ブラウザ = 同一ユーザー。ブラウザデータ削除で別ユーザーになる点は演習として許容）。
 - 将来 Google ログインを足す場合は `linkIdentity()` で user_id 不変のまま紐付け可能（スキーマ変更不要）。
 
-### DB（5テーブル + RLS）
+### DB（6テーブル + RLS）
 
-- `profiles`（ニックネーム）/ `posts`（単体投稿）/ `trips`（旅記録）/ `trip_entries`（順番付き訪問エントリ）/ `saved_routes`（保存したルート＝軽量ブックマーク。セクション17）。
+- `profiles`（ニックネーム）/ `posts`（単体投稿）/ `trips`（旅記録）/ `trip_entries`（順番付き訪問エントリ）/ `saved_routes`（保存したルート＝軽量ブックマーク。セクション17）/ `diagnoses`（保存した診断結果＝**1ユーザー1行・最新のみ**。セクション18）。
 - RLS: posts/trips/profiles/trip_entries は読み取り全公開・書き込み本人のみ。FK は `profiles(id)` に張り `select('*, profiles(nickname)')` で投稿者名を1クエリ展開。
-- **`saved_routes` だけは非公開**（読み取りも本人のみ）。自分用ブックマークで他人に見せないため。FK も `profiles(id)` ではなく `auth.users(id)` を直参照＝保存にニックネームを要求しない（セクション17）。
+- **`saved_routes` と `diagnoses` は非公開**（読み取りも本人のみ）。自分用で他人に見せないため。FK も `profiles(id)` ではなく `auth.users(id)` を直参照＝保存にニックネームを要求しない（セクション17・18）。`diagnoses` は `user_id` が主キー＝upsert で最新1件だけを保持する。
 - **spot_id は spots.json の文字列IDを text 保存（正規化しない）**。マスタはGit管理のJSONが正本。**公開後の spots.json の id は変更・削除しない**こと（リネームは name のみ）。
 - `trips.route_query` に `encodeRouteQuery` 文字列を保存（ルート画面起点のみ）→ 詳細ページから `/route?{route_query}` でルート画面を丸ごと再利用できる。
 
@@ -543,7 +546,7 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 
 ### 保存（`src/components/SaveRouteButton.tsx`）
 
-- /route の CTA 行（`ShareRouteButton` の隣）に「ルートを保存」を置く。押すと `ensureAnonSession()`（`src/lib/auth.ts`。**ニックネームは求めない**＝`ensureSignedInWithProfile` は使わない）→ `getSupabase().from("saved_routes").insert({ route_query })` だけ。`user_id` は DB の `default auth.uid()` 任せ。
+- /route の CTA 行（`ShareButton` の隣）に「ルートを保存」を置く。押すと `ensureAnonSession()`（`src/lib/auth.ts`。**ニックネームは求めない**＝`ensureSignedInWithProfile` は使わない）→ `getSupabase().from("saved_routes").insert({ route_query })` だけ。`user_id` は DB の `default auth.uid()` 任せ。
 - 保存はワンタップ。タイトルは付けない（一覧で自動生成する）。同一表示中の二重保存はローカル state で1回に制限（重複行の厳密防止まではしない）。
 
 ### 見返し（`src/app/me/page.tsx` の `MySavedRouteItem`）
@@ -557,3 +560,35 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 
 - `saved_routes(id, user_id default auth.uid() → auth.users(id), route_query not null, title 1..60 nullable, created_at)`。
 - RLS は **read/insert/update/delete すべて本人のみ**（他テーブルの「public read」と違い読み取りも本人限定＝非公開）。既存DBへの適用は migration-004（新規は schema.sql に同梱）。
+
+---
+
+## 18. 診断結果の保存・共有（機能2の拡張）
+
+診断結果を**保存してマイページで見返す**／**URLで共有する**。診断結果は `type + 4軸スコア`
+（`diagnosisQuery.ts`）で完全にシリアライズできるので、保存・共有・`/select` 連携・共有リンク表示の
+すべてで同じ URL 語彙（`type=&plan=&desire=&social=&value=`）を使い回す。
+
+- **保存は「最新のみ」を DB で構造保証**: `diagnoses` テーブルは **`user_id` が主キー＝1ユーザー1行**。
+  保存は `upsert(onConflict: "user_id")` なので、何度診断・保存しても行は常に1つ（＝最新に置き換わる）。
+  マイページは `.eq("user_id", uid).maybeSingle()` で1件読むだけ。履歴は持たない（ユーザーの要望＝診断の解釈を一意に保つ）。
+- **保存対象は `result_query`（`encodeDiagnosisQuery` 文字列）1本**。decode → `resultFromScores`（`src/lib/diagnosis.ts`）で結果カードを復元できる（生の16回答は保存しない）。
+- 認証は saved_routes と同じ **匿名セッションのみ・ニックネーム不要**（`ensureAnonSession`。FK は `auth.users` 直参照）。RLS は本人のみ read/write（非公開）。
+
+### スコア → 結果カードの再構築（`src/lib/diagnosis.ts`）
+- `resultFromScores(scoreById)`: 軸スコア（-8〜+8）だけから `DiagnosisResult`（比率バー・優勢極・タイプ）を再構築する。`computeResult`（生回答用）と軸計算ヘルパ（`axisResultFromScore`/`resultFromAxes`）を共有。
+
+### 保存（`src/components/SaveDiagnosisButton.tsx`）
+- 結果画面（**自分で診断した直後 = `source="quiz"` のときだけ**）に「結果を保存」。`ensureAnonSession()` → `diagnoses.upsert({ user_id, result_query, created_at }, { onConflict: "user_id" })`。
+
+### 共有（`src/components/ShareButton.tsx`）
+- `ShareRouteButton` を汎用化してリネーム。props `{ url, title?, text?, label?, ariaLabel? }`（既定はルート共有文言）。診断は診断用文言で使う。共有URL = `${origin}/diagnosis?{result_query}`。
+- 共有リンクを開く＝`/diagnosis` が URL の結果クエリを検出して**結果を復元表示**（`source="url"`）。CTA は「共有」＋「自分も診断する」（＝クエリを外して最初から診断）＋「この結果で旅を設計する」。保存ボタンと「質問にもどる」は出さない。
+
+### `/diagnosis` の URL 対応（`src/app/diagnosis/page.tsx`）
+- `useSearchParams` を **`<Suspense>` 境界の内側**で使う（`DiagnosisContent` を `DiagnosisPage` が包む。/select・/route と同構成）。
+- URL に有効な結果クエリがあれば初期表示で `resultFromScores` により result フェーズ（`source="url"`）を出す。無ければ従来のクイズ（intro→question→result、`source="quiz"`）。
+
+### マイページ（`src/app/me/page.tsx` の `MyDiagnosisItem`）
+- **DIAGNOSIS** 節に最新1件を表示（動物画像サムネ + タイプ名 + 診断日）。操作: **見直す**（`/diagnosis?{result_query}`）/ **もう一度共有**（`ShareButton`）/ **この結果で旅を設計**（`/select?{result_query}`）/ **削除**（`diagnoses` から本人行を delete）。
+- `diagnosis` state は `undefined`=未取得 / `null`=未保存 / 値=最新。`loading`/`isEmpty` 判定にも含める。ニックネーム未設定でも表示できる。

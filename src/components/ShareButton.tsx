@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// 提案されたルートを SNS / メッセージで共有するボタン（機能1の一部）。
+// アプリ内URL（リンク）を SNS / メッセージで共有する汎用ボタン。
 //
-// 共有する中身は「アプリ内のルートURL（リンク）のみ」。/route のクエリだけで
-// ルートは決定的に再現される（CLAUDE.md セクション8）ので、OGP画像などは作らず
+// 共有する中身は「アプリ内URL（リンク）のみ」。ルートも診断結果もクエリだけで
+// 決定的に再現される（CLAUDE.md セクション8・17・18）ので、OGP画像などは作らず
 // URL を渡すだけにしている。渡す URL には Google 由来データ（写真URL等）を
 // 一切含めない（規約=CLAUDE.md セクション5）。
+//
+// 用途ごとに文言（title/text/label）を差し替えられる（既定はルート共有）。
 //
 // 二段構え:
 // - スマホなど navigator.share が使える環境 → OS の共有シート（LINE / Instagram /
@@ -16,16 +18,49 @@ import { useEffect, useRef, useState } from "react";
 //   Instagram の DM は Web の URL スキームで直接送れないため、フォールバックには
 //   含めない（共有シート経由なら選べる）。
 
-interface ShareRouteButtonProps {
+interface ShareButtonProps {
   /** 共有する完全なURL（例: https://example.com/route?spots=..）。呼び出し側で組み立てて渡す */
   url: string;
+  /** OS共有シートのタイトル（既定: ルート共有） */
+  title?: string;
+  /** 共有本文 / X のツイート文（既定: ルート共有） */
+  text?: string;
+  /** ボタンの表示ラベル（既定: 「ルートを共有する」） */
+  label?: string;
+  /** ボタンの aria-label（既定: 「このルートを共有する」） */
+  ariaLabel?: string;
+  /** トリガーボタンの見た目を上書き（既定は従属pill）。/me など周囲のボタンに揃えたいとき */
+  buttonStyle?: React.CSSProperties;
+  /** トリガーボタンの className を上書き（既定 "route-cta"。ホバー挙動を変えたいとき） */
+  buttonClassName?: string;
+  /** アイコンを隠してテキストのみにする（周囲のアイコン無しボタンと揃えるとき） */
+  hideIcon?: boolean;
 }
 
-// 那須旅アプリらしい短文（ブランド「#NASU」に合わせる）
-const SHARE_TITLE = "#NASU の那須ルート";
-const SHARE_TEXT = "那須の周遊ルートを作りました。地図で見てね";
+// 那須旅アプリらしい短文（ブランド「#NASU」に合わせる）。既定はルート共有用
+const DEFAULT_TITLE = "#NASU の那須ルート";
+const DEFAULT_TEXT = "那須の周遊ルートを作りました。地図で見てね";
 
-export default function ShareRouteButton({ url }: ShareRouteButtonProps) {
+// 既定のトリガー見た目（記録CTAと対になる、生成り地×深緑縁の従属pill）
+const DEFAULT_TRIGGER_STYLE: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: "10px", cursor: "pointer",
+  background: "rgba(255,255,255,.92)", color: "#2c3e2d",
+  border: "1px solid rgba(44,62,45,.4)",
+  fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
+  padding: "13px 26px", borderRadius: "100px",
+  fontFamily: "var(--font-sans)",
+};
+
+export default function ShareButton({
+  url,
+  title = DEFAULT_TITLE,
+  text = DEFAULT_TEXT,
+  label = "ルートを共有する",
+  ariaLabel = "このルートを共有する",
+  buttonStyle,
+  buttonClassName,
+  hideIcon = false,
+}: ShareButtonProps) {
   // navigator の機能検出はクライアントでのみ有効。SSR との不整合を避けるため
   // マウント後に判定する（初期レンダーはフォールバック非表示の状態から始まる）。
   const [canNativeShare, setCanNativeShare] = useState(false);
@@ -75,7 +110,7 @@ export default function ShareRouteButton({ url }: ShareRouteButtonProps) {
   const handleShareClick = async () => {
     if (canNativeShare) {
       try {
-        await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url });
+        await navigator.share({ title, text, url });
       } catch {
         // ユーザーがキャンセルした場合など。何もしない（フォールバックは出さない）
       }
@@ -97,10 +132,10 @@ export default function ShareRouteButton({ url }: ShareRouteButtonProps) {
 
   // LINE の Web 共有（LINEit）。PCブラウザでも共有先（トーク/Keepメモ）を選べる公式エンドポイント。
   // line.me/R/msg/text/ はスマホアプリ向けスキームで、PCでは共有画面のボタンが押せないため使わない。
-  // lineit/share は url のみ受け取り、本文は共有先URLのOGPプレビューで表現される（SHARE_TEXT は付かない）。
+  // lineit/share は url のみ受け取り、本文は共有先URLのOGPプレビューで表現される（text は付かない）。
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`;
   // X（旧Twitter）のツイートIntent。DM 直リンクは不可のためツイート共有にする
-  const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(url)}`;
+  const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
 
   return (
     <div style={{ position: "relative", display: "inline-flex", flexDirection: "column", alignItems: "center" }}>
@@ -108,29 +143,22 @@ export default function ShareRouteButton({ url }: ShareRouteButtonProps) {
         ref={buttonRef}
         type="button"
         onClick={handleShareClick}
-        aria-label="このルートを共有する"
+        aria-label={ariaLabel}
         aria-haspopup={canNativeShare ? undefined : "menu"}
         aria-expanded={canNativeShare ? undefined : fallbackOpen}
-        className="route-cta"
-        style={{
-          display: "inline-flex", alignItems: "center", gap: "10px",
-          cursor: "pointer",
-          // 記録CTA（深緑pill）と対になる、生成り地×深緑縁の従属pill
-          background: "rgba(255,255,255,.92)", color: "#2c3e2d",
-          border: "1px solid rgba(44,62,45,.4)",
-          fontSize: "13.5px", fontWeight: 600, letterSpacing: ".1em",
-          padding: "13px 26px", borderRadius: "100px",
-          fontFamily: "var(--font-sans)",
-        }}
+        className={buttonClassName ?? "route-cta"}
+        style={buttonStyle ?? DEFAULT_TRIGGER_STYLE}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          {/* 共有アイコン（3点をつなぐシェア記号） */}
-          <circle cx="18" cy="5" r="2.4" stroke="currentColor" strokeWidth="2" />
-          <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="2" />
-          <circle cx="18" cy="19" r="2.4" stroke="currentColor" strokeWidth="2" />
-          <path d="M8.1 10.9l7.8-4.6M8.1 13.1l7.8 4.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-        ルートを共有する
+        {!hideIcon && (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            {/* 共有アイコン（3点をつなぐシェア記号） */}
+            <circle cx="18" cy="5" r="2.4" stroke="currentColor" strokeWidth="2" />
+            <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="2" />
+            <circle cx="18" cy="19" r="2.4" stroke="currentColor" strokeWidth="2" />
+            <path d="M8.1 10.9l7.8-4.6M8.1 13.1l7.8 4.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        )}
+        {label}
       </button>
 
       {/* フォールバックUI（navigator.share 非対応環境のみ）: コピー / LINE / X */}
