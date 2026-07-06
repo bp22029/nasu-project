@@ -45,6 +45,20 @@ export interface TripEntry {
 }
 
 /**
+ * 保存したルート（軽量ブックマーク。写真なし・非公開・自分用）。
+ * ルートは route_query 一本で完全復元できる（/route?{route_query}）。
+ */
+export interface SavedRoute {
+  id: string;
+  user_id: string;
+  /** /route の encodeRouteQuery 文字列。これ一本でルートを再現する */
+  route_query: string;
+  /** 表示名。null なら route_query のスポット名から自動生成（deriveRouteTitle） */
+  title: string | null;
+  created_at: string;
+}
+
+/**
  * /route → /trips/new へのプレフィル受け渡し（sessionStorage 経由）。
  * URL の spots= は選択順であって TSP 最適化後の訪問順ではないため、
  * ルート画面が訪問順をここに保存する。

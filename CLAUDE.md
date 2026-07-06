@@ -20,6 +20,7 @@
 ### ✅ 機能1（実装済み）— ルート設計支援
 
 - 画像グリッドでスポットを選択 → 道なりルート提案
+- **ルートの保存（見返し）**: /route の結果画面「ルートを保存」ボタンで、表示中のルートを**軽量ブックマーク**として保存し、**マイページ（/me）の「SAVED ROUTES」から見返す**（`src/components/SaveRouteButton.tsx`）。写真なし・非公開・自分用で、旅記録（trips）より軽い（ニックネーム不要＝匿名セッションだけ発火。タイトルも任意）。保存内容は `route_query`（`encodeRouteQuery` 文字列）1本のみで、一覧タップで `/route?{route_query}` として地図つきルートを完全復元する。詳細はセクション17。
 - **ルートのSNS共有**: /route の結果画面「ルートを共有する」ボタンで、表示中のルートを**アプリ内URL（リンク）として共有**する（`src/components/ShareRouteButton.tsx`）。共有URL = `window.location.origin` + `/route?` + 現在のクエリ文字列（`useSearchParams().toString()` をそのまま使うので `lock=` 等が増えても自動追従）。スマホは Web Share API（`navigator.share`）でOSの共有シート（LINE / Instagram / X / メール等）、PC/未対応はフォールバック（①リンクをコピー ②LINEで送る ③Xで送る）。**Instagram DM は Web の URL スキームで直送できない**ためフォールバックには含めない（共有シート経由なら選べる）。共有ペイロードは URL のみで Google 由来データは一切含めない（セクション5）
 - **タグフィルター**: ジャンル（詳細ジャンルをまとめた11種）と同行者（6種）でグリッドを絞り込む。`tags` を実行時に2軸へ解釈（`src/lib/spotTags.ts`）。OR判定。debugモードは tags 空のため非表示（セクション6参照）
 - **出発地の選択**: 那須塩原駅 / 道の駅 那須高原友愛の森 / 那須IC / GPS現在地 の4択
@@ -194,7 +195,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 | `/trips` | 旅記録一覧（機能3）。旅記録のみ新着順・公開（ログイン不要） |
 | `/trips/[id]` | 旅記録詳細（機能3）。訪問順エントリ + route_query があればルート画面へのリンク |
 | `/trips/new` | 旅記録作成（機能3）。/route からのプレフィル有/無で画面共通 |
-| `/me` | マイページ（機能3）。自分の投稿の確認・編集・削除、ニックネーム変更 |
+| `/me` | マイページ（機能3）。保存したルート（SAVED ROUTES）の見返し・改名・削除、自分の投稿の確認・編集・削除、ニックネーム変更 |
 | `/survey` | 使用感アンケート（機能4）。5段階3問 + 自由記述。回答は Google スプレッドシートへ保存（セクション15） |
 
 - `/select` の選択状態は sessionStorage（キー `nasu-select-state`、`src/lib/selectState.ts`）に保存され、「← 選び直す」で戻る・リロードでは維持される。**ホームの「はじめる」はこのキーを破棄して常に新規スタート**（前回の選択が残ると違和感があるため。ユーザー要望、2026-06-12）。
@@ -247,7 +248,8 @@ nasu-tabi/
 │   ├── survey-apps-script.gs    # 機能4: アンケート回答をGoogleスプレッドシートに追記するApps Script（貼付用+手順）
 │   └── verify-diagnosis-scoring.ts # 機能2おすすめ順スコアの検証（16タイプ×傾きパターンで上位/階層を出力。npx tsx で実行）
 ├── supabase/
-│   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行）
+│   ├── schema.sql               # 機能3のDBスキーマ + RLS（SQL Editorで実行。saved_routes 含む）
+│   ├── migration-004-saved-routes.sql # 保存したルート（saved_routes）の追加（既存DB向け差分）
 │   └── SETUP.md                 # Supabaseプロジェクトのセットアップ手順
 ├── src/
 │   ├── app/
@@ -276,6 +278,7 @@ nasu-tabi/
 │   │   ├── SpotFilter.tsx      # タグフィルターのチップUI（ジャンル / 同行者）
 │   │   ├── SurveyPrompt.tsx    # 機能4: アンケートへの導線CTA（回答済みなら自動非表示。全完了地点で共用）
 │   │   ├── ShareRouteButton.tsx # 機能1: ルートURLをSNS共有（Web Share API + フォールバック=コピー/LINE/X）
+│   │   ├── SaveRouteButton.tsx  # ルート保存: 表示中ルートを saved_routes に軽量保存（匿名セッションのみ・写真なし）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
 │   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
 │   │   ├── SiteHeader.tsx       # 共通sticky ヘッダー（左=文脈的な戻る / 右=NASU→ホーム + NavMenu）
@@ -294,6 +297,7 @@ nasu-tabi/
 │   │   ├── diagnosis.ts         # 機能2診断の軸・質問・16タイプ・採点 + 極→ジャンル表(POLE_GENRES)・おすすめ順スコア(scoreSpotByAxes)
 │   │   ├── diagnosisQuery.ts    # 機能2→/select 連携の URL エンコード/デコード（type + 4軸スコア。セクション16）
 │   │   ├── routeQuery.ts        # /route クエリのエンコード/デコード（機能2の差し込み口）
+│   │   ├── savedRoutes.ts       # ルート保存: route_query からスポットid抽出・表示名の自動生成（deriveRouteTitle）
 │   │   ├── ors.ts               # ORS API クライアント（Matrix / Directions）
 │   │   ├── tsp.ts               # 自前TSP（全探索 / 最近傍法）
 │   │   ├── supabase/client.ts   # Supabase ブラウザクライアント（lazy singleton）
@@ -417,10 +421,11 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 - セッションは localStorage 永続化（同一ブラウザ = 同一ユーザー。ブラウザデータ削除で別ユーザーになる点は演習として許容）。
 - 将来 Google ログインを足す場合は `linkIdentity()` で user_id 不変のまま紐付け可能（スキーマ変更不要）。
 
-### DB（4テーブル + RLS）
+### DB（5テーブル + RLS）
 
-- `profiles`（ニックネーム）/ `posts`（単体投稿）/ `trips`（旅記録）/ `trip_entries`（順番付き訪問エントリ）。
-- RLS: 読み取りは全公開、書き込みは本人のみ。FK は `profiles(id)` に張り `select('*, profiles(nickname)')` で投稿者名を1クエリ展開。
+- `profiles`（ニックネーム）/ `posts`（単体投稿）/ `trips`（旅記録）/ `trip_entries`（順番付き訪問エントリ）/ `saved_routes`（保存したルート＝軽量ブックマーク。セクション17）。
+- RLS: posts/trips/profiles/trip_entries は読み取り全公開・書き込み本人のみ。FK は `profiles(id)` に張り `select('*, profiles(nickname)')` で投稿者名を1クエリ展開。
+- **`saved_routes` だけは非公開**（読み取りも本人のみ）。自分用ブックマークで他人に見せないため。FK も `profiles(id)` ではなく `auth.users(id)` を直参照＝保存にニックネームを要求しない（セクション17）。
 - **spot_id は spots.json の文字列IDを text 保存（正規化しない）**。マスタはGit管理のJSONが正本。**公開後の spots.json の id は変更・削除しない**こと（リネームは name のみ）。
 - `trips.route_query` に `encodeRouteQuery` 文字列を保存（ルート画面起点のみ）→ 詳細ページから `/route?{route_query}` でルート画面を丸ごと再利用できる。
 
@@ -522,3 +527,33 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
   - 処理順は **「だれとで絞る（`visibleIds` で CSS 非表示）→ スコア順に並べる」**。並びはスコア降順で、**同スコア帯の中は `orderedIds`（全体ランダム）の順がそのまま**（`Array.sort` の安定性を利用した `displayIds`）。**シャッフルボタンは `orderedIds` を混ぜ直す→再ソート＝同スコア帯内だけ入れ替え**（帯を越えない）。スコア0のスポットも隠さず最下層に並ぶ。
 - クエリが無いときは既存挙動を完全維持（全体ランダム・シャッフル・ジャンル+だれとフィルター）。`SELECT_STATE_KEY`（選択状態の sessionStorage）は診断モードと独立で、従来どおり保存・復元する。
 - useSearchParams のため **`<Suspense>` 境界の内側**（`SelectPageContent` を `SelectPage` が包む。/route と同じ構成）。
+
+---
+
+## 17. ルート保存（設計したルートをマイページで見返す）
+
+設計したルートを**軽量ブックマーク**として残し、あとでマイページから見返す機能。**旅記録（trips）とは別物**として位置づける（棲み分けが設計の肝）:
+
+| | 保存したルート（saved_routes） | 旅記録（trips） |
+|---|---|---|
+| いつ | 出発前（プラン段階） | 旅の後 |
+| 中身 | ルートのみ（route_query 1本） | タイトル + 訪問エントリ + 写真 + コメント |
+| 公開 | 非公開（自分だけ） | 公開（/trips 一覧に出る） |
+| 認証 | 匿名セッションのみ（**ニックネーム不要**） | 匿名 + **ニックネーム必須** |
+
+### 保存（`src/components/SaveRouteButton.tsx`）
+
+- /route の CTA 行（`ShareRouteButton` の隣）に「ルートを保存」を置く。押すと `ensureAnonSession()`（`src/lib/auth.ts`。**ニックネームは求めない**＝`ensureSignedInWithProfile` は使わない）→ `getSupabase().from("saved_routes").insert({ route_query })` だけ。`user_id` は DB の `default auth.uid()` 任せ。
+- 保存はワンタップ。タイトルは付けない（一覧で自動生成する）。同一表示中の二重保存はローカル state で1回に制限（重複行の厳密防止まではしない）。
+
+### 見返し（`src/app/me/page.tsx` の `MySavedRouteItem`）
+
+- マイページ最上段に **SAVED ROUTES** 節を追加（TRIPS/PHOTOS と同じ体裁）。行タップで `/route?{route_query}` に飛び、地図つきルート画面を丸ごと復元（`/trips/[id]` の「このルートを地図で見る」と同手法）。
+- 表示名は `deriveRouteTitle`（`src/lib/savedRoutes.ts`）: ユーザーが付けた `title` があればそれ、無ければ route_query のスポット名から自動生成（例「茶臼岳・鹿の湯 ほか3スポット」）。**「名前」ボタンで改名**でき、空にすると自動生成名に戻す（`title` を null に更新。DB の CHECK は 1〜60 文字なので空文字は入れない）。
+- 削除は行削除のみ（写真を持たないので Storage 操作なし）。
+- マイページはニックネーム未設定でも保存ルートを表示できる（保存で張った匿名セッションで読む。`isEmpty` 判定にも saved_routes を含める）。
+
+### データ（`saved_routes`、セクション14・`supabase/migration-004-saved-routes.sql`）
+
+- `saved_routes(id, user_id default auth.uid() → auth.users(id), route_query not null, title 1..60 nullable, created_at)`。
+- RLS は **read/insert/update/delete すべて本人のみ**（他テーブルの「public read」と違い読み取りも本人限定＝非公開）。既存DBへの適用は migration-004（新規は schema.sql に同梱）。
