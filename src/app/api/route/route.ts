@@ -7,6 +7,11 @@ import { calculateRoute } from "@/lib/calculateRoute";
 
 const allSpots = SPOTS;
 
+// ORS 公開インスタンスが遅いときのリトライ（ors.ts）に十分な実行時間を確保する。
+// Vercel の関数タイムアウト既定は短い（Hobbyは既定10秒）ため明示的に伸ばす。
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 interface RequestBody {
   spotIds: string[];
   departure: { lat: number; lng: number; name: string };
