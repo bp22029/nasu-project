@@ -1,15 +1,20 @@
 /**
  * OpenRouteService (ORS) API クライアント
  *
- * 公開インスタンス（api.openrouteservice.org 無料枠）は混雑時に応答が遅く、
- * ORS 側の nginx が 504 Gateway Time-out を返すことがある。
+ * エンドポイントは api.heigit.org を使う。
+ * 旧 api.openrouteservice.org は 2026-04-28 に廃止告知され（クォータ制限で Directions が
+ * 504/ハングするようになった）、2026-08-24 に完全停止する。移行先が api.heigit.org で、
+ * APIキー・エンドポイントの形式（/v2/directions・/v2/matrix）は同一なので base URL の変更だけでよい。
+ * 参考: https://ask.openrouteservice.org/t/deprecating-api-openrouteservice-org-in-favour-of-api-heigit-org/7912
+ *
+ * 公開インスタンス（無料枠）は混雑時に応答が遅く、nginx が 504 Gateway Time-out を返すことがある。
  * そのまま失敗させず、自前で「短めのタイムアウト（AbortController）＋一時エラーのリトライ」で吸収する。
  * - 自前タイムアウトで先に打ち切る → ORS の 60 秒ゲートウェイ待ちを避けて素早く再試行できる。
  * - 502/503/504/429/500・ネットワーク切断・タイムアウトは一時エラーとみなしてリトライ。
  * Vercel の関数実行時間内に収まるよう、試行回数と待ち時間は控えめにする（route.ts の maxDuration と揃える）。
  */
 
-const ORS_BASE = "https://api.openrouteservice.org/v2";
+const ORS_BASE = "https://api.heigit.org/openrouteservice/v2";
 
 // 一時的とみなすHTTPステータス（リトライ対象）
 const TRANSIENT_STATUS = new Set([429, 500, 502, 503, 504]);
