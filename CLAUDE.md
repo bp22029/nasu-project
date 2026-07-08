@@ -348,6 +348,12 @@ Places API は Next.js の API Route（サーバーサイド）から呼ぶた�
 
 openrouteservice.org は 2023 年以降にトークン体系を刷新した。旧フォーマット（`eyJ...` で始まる base64 エンコードされた JSON）は現在使えない。openrouteservice.org/dev/#/ から新規トークン（長い 16 進数の文字列）を発行して `.env.local` に設定すること。
 
+### ORS のエンドポイントは api.heigit.org（旧 api.openrouteservice.org は廃止）
+
+公開エンドポイントの base URL は **`https://api.heigit.org/openrouteservice/v2`**（`src/lib/ors.ts` の `ORS_BASE`）。旧 `api.openrouteservice.org` は **2026-04-28 に廃止告知 → 2026-08-24 に完全停止**。移行期間中は旧ドメインのクォータが絞られ、**Matrix は通るのに Directions だけ 504/ハングする**という不均一な障害が起きる（実際に本番でこれが発生した。2026-07-08）。移行先は **APIキー・エンドポイントの形式が同一**なので base URL を差し替えるだけ。参考: https://ask.openrouteservice.org/t/deprecating-api-openrouteservice-org-in-favour-of-api-heigit-org/7912
+
+なお公開インスタンス（無料枠）は混雑時に遅く、単発 fetch では簡単に失敗する。`ors.ts` は **AbortController の短めタイムアウト + 一時エラー（429/500/502/503/504・切断・タイムアウト）のバックオフ付きリトライ**で吸収し（Directions=3回/15秒・Matrix=2回/12秒）、`/api/route` は `maxDuration=60` でその時間を確保している。**短時間に大量の Directions を叩くと無料プランのレート制限に当たり、ハングや不定なステータスで返る**ので、デバッグ時の連打に注意。
+
 ### 背景演出のパフォーマンス方針（重い手法を再導入しない）
 
 v2-souデザインの初期実装は動作が重く、以下を禁止手法として軽量化した経緯がある:
@@ -396,7 +402,7 @@ Next.js 14 は GET Route Handler と、その中で実行される `fetch`（**s
 
 ```
 GOOGLE_PLACES_API_KEY=（Places API (New) 有効化済み。APIキーの制限は「なし」か「IPアドレス」に設定）
-ORS_API_KEY=（openrouteservice.org で発行した新形式トークン。旧 eyJ... 形式は不可）
+ORS_API_KEY=（openrouteservice.org で発行した新形式トークン。旧 eyJ... 形式は不可。同じキーが移行先 api.heigit.org でもそのまま使える）
 NEXT_PUBLIC_SUPABASE_URL=（Supabase の Project URL。機能3用）
 NEXT_PUBLIC_SUPABASE_ANON_KEY=（Supabase の anon / publishable key。公開前提のキーで防壁はRLS）
 NEXT_PUBLIC_SPOTS_MODE=（debug=13件（開発用・既定） / full=約200件。Vercel は full を設定）
