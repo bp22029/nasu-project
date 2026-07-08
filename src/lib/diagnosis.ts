@@ -109,7 +109,7 @@ export const QUESTIONS: LikertQuestion[] = [
   // ① 計画 ↔ 即興
   { id: "q1", axisId: "plan", reverse: false, text: "1日の流れをある程度イメージしてから行動することが多い" },
   { id: "q2", axisId: "plan", reverse: false, text: "やるべきことは順番や優先順位を決めて進めたい" },
-  { id: "q3", axisId: "plan", reverse: true, text: "予定外の出来事が起きると、それを楽しめることが多い" },
+  { id: "q3", axisId: "plan", reverse: true, text: "予定外の出来事が起きても、それを楽しめることが多い" },
   { id: "q4", axisId: "plan", reverse: true, text: "空いた時間は、その時の気分で自由に使いたい" },
   // ② 刺激 ↔ 癒し
   { id: "q5", axisId: "desire", reverse: false, text: "休日はリラックスできる時間を重視したい" },
