@@ -15,6 +15,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SURVEY_ANSWERED_KEY } from "@/lib/survey";
 
+/**
+ * アプリ内アンケート導線の有効フラグ。
+ * アンケートは Google フォームで実施するため false にして全ページのCTAを一括で隠す。
+ * アプリ内アンケートに戻すときは true にするだけ（実装は下にそのまま残してある）。2026-07-16
+ */
+const SURVEY_PROMPT_ENABLED = false;
+
 interface SurveyPromptProps {
   /** 導線識別子（'route' | 'diagnosis' | 'post' | 'trips' | 'nav' など） */
   from: string;
@@ -33,6 +40,9 @@ export default function SurveyPrompt({ from, variant = "link" }: SurveyPromptPro
       setVisible(true);
     }
   }, []);
+
+  // Google フォーム運用中はアプリ内CTAを出さない（フラグは上で定義）。
+  if (!SURVEY_PROMPT_ENABLED) return null;
 
   if (!visible) return null;
 
