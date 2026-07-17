@@ -94,7 +94,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
           observer.disconnect();
         }
       },
-      { rootMargin: "600px 0px" } // 画面の少し手前から先読みしてスクロールを待たせない
+      { rootMargin: "250px 0px" } // 画面の少し手前から先読みしてスクロールを待たせない（先読みしすぎるとAPI消費が増えるため控えめに）
     );
     observer.observe(el);
     return () => observer.disconnect();
