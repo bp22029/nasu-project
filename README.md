@@ -4,6 +4,8 @@
 
 写真で直感的にスポットを選ぶと、車で回れる実際の道なりルートに変換される。芝浦工業大学 システム工学特別演習 9班の成果物で、那須町での実証実験まで実施した。
 
+**▶ ライブデモ: https://nasu-project.vercel.app/** 
+
 ![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-000000?logo=nextdotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
@@ -474,17 +476,18 @@ npx tsx scripts/build-spots-full.ts
 
 ### デプロイ（Vercel）
 
-GitHub リポジトリを接続すると、main への push で本番が更新され、PR ごとにプレビュー URL が立つ。Environment Variables に上記と同じ変数を登録する（`NEXT_PUBLIC_SPOTS_MODE` は `full`）。
+本番は https://nasu-project.vercel.app/ で公開している。GitHub リポジトリを接続すると main への push で本番が更新され、PR ごとにプレビュー URL が立つ。Environment Variables に上記と同じ変数を登録する（`NEXT_PUBLIC_SPOTS_MODE` は `full`）。
 
-Vercel のサーバー関数は IP が動的なので、Google Places キーは「アプリケーションの制限=なし」＋「API の制限で Places API (New) のみ」に絞り、予算アラートを設定する。
+- Vercel のサーバー関数は IP が動的なので、Google Places キーは「アプリケーションの制限=なし」＋「API の制限で Places API (New) のみ」に絞り、**予算アラートを設定する**（写真は1リクエストずつ課金される）。
+- **公開URLは誰でも匿名で投稿できる**。限定公開にしたい場合は Vercel の Password Protection 等を検討する。
 
 ---
 
 ## 制作情報
 
 - **チーム**: 芝浦工業大学 システム工学特別演習 9班
-- **担当範囲**: <!-- TODO: 自分の担当を記入する（例: アプリケーション全体の設計・実装、実証実験の設計） -->
-- **期間**: <!-- TODO: 開発期間を記入する -->
+- **担当範囲**: アプリケーション全体の設計・実装、実証実験の設計）
+- **期間**: 2026年5月～2026年7月
 - **設計ドキュメント**: [CLAUDE.md](CLAUDE.md)（アーキテクチャと判断の記録）、[docs/](docs/)（診断ロジックの詳細・キャラクターデザイン引継ぎ書）
 
 ### ライセンス
