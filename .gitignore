@@ -23,4 +23,6 @@ tsconfig.tsbuildinfo
 
 # Claude Code local settings
 .claude/settings.local.json
-docs
+docs/external-dependencies-audit.md
+docs/実証実験_API制限と注意点.md
+docs/予算計画書.md
