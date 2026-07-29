@@ -11,7 +11,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)
 ![Leaflet](https://img.shields.io/badge/Leaflet-199900?logo=leaflet&logoColor=white)
-![Vitest](https://img.shields.io/badge/Vitest_52_tests-6E9F18?logo=vitest&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest_58_tests-6E9F18?logo=vitest&logoColor=white)
 
 <table>
 <tr>
@@ -370,7 +370,7 @@ docs/                       # 設計ドキュメント
 | 巡回順最適化 | 自前 TSP（全探索 / 最近傍法） | 訪問順の一部固定という要件がライブラリでは表現しづらいため |
 | 写真 | Google Places API (New) | place_id から動的取得。規約上キャッシュしない |
 | DB / 認証 / ストレージ | Supabase | 匿名認証・Postgres・Storage・RLS が無料枠で揃うため |
-| テスト | Vitest | 52テスト |
+| テスト | Vitest | 58テスト（9ファイル） |
 | CI / デプロイ | GitHub Actions / Vercel | — |
 
 ---
@@ -417,13 +417,13 @@ Supabase の無料プロジェクトは一定期間アクセスがないと停�
 
 ## 品質
 
-- **テスト**: Vitest で **52テスト**。ドメインロジック（TSP・ルート計算・URL エンコード/デコード・診断採点・タグ解釈・スポット検索・ORS クライアント）を対象にしている
+- **テスト**: Vitest で **58テスト / 9ファイル**。ドメインロジック（TSP・ルート計算・URL エンコード/デコード・診断採点・タグ解釈・スポット検索・ORS クライアント）と、ORS をモックしたルート計算の結合テストを対象にしている
 - **CI**: GitHub Actions で push / PR ごとにテストを実行
 - **型**: TypeScript strict。Vitest は型を見ないため、push 前に `tsc --noEmit` を別途通す運用にしている
 - **ブランチ運用**: `main` は常に動く状態を保ち、細かい修正でも機能ブランチを切ってからマージする
 
 ```bash
-npm test           # 52テストを実行
+npm test           # 58テストを実行
 npm run test:cov   # カバレッジ付き
 npx tsc --noEmit   # 型チェック
 ```
