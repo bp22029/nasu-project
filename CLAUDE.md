@@ -102,15 +102,13 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 | place_id | Google Places (Text Search) | **保存OK**（キャッシュ制限の例外） | 内部利用（写真取得キー） |
 | 写真 | Google Places (New) | **保存禁止**。毎回動的取得 | 地図外グリッド |
 | 経路形状 | ORS | 保存OK（Google由来でない） | 地図（Leaflet polyline） |
-| 自前写真 | 現地調査の撮影 / ライセンス明示のフリー素材 | 保存OK（リポジトリ同梱） | 地図外グリッド |
 
 写真表示時の義務:
 - `authorAttributions`（撮影者クレジット）が返ればそれを必ず表示する。
 - Googleコンテンツを地図なしで表示するため、**帰属表示「Google Maps」を併記する**。ロゴ画像は不要で、テキスト表記でよい（Google Maps Platform ポリシー: スペースが限られる場合は「Google マップ」テキスト可。**新規実装は「Google」ではなく「Google Maps」**を使う＝旧「Google」は経過措置）。実装は SpotCard 下部クレジット行で、撮影者名があれば `{撮影者名} · Google Maps`、無くても `Google Maps` を必ず表示（`photoCredit`）。施設名OFF時も表示し続ける。
 - 写真本体・写真URLはキャッシュ／DB保存しない（place_idだけ保存）。
 
-**Google 写真をダウンロードして自前ホストするのは規約違反**（キャッシュ禁止に当たる）。API キーが無い期間の穴埋めには、
-権利がクリアな自前写真（`data/spot-photos.json` + `public/spot-photos/`）を使う。詳細はセクション19。
+**Google 写真をダウンロードして自前ホストするのは規約違反**（キャッシュ禁止に当たる）。キーが無い現在の運用はセクション19。
 
 ---
 
@@ -232,6 +230,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 |---|---|
 | `POST /api/route` | ORS Matrix → TSP → ORS Directions を実行して RouteResult を返す |
 | `GET /api/photos/[placeId]` | Places API (New) からスポット写真を動的取得して返す |
+| `GET /api/photos/coverage` | 掲載許可された投稿写真を持つスポットid一覧（/select の並べ替え用。セクション19） |
 | `POST /api/survey` | アンケート回答を検証して Google スプレッドシート（Apps Script Web App）へ転送（セクション15） |
 
 ---
@@ -244,11 +243,9 @@ nasu-tabi/
 │   ├── spots.json               # 観光地マスタ debug用（13件）
 │   ├── spots-full.json          # 観光地マスタ 本番用（約200件、build-spots-full.ts で生成）
 │   ├── nasu_spot_v1.csv         # 本番スポットの調査データ（spots-full.json の元）
-│   ├── spot-photos.json         # 自前写真のマニフェスト（spotId → public/spot-photos の画像 + クレジット）
 │   └── image/                   # 診断タイプの動物画像 元データ（public/diagnosis-types へコピーして使用）
 ├── public/
-│   ├── diagnosis-types/         # 診断16タイプの画像（ファイル名がタイプコード。例 05_phnx_sheep.png）
-│   └── spot-photos/             # 自前スポット写真（Google API に依存しない写真ソース。README.md に追加手順）
+│   └── diagnosis-types/         # 診断16タイプの画像（ファイル名がタイプコード。例 05_phnx_sheep.png）
 ├── scripts/
 │   ├── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
 │   ├── build-spots-full.ts      # spots-full.json 生成（CSV + 既存13件をマージ、placeId取得）
@@ -277,6 +274,7 @@ nasu-tabi/
 │   │   └── api/
 │   │       ├── route/route.ts           # POST /api/route
 │   │       ├── photos/[spotId]/route.ts # GET /api/photos/[spotId]（Google + 投稿写真をマージ）
+│   │       ├── photos/coverage/route.ts # GET /api/photos/coverage（写真のあるスポットid一覧。セクション19）
 │   │       └── survey/route.ts          # POST /api/survey（回答を検証しApps Script Web Appへ転送）
 │   ├── components/
 │   │   ├── Map.tsx              # Leaflet地図（SSR無効、polyline・マーカー）
@@ -612,14 +610,16 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 
 授業用の Google Cloud 無料クレジットが終了し、**Places API の写真取得は現在停止している**。
 `fetchGooglePhotos` は失敗時に例外ではなく `[]` を返すため、**エラーは出ないまま全カードが無写真になる**のがこの状態。
-就活ポートフォリオとして公開を続けるので、外部APIが止まっても画面が成立する形にしてある。
+就活ポートフォリオとして公開を続けるので、**残っている投稿写真（Supabase）だけで画面が成立する**形にしてある。
+リポジトリに写真を同梱する案は、手作業が増えるわりに見え方が変わらないため採らない（ユーザー判断、2026-09-06）。
 
-- **写真ソースは3系統**（`/api/photos/[spotId]` が同じ形にマージ）:
-  Google 写真（`source: "google"`・キーがあるときだけ） / **自前写真**（`source: "local"`） / 投稿写真（`source: "user"`）。
-- **自前写真**: `data/spot-photos.json`（spotId → `{ file, credit }` の配列）に登録した `public/spot-photos/` の画像。
-  fetch も DB アクセスも無いので外部サービスに依存しない。追加手順とライセンスの注意は `public/spot-photos/README.md` が正本。
-  **Google 由来の写真をダウンロードして置くことは禁止**（セクション5）。使えるのは現地調査の撮影分とライセンスが明示されたフリー素材だけで、
-  クレジットが必要な素材は `credit` に書けばカード下部にそのまま出る。
+- **写真の実体は投稿写真だけ**: 実証実験の現地調査でアプリから投稿された写真（`posts` / `trip_entries` の
+  掲載許可ぶん）。**198スポット中10スポット**に付いている（2026-09-06 時点）。Google キーを戻せば `source: "google"` も復活する。
+- **写真のあるスポットを先頭に並べる**（`GET /api/photos/coverage` → `/select`）: 全体ランダム順のままだと
+  最初の画面に一枚も写真が出ないことがある。coverage が返す id を並べ替えのキーに使い、実写真のカードを先に見せる。
+  ソートキーは ①診断スコア降順（診断モードのみ）→ ②写真あり → ③orderedIds（ランダム）。Array.sort の安定性で
+  同帯内のランダム性・シャッフルの挙動はそのまま（セクション16と同じ考え方）。coverage が取れなければ従来の並びに戻るだけ。
+  **写真が増えれば自動で先頭に入る**（投稿を増やす以外の作業は要らない）。
 - **写真ゼロのカード**: 施設名とジャンル（`parseSpotTags` の先頭ジャンル）を必ず表示する（**施設名スイッチ OFF でも**）。
   写真の代わりの手がかりが無いと「読み込み失敗」に見えるため。左上のラベルも「写真」からジャンル名に切り替える。
 - **壊れた画像URLの除外**: SpotCard は `onError` で失敗した URI を候補から外し、残りの写真かプレースホルダーに倒す
@@ -627,4 +627,4 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 - **注記の掲示**: `DemoNotice`（/select のフィルター上）で、写真取得を止めている理由・現在の写真ソース・README のスクリーンショットへのリンクを明示する。
   セッション中は閉じたら再表示しない（sessionStorage `nasu-demo-notice-dismissed`）。
 - **復帰方法**: `GOOGLE_PLACES_API_KEY` に有効なキー（課金アカウント紐付け済み）を設定すれば、コード変更なしで Google 写真が戻る。
-  戻した場合は `DemoNotice` の掲示要否を見直すこと。
+  戻した場合は `DemoNotice` の掲示要否と、写真あり優先ソートの要否（全スポットに写真が付くので無意味になる）を見直すこと。

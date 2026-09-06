@@ -21,11 +21,9 @@ interface SpotCardProps {
 // /api/photos/[spotId] のレスポンス。Google 写真と投稿写真（機能3）が混在する
 interface PhotoItem {
   uri: string;
-  source: "google" | "user" | "local";
+  source: "google" | "user";
   authorAttributions?: Array<{ displayName: string; uri?: string }>;
   nickname?: string;
-  /** source: "local" のときのみ。data/spot-photos.json のクレジット（ライセンス表記） */
-  credit?: string;
 }
 
 // プレースホルダー色は spot.id から決める（グリッド内の位置に依存させない）。
@@ -50,10 +48,6 @@ function cardGradient(seed: number): string {
 function photoCredit(photo: PhotoItem): string | null {
   if (photo.source === "user") {
     return `${photo.nickname ?? "名無しの旅人"} さんの投稿`;
-  }
-  // 自前写真: マニフェストのクレジットをそのまま出す（フリー素材の表記義務に対応）
-  if (photo.source === "local") {
-    return photo.credit ?? null;
   }
   const author = photo.authorAttributions?.[0]?.displayName;
   return author ? `${author} · Google Maps` : "Google Maps";

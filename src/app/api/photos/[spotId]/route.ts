@@ -3,15 +3,13 @@
  *
  * GET /api/photos/[spotId]   ※キーは spots.json の id（Google placeId ではない）
  *
- * Google Places 写真・自前写真・グリッド掲載が許可された投稿写真（機能3）をマージして返す。
+ * Google Places 写真と、グリッド掲載が許可された投稿写真（機能3）をマージして返す。
  * - Google 写真: spots.json で spotId → placeId を引いて動的取得（最大1枚）
- * - 自前写真: data/spot-photos.json に登録した public/spot-photos/ の画像（最大2枚）
  * - 投稿写真: posts.show_in_grid = true / trips.show_in_grid = true のものから最大4枚
  *
- * 自前写真を用意している理由: Google Places の写真は API キーが失効すると無言で0件になり
- * （fetchGooglePhotos は失敗時に [] を返す）、グリッドが空のカードだらけになる。外部APIが
- * 止まっても画面が成立するよう、権利がクリアな写真をリポジトリに同梱できるようにしてある。
- * 追加手順は public/spot-photos/README.md 参照。
+ * Google のクレジット終了後は写真が投稿分だけになる（fetchGooglePhotos はキーが無効だと
+ * 例外ではなく [] を返す）。写真がどこにあるかは /api/photos/coverage が返し、/select は
+ * それを使って写真のあるスポットを先頭に並べる。写真ゼロのカードの見せ方はセクション19。
  *
  * 規約遵守（CLAUDE.md セクション5）:
  * - Google 写真の本体・URLはサーバー側でキャッシュしない（毎回動的取得）
@@ -22,7 +20,6 @@
 
 import { NextResponse } from "next/server";
 import { SPOTS } from "@/lib/spots";
-import spotPhotoManifest from "@/../data/spot-photos.json";
 import { getSupabaseServer } from "@/lib/supabase/server";
 
 // Next.js は GET Route Handler とその中の fetch をデフォルトでキャッシュする。
@@ -35,15 +32,6 @@ const PLACES_BASE = "https://places.googleapis.com/v1";
 const MAX_GOOGLE_PHOTOS = 1;
 // 投稿写真はカードのカルーセルが重くならない程度に絞る
 const MAX_USER_PHOTOS = 4;
-// 自前写真も同様に絞る
-const MAX_LOCAL_PHOTOS = 2;
-
-/** data/spot-photos.json: spotId → 自前写真の配列（public/spot-photos/ の画像） */
-const LOCAL_PHOTOS = spotPhotoManifest as Record<
-  string,
-  Array<{ file: string; credit?: string }>
->;
-
 interface AuthorAttribution {
   displayName: string;
   uri?: string;
@@ -52,13 +40,11 @@ interface AuthorAttribution {
 
 export interface PhotoItem {
   uri: string;
-  source: "google" | "user" | "local";
+  source: "google" | "user";
   /** source: "google" のときのみ。撮影者クレジット（規約上必ず表示） */
   authorAttributions?: AuthorAttribution[];
   /** source: "user" のときのみ。投稿者ニックネーム */
   nickname?: string;
-  /** source: "local" のときのみ。マニフェストに書いたクレジット（ライセンス表記） */
-  credit?: string;
 }
 
 export async function GET(
@@ -74,8 +60,7 @@ export async function GET(
     return NextResponse.json({ error: "スポットが見つかりません" }, { status: 404 });
   }
 
-  // Google 写真と投稿写真は独立に取得（片方が失敗してももう片方は返す）。
-  // 自前写真はリポジトリ同梱なので非同期取得の必要がない
+  // Google 写真と投稿写真は独立に取得（片方が失敗してももう片方は返す）
   const [googlePhotos, userPhotos] = await Promise.all([
     fetchGooglePhotos(spot.placeId).catch((err) => {
       console.error("[/api/photos] google", err);
@@ -87,24 +72,7 @@ export async function GET(
     }),
   ]);
 
-  const localPhotos = getLocalPhotos(spotId);
-
-  return NextResponse.json({
-    photos: [...googlePhotos, ...localPhotos, ...userPhotos],
-  });
-}
-
-/**
- * リポジトリ同梱の自前写真（data/spot-photos.json + public/spot-photos/）。
- * 静的ファイルなので fetch も DB アクセスも不要（＝外部サービスが止まっても表示できる）。
- */
-function getLocalPhotos(spotId: string): PhotoItem[] {
-  const entries = LOCAL_PHOTOS[spotId] ?? [];
-  return entries.slice(0, MAX_LOCAL_PHOTOS).map((e) => ({
-    uri: `/spot-photos/${e.file}`,
-    source: "local" as const,
-    credit: e.credit,
-  }));
+  return NextResponse.json({ photos: [...googlePhotos, ...userPhotos] });
 }
 
 /** Google Places (New) からスポット写真を動的取得（従来ロジック） */
