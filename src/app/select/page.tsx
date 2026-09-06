@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useCallback, useEffect, useRef, useMemo } from "react";
 import SpotGrid from "@/components/SpotGrid";
+import DemoNotice from "@/components/DemoNotice";
 import SpotFilter from "@/components/SpotFilter";
 import SiteHeader from "@/components/SiteHeader";
 import DepartureSelector from "@/components/DepartureSelector";
@@ -347,6 +348,9 @@ function SelectPageContent() {
             </button>
           </div>
         )}
+
+        {/* 公開デモの注記（写真ソースの説明。閉じるとセッション中は出ない） */}
+        <DemoNotice />
 
         {/* タグフィルター（ジャンル・同行者。OR 判定。debug モードは選択肢が無く非表示）。
             診断モードではジャンルチップを隠す（スコアがジャンルで動くため。「だれと」は残す）。 */}

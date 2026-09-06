@@ -102,11 +102,15 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 | place_id | Google Places (Text Search) | **保存OK**（キャッシュ制限の例外） | 内部利用（写真取得キー） |
 | 写真 | Google Places (New) | **保存禁止**。毎回動的取得 | 地図外グリッド |
 | 経路形状 | ORS | 保存OK（Google由来でない） | 地図（Leaflet polyline） |
+| 自前写真 | 現地調査の撮影 / ライセンス明示のフリー素材 | 保存OK（リポジトリ同梱） | 地図外グリッド |
 
 写真表示時の義務:
 - `authorAttributions`（撮影者クレジット）が返ればそれを必ず表示する。
 - Googleコンテンツを地図なしで表示するため、**帰属表示「Google Maps」を併記する**。ロゴ画像は不要で、テキスト表記でよい（Google Maps Platform ポリシー: スペースが限られる場合は「Google マップ」テキスト可。**新規実装は「Google」ではなく「Google Maps」**を使う＝旧「Google」は経過措置）。実装は SpotCard 下部クレジット行で、撮影者名があれば `{撮影者名} · Google Maps`、無くても `Google Maps` を必ず表示（`photoCredit`）。施設名OFF時も表示し続ける。
 - 写真本体・写真URLはキャッシュ／DB保存しない（place_idだけ保存）。
+
+**Google 写真をダウンロードして自前ホストするのは規約違反**（キャッシュ禁止に当たる）。API キーが無い期間の穴埋めには、
+権利がクリアな自前写真（`data/spot-photos.json` + `public/spot-photos/`）を使う。詳細はセクション19。
 
 ---
 
@@ -240,9 +244,11 @@ nasu-tabi/
 │   ├── spots.json               # 観光地マスタ debug用（13件）
 │   ├── spots-full.json          # 観光地マスタ 本番用（約200件、build-spots-full.ts で生成）
 │   ├── nasu_spot_v1.csv         # 本番スポットの調査データ（spots-full.json の元）
+│   ├── spot-photos.json         # 自前写真のマニフェスト（spotId → public/spot-photos の画像 + クレジット）
 │   └── image/                   # 診断タイプの動物画像 元データ（public/diagnosis-types へコピーして使用）
 ├── public/
-│   └── diagnosis-types/         # 診断16タイプの画像（ファイル名がタイプコード。例 05_phnx_sheep.png）
+│   ├── diagnosis-types/         # 診断16タイプの画像（ファイル名がタイプコード。例 05_phnx_sheep.png）
+│   └── spot-photos/             # 自前スポット写真（Google API に依存しない写真ソース。README.md に追加手順）
 ├── scripts/
 │   ├── fetch-spots.ts           # spots.json 生成スクリプト（使い捨て）
 │   ├── build-spots-full.ts      # spots-full.json 生成（CSV + 既存13件をマージ、placeId取得）
@@ -283,6 +289,7 @@ nasu-tabi/
 │   │   ├── SaveRouteButton.tsx  # ルート保存: 表示中ルートを saved_routes に軽量保存（匿名セッションのみ・写真なし）
 │   │   ├── SaveDiagnosisButton.tsx # 診断保存: 結果を diagnoses に upsert（最新1件・匿名セッションのみ・ニックネーム不要）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
+│   │   ├── DemoNotice.tsx       # /select の注記（写真APIを止めている理由と現在の写真ソース。セクション19）
 │   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
 │   │   ├── SiteHeader.tsx       # 共通sticky ヘッダー（左=文脈的な戻る / 右=NASU→ホーム + NavMenu）
 │   │   ├── NavMenu.tsx          # グローバルナビ（全ページへ飛べるメニュー。最長一致で現在ページを点灯）
@@ -598,3 +605,26 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 ### マイページ（`src/app/me/page.tsx` の `MyDiagnosisItem`）
 - **DIAGNOSIS** 節に最新1件を表示（動物画像サムネ + タイプ名 + 診断日）。操作: **見直す**（`/diagnosis?{result_query}`）/ **もう一度共有**（`ShareButton`）/ **この結果で旅を設計**（`/select?{result_query}`）/ **削除**（`diagnoses` から本人行を delete）。
 - `diagnosis` state は `undefined`=未取得 / `null`=未保存 / 値=最新。`loading`/`isEmpty` 判定にも含める。ニックネーム未設定でも表示できる。
+
+---
+
+## 19. 公開デモの写真ソース（Google クレジット終了後の運用）
+
+授業用の Google Cloud 無料クレジットが終了し、**Places API の写真取得は現在停止している**。
+`fetchGooglePhotos` は失敗時に例外ではなく `[]` を返すため、**エラーは出ないまま全カードが無写真になる**のがこの状態。
+就活ポートフォリオとして公開を続けるので、外部APIが止まっても画面が成立する形にしてある。
+
+- **写真ソースは3系統**（`/api/photos/[spotId]` が同じ形にマージ）:
+  Google 写真（`source: "google"`・キーがあるときだけ） / **自前写真**（`source: "local"`） / 投稿写真（`source: "user"`）。
+- **自前写真**: `data/spot-photos.json`（spotId → `{ file, credit }` の配列）に登録した `public/spot-photos/` の画像。
+  fetch も DB アクセスも無いので外部サービスに依存しない。追加手順とライセンスの注意は `public/spot-photos/README.md` が正本。
+  **Google 由来の写真をダウンロードして置くことは禁止**（セクション5）。使えるのは現地調査の撮影分とライセンスが明示されたフリー素材だけで、
+  クレジットが必要な素材は `credit` に書けばカード下部にそのまま出る。
+- **写真ゼロのカード**: 施設名とジャンル（`parseSpotTags` の先頭ジャンル）を必ず表示する（**施設名スイッチ OFF でも**）。
+  写真の代わりの手がかりが無いと「読み込み失敗」に見えるため。左上のラベルも「写真」からジャンル名に切り替える。
+- **壊れた画像URLの除外**: SpotCard は `onError` で失敗した URI を候補から外し、残りの写真かプレースホルダーに倒す
+  （削除された投稿写真・失効した Google URL 対策）。
+- **注記の掲示**: `DemoNotice`（/select のフィルター上）で、写真取得を止めている理由・現在の写真ソース・README のスクリーンショットへのリンクを明示する。
+  セッション中は閉じたら再表示しない（sessionStorage `nasu-demo-notice-dismissed`）。
+- **復帰方法**: `GOOGLE_PLACES_API_KEY` に有効なキー（課金アカウント紐付け済み）を設定すれば、コード変更なしで Google 写真が戻る。
+  戻した場合は `DemoNotice` の掲示要否を見直すこと。

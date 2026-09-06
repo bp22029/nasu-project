@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import type { Spot } from "@/types/spot";
+import { parseSpotTags } from "@/lib/spotTags";
 
 interface SpotCardProps {
   spot: Spot;
@@ -20,9 +21,11 @@ interface SpotCardProps {
 // /api/photos/[spotId] のレスポンス。Google 写真と投稿写真（機能3）が混在する
 interface PhotoItem {
   uri: string;
-  source: "google" | "user";
+  source: "google" | "user" | "local";
   authorAttributions?: Array<{ displayName: string; uri?: string }>;
   nickname?: string;
+  /** source: "local" のときのみ。data/spot-photos.json のクレジット（ライセンス表記） */
+  credit?: string;
 }
 
 // プレースホルダー色は spot.id から決める（グリッド内の位置に依存させない）。
@@ -48,6 +51,10 @@ function photoCredit(photo: PhotoItem): string | null {
   if (photo.source === "user") {
     return `${photo.nickname ?? "名無しの旅人"} さんの投稿`;
   }
+  // 自前写真: マニフェストのクレジットをそのまま出す（フリー素材の表記義務に対応）
+  if (photo.source === "local") {
+    return photo.credit ?? null;
+  }
   const author = photo.authorAttributions?.[0]?.displayName;
   return author ? `${author} · Google Maps` : "Google Maps";
 }
@@ -67,6 +74,9 @@ const arrowStyle: React.CSSProperties = {
 
 export default function SpotCard({ spot, selected, onToggle, routeNumber, index = 0, selectionOrder, showName = true, shuffleNonce = 0 }: SpotCardProps) {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  // 読み込みに失敗した写真URL（消された投稿写真・失効した Google URL など）。
+  // 一枚も出ないより、残りの写真かプレースホルダーに素直に倒す
+  const [brokenUris, setBrokenUris] = useState<string[]>([]);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [photoLoading, setPhotoLoading] = useState(true);
   const [hovered, setHovered] = useState(false);
@@ -138,12 +148,18 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
     });
   }, [shuffleNonce]);
 
-  const photo = photos[photoIndex] ?? null;
+  // 壊れた写真は候補から外す。全滅したらプレースホルダー表示に落ちる
+  const shownPhotos = photos.filter((p) => !brokenUris.includes(p.uri));
+  const photo = shownPhotos[photoIndex] ?? shownPhotos[0] ?? null;
   const badgeNum = routeNumber ?? selectionOrder;
+  // 写真が無いカードは「読み込み失敗」に見えないよう、施設名とジャンルを必ず出す
+  // （施設名スイッチが OFF でも表示する。写真の代わりの手がかりが無くなるため）
+  const genre = parseSpotTags(spot).genres[0] ?? null;
+  const nameVisible = showName || !photo;
 
   const stepPhoto = (e: React.MouseEvent, dir: -1 | 1) => {
     e.stopPropagation(); // カードの選択トグルを発火させない
-    setPhotoIndex((i) => (i + dir + photos.length) % photos.length);
+    setPhotoIndex((i) => (i + dir + shownPhotos.length) % shownPhotos.length);
   };
 
   return (
@@ -190,6 +206,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
             sizes="(max-width: 640px) 50vw, 33vw"
             className="object-cover"
             unoptimized
+            onError={() => setBrokenUris((b) => (b.includes(photo.uri) ? b : [...b, photo.uri]))}
           />
         ) : (
           <div className="w-full h-full" style={{ background: cardGradient(idHash(spot.id)) }}>
@@ -201,14 +218,19 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
         )}
       </div>
 
-      {/* "写真" tag top-left */}
+      {/* 左上ラベル: 写真ありは「写真」、写真なしはジャンル。
+          写真が無いカードを無地のパネルに見せず、意図した見た目にするための手がかり */}
       <span className="absolute flex items-center gap-[5px]" style={{
         top: "11px", left: "12px", zIndex: 3,
         fontFamily: "var(--font-sans)", fontSize: "9px", letterSpacing: ".18em",
-        color: "rgba(255,255,255,.82)", textTransform: "uppercase",
+        color: photo ? "rgba(255,255,255,.82)" : "rgba(28,38,24,.62)",
+        textTransform: "uppercase",
       }}>
-        <span style={{ width: "5px", height: "5px", borderRadius: "1px", background: "rgba(255,255,255,.7)", flexShrink: 0 }} />
-        写真
+        <span style={{
+          width: "5px", height: "5px", borderRadius: "1px",
+          background: photo ? "rgba(255,255,255,.7)" : "rgba(28,38,24,.45)", flexShrink: 0,
+        }} />
+        {photo ? "写真" : genre ?? "スポット"}
       </span>
 
       {/* Loading spinner */}
@@ -243,7 +265,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
       )}
 
       {/* 写真送り（複数枚あるときだけ）: Google 写真 + 許可済み投稿写真のカルーセル */}
-      {photos.length > 1 && (
+      {shownPhotos.length > 1 && (
         <div
           className="absolute flex items-center gap-[7px]"
           style={{ top: "50%", right: "8px", transform: "translateY(-50%)", zIndex: 4, flexDirection: "column" }}
@@ -258,7 +280,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
             background: "rgba(20,28,16,.45)", borderRadius: "100px", padding: "2px 7px",
             fontFamily: "var(--font-sans)",
           }}>
-            {photoIndex + 1}/{photos.length}
+            {photoIndex + 1}/{shownPhotos.length}
           </span>
           <button type="button" aria-label="次の写真" onClick={(e) => stepPhoto(e, 1)} style={arrowStyle}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -270,14 +292,14 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
 
       {/* Bottom caption: name (toggleable) + credit (Google写真は規約上常に表示・投稿写真はニックネーム) */}
       <div className="absolute left-0 right-0 bottom-0" style={{
-        padding: showName ? "38px 14px 14px" : "20px 14px 9px",
+        padding: nameVisible ? "38px 14px 14px" : "20px 14px 9px",
         zIndex: 3,
-        background: showName
+        background: nameVisible
           ? "linear-gradient(0deg, rgba(20,28,16,.62) 0%, rgba(20,28,16,.22) 55%, transparent 100%)"
           : "linear-gradient(0deg, rgba(20,28,16,.4) 0%, transparent 100%)",
         transition: "padding .3s, background .3s",
       }}>
-        {showName && (
+        {nameVisible && (
           <div style={{
             fontFamily: "var(--font-serif)", fontWeight: 600, fontSize: "16px",
             lineHeight: 1.32, color: "#f6f4ed", letterSpacing: ".03em",
@@ -288,7 +310,7 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
         )}
         {photo && photoCredit(photo) && (
           <p style={{
-            fontSize: "8px", color: "rgba(255,255,255,.65)", marginTop: showName ? "3px" : 0,
+            fontSize: "8px", color: "rgba(255,255,255,.65)", marginTop: nameVisible ? "3px" : 0,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>
             {photoCredit(photo)}
