@@ -53,9 +53,9 @@ function photoCredit(photo: PhotoItem): string | null {
   return author ? `${author} · Google Maps` : "Google Maps";
 }
 
-// 写真の自動切替（クロスフェード）。5秒はグリッドで眺めたときに落ち着く間隔で、
-// 3秒未満は「選ぶ画面」としてせわしなくなる
-const AUTO_ADVANCE_MS = 5000;
+// 写真の自動切替（クロスフェード）。8秒は「眺めていて気付くが、選ぶ手を急かさない」間隔。
+// 5秒だと選択画面としてはせわしなかった（ユーザー評価、2026-09-07）
+const AUTO_ADVANCE_MS = 8000;
 // カードごとに開始タイミングをずらす幅。写真ありカードが同フレームで一斉に切り替わると
 // デコードが集中し、見た目も機械的になる（ずれ幅は spot.id から決めるので毎回同じ）
 const AUTO_ADVANCE_PHASE_MS = 3000;
