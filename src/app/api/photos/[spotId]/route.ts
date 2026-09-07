@@ -30,8 +30,10 @@ export const dynamic = "force-dynamic";
 const PLACES_BASE = "https://places.googleapis.com/v1";
 // Google 写真は1枚に絞る（media API の呼び出し数 = スポット数で済む）
 const MAX_GOOGLE_PHOTOS = 1;
-// 投稿写真はカードのカルーセルが重くならない程度に絞る
-const MAX_USER_PHOTOS = 4;
+// 投稿写真はカードのカルーセルが重くならない程度に絞る。
+// 自動切替（クロスフェード）で1カードあたり数枚を巡るので、実際に投稿がある
+// スポット（最大10枚）でも一巡して飽きない程度に6枚まで出す
+const MAX_USER_PHOTOS = 6;
 interface AuthorAttribution {
   displayName: string;
   uri?: string;
