@@ -53,6 +53,15 @@ function photoCredit(photo: PhotoItem): string | null {
   return author ? `${author} · Google Maps` : "Google Maps";
 }
 
+// 写真の自動切替（クロスフェード）。8秒は「眺めていて気付くが、選ぶ手を急かさない」間隔。
+// 5秒だと選択画面としてはせわしなかった（ユーザー評価、2026-09-07）
+const AUTO_ADVANCE_MS = 8000;
+// カードごとに開始タイミングをずらす幅。写真ありカードが同フレームで一斉に切り替わると
+// デコードが集中し、見た目も機械的になる（ずれ幅は spot.id から決めるので毎回同じ）
+const AUTO_ADVANCE_PHASE_MS = 3000;
+// クロスフェードの長さ
+const CROSSFADE_MS = 900;
+
 const arrowStyle: React.CSSProperties = {
   width: "26px",
   height: "26px",
@@ -77,6 +86,19 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
   // 画面に近づいたカードだけ写真を取得する（本番は約200スポットあるため、
   // 全カード一斉に取得すると /select を開くたびに Google API を数百回消費してしまう）
   const [visible, setVisible] = useState(false);
+  // いま画面内にあるか（visible と違い出入りで false に戻る）。自動切替のガードに使う。
+  // 画面外のカードでタイマーを回し続けても意味がないので止める
+  const [inView, setInView] = useState(false);
+  // 動きを減らす設定（自動切替を止める）。購読は写真2枚以上のカードだけ
+  const [reduceMotion, setReduceMotion] = useState(false);
+  // クロスフェードで下に残す「直前の1枚」。DOM に置く写真は常に最大2枚に保つ
+  // （全枚数を重ねて先読みすると通信量が数MB増える。投稿写真は長辺1600pxのJPEG）
+  const [prevUri, setPrevUri] = useState<string | null>(null);
+  const [fadedIn, setFadedIn] = useState(true);
+  const lastUriRef = useRef<string | null>(null);
+  // 読み込み済みと分かっている写真URL / 次に出す写真URL（自動切替の可否判定に使う）
+  const preloadedRef = useRef<Set<string>>(new Set());
+  const nextUriRef = useRef<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   // シャッフル時の写真選び直し用（effect から最新の photos を読むため）
   const photosRef = useRef<PhotoItem[]>([]);
@@ -89,14 +111,16 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
     if (!el) return;
     if (typeof IntersectionObserver === "undefined") {
       setVisible(true);
+      setInView(true);
       return;
     }
+    // 自動切替のガードに使うため disconnect せず監視し続ける（写真の取得トリガーである
+    // visible は一度 true にしたら戻さないので、写真の再取得は起きない）
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setVisible(true);
-          observer.disconnect();
-        }
+        const intersecting = entries.some((e) => e.isIntersecting);
+        setInView(intersecting);
+        if (intersecting) setVisible(true);
       },
       { rootMargin: "250px 0px" } // 画面の少し手前から先読みしてスクロールを待たせない（先読みしすぎるとAPI消費が増えるため控えめに）
     );
@@ -150,6 +174,87 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
   // （施設名スイッチが OFF でも表示する。写真の代わりの手がかりが無くなるため）
   const genre = parseSpotTags(spot).genres[0] ?? null;
   const nameVisible = showName || !photo;
+  const photoCount = shownPhotos.length;
+  const currentUri = photo?.uri ?? null;
+
+  // 「動きを減らす」設定の購読。写真が2枚以上のカードだけ購読する
+  // （グリッドは約200枚あるので、全カードにリスナーを張らない）
+  useEffect(() => {
+    if (photoCount < 2 || typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [photoCount]);
+
+  // 写真の自動切替。次をすべて満たすときだけタイマーを回す:
+  //   ① 表示できる写真が2枚以上 ② カードが画面内 ③ hover していない ④ 未選択 ⑤ reduced-motion でない
+  // ③④は「カードが選択コントロールでもある」ため。触っている最中や選んだ後に絵が変わると、
+  // 気に入った写真でタップしたつもりが別の写真になる事故になる。
+  useEffect(() => {
+    if (photoCount < 2 || !inView || hovered || selected || reduceMotion) return;
+    const tick = () => {
+      // 次の1枚がまだ読めていなければ今回は見送る（読めていないまま進めると、
+      // 透明な新レイヤーが前の写真を隠してカードが下地に抜ける）
+      const next = nextUriRef.current;
+      if (next && !preloadedRef.current.has(next)) return;
+      setPhotoIndex((i) => (i + 1) % photoCount);
+    };
+    // 開始を spot.id 由来のオフセットでずらす（同フレームでの一斉切替を避ける）
+    const phase = idHash(spot.id) % AUTO_ADVANCE_PHASE_MS;
+    let interval: number | undefined;
+    const start = window.setTimeout(() => {
+      tick();
+      interval = window.setInterval(tick, AUTO_ADVANCE_MS);
+    }, AUTO_ADVANCE_MS + phase);
+    return () => {
+      window.clearTimeout(start);
+      if (interval !== undefined) window.clearInterval(interval);
+    };
+  }, [photoCount, inView, hovered, selected, reduceMotion, spot.id]);
+
+  // 次の1枚だけ先読みする。全枚数の先読みはしない
+  // （写真ありカード×最大6枚を一斉に読むと通信量が跳ねる。投稿写真は長辺1600pxのJPEG）
+  const nextUri = photoCount > 1 ? shownPhotos[(photoIndex + 1) % photoCount].uri : null;
+  useEffect(() => {
+    nextUriRef.current = nextUri;
+    if (!inView || !nextUri || typeof window === "undefined") return;
+    if (preloadedRef.current.has(nextUri)) return;
+    const img = new window.Image();
+    img.onload = () => preloadedRef.current.add(nextUri);
+    img.src = nextUri;
+  }, [nextUri, inView]);
+
+  // クロスフェード: 直前の1枚を下に残したまま、新しい1枚を上に重ねて opacity で入れ替える。
+  // フェードは**新しい画像が読み込めてから**始める（時間で始めると、まだ読めていない透明な層が
+  // 前の写真を消してカードが下地に抜ける）。読み込みが遅い間は前の写真が出たままになる。
+  useEffect(() => {
+    if (!currentUri) {
+      lastUriRef.current = null;
+      setPrevUri(null);
+      return;
+    }
+    if (currentUri === lastUriRef.current) return;
+    const prev = lastUriRef.current;
+    lastUriRef.current = currentUri;
+    if (!prev) {
+      setFadedIn(true); // 最初の1枚は下地のグラデーションからそのまま出す
+      return;
+    }
+    setPrevUri(prev);
+    setFadedIn(false);
+    // onLoad を取り逃したとき用の保険（キャッシュ済み画像など）
+    const fallback = window.setTimeout(() => setFadedIn(true), 2500);
+    return () => window.clearTimeout(fallback);
+  }, [currentUri]);
+
+  // フェード完了後に下の1枚を外す（DOM に残す写真を最大2枚に保つ後始末）
+  useEffect(() => {
+    if (!fadedIn || !prevUri) return;
+    const clear = window.setTimeout(() => setPrevUri(null), CROSSFADE_MS + 80);
+    return () => window.clearTimeout(clear);
+  }, [fadedIn, prevUri]);
 
   const stepPhoto = (e: React.MouseEvent, dir: -1 | 1) => {
     e.stopPropagation(); // カードの選択トグルを発火させない
@@ -189,26 +294,50 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Photo or gradient placeholder */}
+      {/* 下地のグラデーション + 写真レイヤー（自動切替はクロスフェード） */}
       <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "16px" }}>
-        {photo ? (
-          <Image
-            key={photo.uri}
-            src={photo.uri}
-            alt={spot.name}
-            fill
-            sizes="(max-width: 640px) 50vw, 33vw"
-            className="object-cover"
-            unoptimized
-            onError={() => setBrokenUris((b) => (b.includes(photo.uri) ? b : [...b, photo.uri]))}
-          />
-        ) : (
-          <div className="w-full h-full" style={{ background: cardGradient(idHash(spot.id)) }}>
-            <div className="absolute inset-0" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
-              opacity: .08, mixBlendMode: "overlay",
-            }} />
-          </div>
+        {/* 下地のグラデーション。写真の読み込み中も写真なしのときもここが見えるので、
+            カードが下地色に白く抜けることがない */}
+        <div className="w-full h-full" style={{ background: cardGradient(idHash(spot.id)) }}>
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
+            opacity: .08, mixBlendMode: "overlay",
+          }} />
+        </div>
+        {photo && (
+          <>
+            {/* 下に残す直前の1枚（クロスフェード中だけ存在する） */}
+            {prevUri && prevUri !== photo.uri && (
+              <Image
+                key={prevUri}
+                src={prevUri}
+                alt=""
+                aria-hidden
+                fill
+                sizes="(max-width: 640px) 50vw, 33vw"
+                className="object-cover"
+                unoptimized
+              />
+            )}
+            <Image
+              key={photo.uri}
+              src={photo.uri}
+              alt={spot.name}
+              fill
+              sizes="(max-width: 640px) 50vw, 33vw"
+              className="object-cover"
+              unoptimized
+              style={{
+                opacity: fadedIn ? 1 : 0,
+                transition: `opacity ${CROSSFADE_MS}ms ease`,
+              }}
+              onLoad={() => {
+                preloadedRef.current.add(photo.uri);
+                setFadedIn(true); // 読み込めた時点でフェード開始（それまでは前の写真が見えている）
+              }}
+              onError={() => setBrokenUris((b) => (b.includes(photo.uri) ? b : [...b, photo.uri]))}
+            />
+          </>
         )}
       </div>
 
