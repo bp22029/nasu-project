@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useCallback, useEffect, useRef, useMemo } from "react";
 import SpotGrid from "@/components/SpotGrid";
+import DemoNotice from "@/components/DemoNotice";
 import SpotFilter from "@/components/SpotFilter";
 import SiteHeader from "@/components/SiteHeader";
 import DepartureSelector from "@/components/DepartureSelector";
@@ -140,6 +141,21 @@ function SelectPageContent() {
     return new Set(spots.filter((s) => spotMatchesTags(s, effectiveActiveTags)).map((s) => s.id));
   }, [effectiveActiveTags]);
 
+  // 写真のあるスポット（投稿写真が掲載許可されている id の集合）。
+  // Google のクレジット終了後、写真は投稿分だけなので、ランダム順のままだと
+  // 最初の画面に一枚も写真が出ないことがある。取得できるまでは null（＝並べ替えない）。
+  const [photoSpotIds, setPhotoSpotIds] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/photos/coverage")
+      .then((r) => r.json())
+      .then((d: { spotIds?: string[] }) => {
+        if (!cancelled && d.spotIds) setPhotoSpotIds(new Set(d.spotIds));
+      })
+      .catch(() => {}); // 取れなくても並びが従来どおりになるだけ
+    return () => { cancelled = true; };
+  }, []);
+
   // 診断モードのスコア（id → スコア）。診断が無ければ null。
   const scoreById = useMemo<Map<string, number> | null>(() => {
     if (!diagnosis) return null;
@@ -150,17 +166,25 @@ function SelectPageContent() {
     return m;
   }, [diagnosis]);
 
-  // 実際にグリッドへ渡す表示順。
-  // - 通常モード: orderedIds（全体ランダム）そのまま
-  // - 診断モード: orderedIds を「スコア降順」で安定ソート。Array.sort は安定なので、同スコア帯の
-  //   中は orderedIds のランダム順がそのまま保たれる（＝同スコア帯内はランダム）。シャッフルは
-  //   orderedIds を混ぜ直す → 再ソートで帯内だけが入れ替わる（帯を越えた移動はしない）。
-  //   スコア0のスポットも除外せず最下層に並ぶ。
+  // 実際にグリッドへ渡す表示順。ソートキーは上から順に
+  //   ① 診断スコア降順（診断モードのときだけ。おすすめ順の主役なので写真より優先）
+  //   ② 写真あり優先（写真で選ぶアプリなので、実写真のカードを先に見せる）
+  //   ③ orderedIds（全体ランダム）
+  // Array.sort が安定なので、同じ帯の中は orderedIds のランダム順がそのまま残る。
+  // シャッフルは orderedIds を混ぜ直す → 再ソートで帯内だけが入れ替わる（帯を越えない）。
+  // スコア0・写真なしのスポットも除外せず最下層に並ぶ。
   const displayIds = useMemo<string[] | null>(() => {
     if (!orderedIds) return null;
-    if (!scoreById) return orderedIds;
-    return [...orderedIds].sort((a, b) => (scoreById.get(b) ?? 0) - (scoreById.get(a) ?? 0));
-  }, [orderedIds, scoreById]);
+    if (!scoreById && !photoSpotIds) return orderedIds;
+    const hasPhoto = (id: string) => (photoSpotIds?.has(id) ? 1 : 0);
+    return [...orderedIds].sort((a, b) => {
+      if (scoreById) {
+        const byScore = (scoreById.get(b) ?? 0) - (scoreById.get(a) ?? 0);
+        if (byScore !== 0) return byScore;
+      }
+      return hasPhoto(b) - hasPhoto(a);
+    });
+  }, [orderedIds, scoreById, photoSpotIds]);
 
   // 出発地変更時: GPS = 有料OK（遠方から来る想定）、プリセット = 一般道推奨
   const handleSelectDeparture = useCallback((dep: DeparturePoint) => {
@@ -347,6 +371,9 @@ function SelectPageContent() {
             </button>
           </div>
         )}
+
+        {/* 公開デモの注記（写真ソースの説明。閉じるとセッション中は出ない） */}
+        <DemoNotice />
 
         {/* タグフィルター（ジャンル・同行者。OR 判定。debug モードは選択肢が無く非表示）。
             診断モードではジャンルチップを隠す（スコアがジャンルで動くため。「だれと」は残す）。 */}

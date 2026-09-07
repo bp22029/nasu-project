@@ -7,6 +7,10 @@
  * - Google 写真: spots.json で spotId → placeId を引いて動的取得（最大1枚）
  * - 投稿写真: posts.show_in_grid = true / trips.show_in_grid = true のものから最大4枚
  *
+ * Google のクレジット終了後は写真が投稿分だけになる（fetchGooglePhotos はキーが無効だと
+ * 例外ではなく [] を返す）。写真がどこにあるかは /api/photos/coverage が返し、/select は
+ * それを使って写真のあるスポットを先頭に並べる。写真ゼロのカードの見せ方はセクション19。
+ *
  * 規約遵守（CLAUDE.md セクション5）:
  * - Google 写真の本体・URLはサーバー側でキャッシュしない（毎回動的取得）
  * - Google 写真には authorAttributions を必ず含める（source: "google"）
@@ -28,7 +32,6 @@ const PLACES_BASE = "https://places.googleapis.com/v1";
 const MAX_GOOGLE_PHOTOS = 1;
 // 投稿写真はカードのカルーセルが重くならない程度に絞る
 const MAX_USER_PHOTOS = 4;
-
 interface AuthorAttribution {
   displayName: string;
   uri?: string;

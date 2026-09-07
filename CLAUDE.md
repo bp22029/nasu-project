@@ -108,6 +108,8 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 - Googleコンテンツを地図なしで表示するため、**帰属表示「Google Maps」を併記する**。ロゴ画像は不要で、テキスト表記でよい（Google Maps Platform ポリシー: スペースが限られる場合は「Google マップ」テキスト可。**新規実装は「Google」ではなく「Google Maps」**を使う＝旧「Google」は経過措置）。実装は SpotCard 下部クレジット行で、撮影者名があれば `{撮影者名} · Google Maps`、無くても `Google Maps` を必ず表示（`photoCredit`）。施設名OFF時も表示し続ける。
 - 写真本体・写真URLはキャッシュ／DB保存しない（place_idだけ保存）。
 
+**Google 写真をダウンロードして自前ホストするのは規約違反**（キャッシュ禁止に当たる）。キーが無い現在の運用はセクション19。
+
 ---
 
 ## 6. データ設計（spots.json）
@@ -228,6 +230,7 @@ Supabase（匿名認証 + Postgres + Storage）で実装中。設計の全体像
 |---|---|
 | `POST /api/route` | ORS Matrix → TSP → ORS Directions を実行して RouteResult を返す |
 | `GET /api/photos/[placeId]` | Places API (New) からスポット写真を動的取得して返す |
+| `GET /api/photos/coverage` | 掲載許可された投稿写真を持つスポットid一覧（/select の並べ替え用。セクション19） |
 | `POST /api/survey` | アンケート回答を検証して Google スプレッドシート（Apps Script Web App）へ転送（セクション15） |
 
 ---
@@ -271,6 +274,7 @@ nasu-tabi/
 │   │   └── api/
 │   │       ├── route/route.ts           # POST /api/route
 │   │       ├── photos/[spotId]/route.ts # GET /api/photos/[spotId]（Google + 投稿写真をマージ）
+│   │       ├── photos/coverage/route.ts # GET /api/photos/coverage（写真のあるスポットid一覧。セクション19）
 │   │       └── survey/route.ts          # POST /api/survey（回答を検証しApps Script Web Appへ転送）
 │   ├── components/
 │   │   ├── Map.tsx              # Leaflet地図（SSR無効、polyline・マーカー）
@@ -283,6 +287,7 @@ nasu-tabi/
 │   │   ├── SaveRouteButton.tsx  # ルート保存: 表示中ルートを saved_routes に軽量保存（匿名セッションのみ・写真なし）
 │   │   ├── SaveDiagnosisButton.tsx # 診断保存: 結果を diagnoses に upsert（最新1件・匿名セッションのみ・ニックネーム不要）
 │   │   ├── RouteTimeline.tsx    # ルートのタイムライン表示
+│   │   ├── DemoNotice.tsx       # /select の注記（写真APIを止めている理由と現在の写真ソース。セクション19）
 │   │   ├── GrainOverlay.tsx     # 紙風グレインテクスチャ（/ と /select で共用）
 │   │   ├── SiteHeader.tsx       # 共通sticky ヘッダー（左=文脈的な戻る / 右=NASU→ホーム + NavMenu）
 │   │   ├── NavMenu.tsx          # グローバルナビ（全ページへ飛べるメニュー。最長一致で現在ページを点灯）
@@ -598,3 +603,28 @@ SURVEY_WEBHOOK_URL=（機能4アンケートの Apps Script Web App の URL。NE
 ### マイページ（`src/app/me/page.tsx` の `MyDiagnosisItem`）
 - **DIAGNOSIS** 節に最新1件を表示（動物画像サムネ + タイプ名 + 診断日）。操作: **見直す**（`/diagnosis?{result_query}`）/ **もう一度共有**（`ShareButton`）/ **この結果で旅を設計**（`/select?{result_query}`）/ **削除**（`diagnoses` から本人行を delete）。
 - `diagnosis` state は `undefined`=未取得 / `null`=未保存 / 値=最新。`loading`/`isEmpty` 判定にも含める。ニックネーム未設定でも表示できる。
+
+---
+
+## 19. 公開デモの写真ソース（Google クレジット終了後の運用）
+
+授業用の Google Cloud 無料クレジットが終了し、**Places API の写真取得は現在停止している**。
+`fetchGooglePhotos` は失敗時に例外ではなく `[]` を返すため、**エラーは出ないまま全カードが無写真になる**のがこの状態。
+就活ポートフォリオとして公開を続けるので、**残っている投稿写真（Supabase）だけで画面が成立する**形にしてある。
+リポジトリに写真を同梱する案は、手作業が増えるわりに見え方が変わらないため採らない（ユーザー判断、2026-09-06）。
+
+- **写真の実体は投稿写真だけ**: 実証実験の現地調査でアプリから投稿された写真（`posts` / `trip_entries` の
+  掲載許可ぶん）。**198スポット中10スポット**に付いている（2026-09-06 時点）。Google キーを戻せば `source: "google"` も復活する。
+- **写真のあるスポットを先頭に並べる**（`GET /api/photos/coverage` → `/select`）: 全体ランダム順のままだと
+  最初の画面に一枚も写真が出ないことがある。coverage が返す id を並べ替えのキーに使い、実写真のカードを先に見せる。
+  ソートキーは ①診断スコア降順（診断モードのみ）→ ②写真あり → ③orderedIds（ランダム）。Array.sort の安定性で
+  同帯内のランダム性・シャッフルの挙動はそのまま（セクション16と同じ考え方）。coverage が取れなければ従来の並びに戻るだけ。
+  **写真が増えれば自動で先頭に入る**（投稿を増やす以外の作業は要らない）。
+- **写真ゼロのカード**: 施設名とジャンル（`parseSpotTags` の先頭ジャンル）を必ず表示する（**施設名スイッチ OFF でも**）。
+  写真の代わりの手がかりが無いと「読み込み失敗」に見えるため。左上のラベルも「写真」からジャンル名に切り替える。
+- **壊れた画像URLの除外**: SpotCard は `onError` で失敗した URI を候補から外し、残りの写真かプレースホルダーに倒す
+  （削除された投稿写真・失効した Google URL 対策）。
+- **注記の掲示**: `DemoNotice`（/select のフィルター上）で、写真取得を止めている理由・現在の写真ソース・README のスクリーンショットへのリンクを明示する。
+  セッション中は閉じたら再表示しない（sessionStorage `nasu-demo-notice-dismissed`）。
+- **復帰方法**: `GOOGLE_PLACES_API_KEY` に有効なキー（課金アカウント紐付け済み）を設定すれば、コード変更なしで Google 写真が戻る。
+  戻した場合は `DemoNotice` の掲示要否と、写真あり優先ソートの要否（全スポットに写真が付くので無意味になる）を見直すこと。
