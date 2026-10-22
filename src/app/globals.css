@@ -148,6 +148,15 @@ body {
 }
 .dep-flash { animation: dep-flash .85s ease-in-out 2; }
 
+/* スポットカードの写真の切替。新しい写真が前の写真の上にフェードインしながら、
+   わずかに寄った状態から引いて落ち着く（opacity と transform のみ＝GPU合成で収まる）。
+   長さは SpotCard の CROSSFADE_MS が animationDuration で上書きする */
+@keyframes spot-photo-in {
+  from { opacity: 0; transform: scale(1.05); }
+  to { opacity: 1; transform: none; }
+}
+.spot-photo-in { animation: spot-photo-in 1.2s cubic-bezier(.25,.6,.3,1) both; }
+
 @media (prefers-reduced-motion: reduce) {
-  .sel-rise, .sel-card, .dep-flash { animation: none !important; }
+  .sel-rise, .sel-card, .dep-flash, .spot-photo-in { animation: none !important; }
 }
