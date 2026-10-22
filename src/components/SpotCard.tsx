@@ -59,8 +59,8 @@ const AUTO_ADVANCE_MS = 8000;
 // カードごとに開始タイミングをずらす幅。写真ありカードが同フレームで一斉に切り替わると
 // デコードが集中し、見た目も機械的になる（ずれ幅は spot.id から決めるので毎回同じ）
 const AUTO_ADVANCE_PHASE_MS = 3000;
-// クロスフェードの長さ
-const CROSSFADE_MS = 900;
+// クロスフェードの長さ（globals.css の spot-photo-in に animationDuration として渡す）
+const CROSSFADE_MS = 1200;
 
 const arrowStyle: React.CSSProperties = {
   width: "26px",
@@ -94,8 +94,10 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
   // クロスフェードで下に残す「直前の1枚」。DOM に置く写真は常に最大2枚に保つ
   // （全枚数を重ねて先読みすると通信量が数MB増える。投稿写真は長辺1600pxのJPEG）
   const [prevUri, setPrevUri] = useState<string | null>(null);
-  const [fadedIn, setFadedIn] = useState(true);
-  const lastUriRef = useRef<string | null>(null);
+  // いま上に出している写真が読み込めてフェードイン中/済みか（false の間は透明で待機）
+  const [fadedIn, setFadedIn] = useState(false);
+  // 前回描画した写真URL。切替を描画中に検知するための前回値
+  const [shownUri, setShownUri] = useState<string | null>(null);
   // 読み込み済みと分かっている写真URL / 次に出す写真URL（自動切替の可否判定に使う）
   const preloadedRef = useRef<Set<string>>(new Set());
   const nextUriRef = useRef<string | null>(null);
@@ -226,28 +228,23 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
     img.src = nextUri;
   }, [nextUri, inView]);
 
-  // クロスフェード: 直前の1枚を下に残したまま、新しい1枚を上に重ねて opacity で入れ替える。
+  // クロスフェード: 直前の1枚を下に残したまま、新しい1枚を上に重ねてフェードインさせる。
+  // 切替の検知は**描画中**に行う。useEffect で行うと、新しい写真が不透明のまま1フレーム
+  // 描画されてからフェードが始まり、パッと切り替わって見えていた（ユーザー指摘、2026-10-22）。
+  if (currentUri !== shownUri) {
+    setShownUri(currentUri);
+    setPrevUri(shownUri && currentUri ? shownUri : null);
+    setFadedIn(false);
+  }
+
   // フェードは**新しい画像が読み込めてから**始める（時間で始めると、まだ読めていない透明な層が
   // 前の写真を消してカードが下地に抜ける）。読み込みが遅い間は前の写真が出たままになる。
+  // ここは onLoad を取り逃したとき用の保険（キャッシュ済み画像など）
   useEffect(() => {
-    if (!currentUri) {
-      lastUriRef.current = null;
-      setPrevUri(null);
-      return;
-    }
-    if (currentUri === lastUriRef.current) return;
-    const prev = lastUriRef.current;
-    lastUriRef.current = currentUri;
-    if (!prev) {
-      setFadedIn(true); // 最初の1枚は下地のグラデーションからそのまま出す
-      return;
-    }
-    setPrevUri(prev);
-    setFadedIn(false);
-    // onLoad を取り逃したとき用の保険（キャッシュ済み画像など）
+    if (!currentUri || fadedIn) return;
     const fallback = window.setTimeout(() => setFadedIn(true), 2500);
     return () => window.clearTimeout(fallback);
-  }, [currentUri]);
+  }, [currentUri, fadedIn]);
 
   // フェード完了後に下の1枚を外す（DOM に残す写真を最大2枚に保つ後始末）
   useEffect(() => {
@@ -325,12 +322,12 @@ export default function SpotCard({ spot, selected, onToggle, routeNumber, index 
               alt={spot.name}
               fill
               sizes="(max-width: 640px) 50vw, 33vw"
-              className="object-cover"
+              // 読み込み前は透明で待ち、読めたら spot-photo-in（フェード + わずかなズームアウト）を再生する。
+              // transition ではなく animation にしているのは、マウント直後に opacity を切り替えると
+              // ブラウザが初期値を確定する前に変わり、遷移が飛ばされることがあるため
+              className={fadedIn ? "object-cover spot-photo-in" : "object-cover"}
               unoptimized
-              style={{
-                opacity: fadedIn ? 1 : 0,
-                transition: `opacity ${CROSSFADE_MS}ms ease`,
-              }}
+              style={fadedIn ? { animationDuration: `${CROSSFADE_MS}ms` } : { opacity: 0 }}
               onLoad={() => {
                 preloadedRef.current.add(photo.uri);
                 setFadedIn(true); // 読み込めた時点でフェード開始（それまでは前の写真が見えている）
